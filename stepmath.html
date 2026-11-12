@@ -46,6 +46,32 @@ body{
 }
 button{font-family:inherit}
 button:focus-visible, input:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+button{touch-action:manipulation}
+button:disabled{cursor:not-allowed}
+.app[hidden],.course-gate[hidden]{display:none!important}
+.course-gate{max-width:1120px;margin:0 auto;padding:clamp(20px,5vw,58px) 18px 50px}
+.gate-brand{display:flex;align-items:center;gap:14px;margin-bottom:26px}
+.gate-mark{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-size:32px;box-shadow:0 10px 22px rgba(37,99,235,.25)}
+.gate-title{font-size:clamp(27px,5vw,42px);font-weight:950;letter-spacing:-1px}
+.gate-subtitle{font-size:16px;color:var(--ink-soft);font-weight:700;line-height:1.6;margin-top:5px;max-width:760px}
+.course-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+.course-card{border:2px solid var(--line);border-radius:24px;background:#fff;padding:20px;text-align:left;min-height:250px;cursor:pointer;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-start;gap:10px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.course-card:hover,.course-card:focus-visible{transform:translateY(-3px);border-color:#60a5fa;box-shadow:0 16px 34px rgba(15,23,42,.12)}
+.course-icon{width:54px;height:54px;border-radius:17px;background:#eff6ff;display:grid;place-items:center;font-size:29px}
+.course-card:nth-child(2) .course-icon{background:#fef3c7}.course-card:nth-child(3) .course-icon{background:#ede9fe}
+.course-card h2{font-size:21px;font-weight:950}.course-card p{font-size:14px;line-height:1.6;color:var(--ink-soft);font-weight:700}
+.course-meta{margin-top:auto;color:var(--blue);font-size:12px;font-weight:900}
+.gate-note{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:17px;padding:14px 16px;color:var(--ink-soft);font-size:13px;line-height:1.65;font-weight:700}
+.lesson-path{background:#f7faff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-top:-4px}
+.lesson-path-top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.lesson-path-title{font-size:14px;font-weight:950}.lesson-count{font-size:12px;color:var(--muted);font-weight:800}
+.lesson-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.lesson-step{border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;color:var(--muted);font-size:12px;font-weight:900;text-align:center}
+.lesson-step.current{background:var(--blue);border-color:var(--blue);color:#fff}.lesson-step.done{background:var(--green-soft);border-color:#86efac;color:#166534}
+.lesson-instruction{font-size:14px;line-height:1.65;font-weight:800;color:var(--ink-soft);margin-top:10px}
+.lesson-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
+.research-card{margin-top:14px;background:#f7faff;border:1px solid var(--line);border-radius:15px;padding:12px;font-size:12px;line-height:1.65;color:var(--ink-soft)}
+.research-card a{color:#1d4ed8;font-weight:800}
 h1,h2,h3,p{margin:0}
 .app{max-width:1640px;margin:0 auto;padding:14px 16px 34px}
 
@@ -165,13 +191,32 @@ h1,h2,h3,p{margin:0}
 .screen-expr .er{color:#f87171;font-size:24px}
 .screen-word{font-size:13px;font-weight:800;color:#38bdf8;text-align:right;line-height:1.4}
 .screen-tip{font-size:11px;font-weight:700;color:#64748b;text-align:right}
+.calc-extra{display:flex;gap:7px;flex-wrap:wrap}
+.calc-grouping{background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid #bfdbfe;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:9px;animation:slideIn .28s ease both}
+.calc-grouping[hidden]{display:none}
+.grouping-head{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;font-weight:900}
+.grouping-visual{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:56px}
+.grouping-visual svg{width:54px;height:54px;overflow:visible;flex:0 0 auto}
+.grouping-count{font-size:14px;font-weight:900;color:#1d4ed8}
+.group-unit{transform-box:fill-box;transform-origin:center;animation:pop .35s cubic-bezier(.2,.9,.3,1.4) both;animation-delay:var(--d,0ms)}
+.grouping-svg{width:100%;max-width:430px;height:auto;display:block}
+.fraction-visual{width:110px;height:110px;flex:0 0 auto;overflow:visible}
+.fraction-slice{stroke:#fff;stroke-width:2;transform-origin:50px 50px;animation:sliceIn .35s ease both}
+.fraction-model{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:9px}
+.fraction-model-label{font-size:13px;font-weight:900;color:var(--ink-soft)}
+.fraction-model-label b{display:block;color:var(--blue);font-size:19px}
+.decimal-model{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:11px}
+.decimal-grid{display:grid;grid-template-columns:repeat(10,13px);gap:3px}
+.decimal-grid i{width:13px;height:13px;border:1px solid #93c5fd;border-radius:4px;background:#eff6ff}
+.decimal-grid i.on{background:#3b82f6;border-color:#2563eb;animation:pop .25s both}
+.decimal-copy{font-size:13px;font-weight:900;color:#1d4ed8}
 
 .toolbar{display:flex;flex-direction:column;gap:7px}
 .toolbar-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .toolbar-label{font-size:11px;font-weight:900;color:#64748b;margin-right:2px}
 .chip-btn{
   border:2px solid #334155;background:#0f172a;color:#e2e8f0;border-radius:11px;
-  padding:6px 9px;font-size:12.5px;font-weight:800;cursor:pointer;
+  min-height:44px;padding:6px 11px;font-size:12.5px;font-weight:800;cursor:pointer;
   transition:background .15s,border-color .15s,transform .1s;
 }
 .chip-btn:hover{background:#1e293b;border-color:#64748b;transform:translateY(-1px)}
@@ -208,7 +253,7 @@ h1,h2,h3,p{margin:0}
 .card-tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .tabs{display:flex;gap:4px;background:#eef3f9;border-radius:13px;padding:4px;flex-wrap:wrap}
 .tab{
-  border:0;background:transparent;border-radius:9px;padding:8px 12px;
+  border:0;background:transparent;border-radius:9px;padding:8px 12px;min-height:44px;
   font-size:12.5px;font-weight:900;color:var(--muted);cursor:pointer;white-space:nowrap;
 }
 .tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 7px rgba(15,23,42,.1)}
@@ -344,6 +389,8 @@ h1,h2,h3,p{margin:0}
 .bundle:nth-child(even){border-color:var(--green)}
 .bundle-title{font-size:11.5px;font-weight:900;color:var(--blue)}
 .bundle:nth-child(even) .bundle-title{color:var(--green)}
+.flat,.rod,.unit{animation:pop .28s cubic-bezier(.2,.9,.3,1.4) both;transition:transform .16s,filter .16s}
+.flat:hover,.rod:hover,.unit:hover{transform:translateY(-2px) scale(1.03);filter:brightness(1.04)}
 
 /* ---------- 단계별 교구 ---------- */
 .tool-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
@@ -533,7 +580,7 @@ input[type=range]{width:100%;accent-color:var(--blue);height:30px;cursor:pointer
 .data-track{flex:1;height:30px;background:#f1f5f9;border-radius:8px;overflow:hidden;position:relative}
 .data-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;color:#fff;font-size:12px;font-weight:900;transition:width .2s}
 .data-stepper{display:flex;gap:4px;flex:0 0 auto}
-.step-btn{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:#fff;font-size:16px;font-weight:900;cursor:pointer}
+.step-btn{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);background:#fff;font-size:18px;font-weight:900;cursor:pointer}
 .data-question{background:#f7faff;border:2px solid var(--line);border-radius:14px;padding:11px}
 .data-choices{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
 .word-problem{background:linear-gradient(135deg,#fffbeb,#fff7ed);border:2px solid #fcd34d;border-radius:14px;padding:12px}
@@ -570,6 +617,10 @@ dialog.modal::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
 @keyframes pop{0%{opacity:0;transform:scale(.55)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.7)}50%{box-shadow:0 0 0 7px rgba(250,204,21,0)}}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sliceIn{from{opacity:.3;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
+.stage-head,.card,.tool-card{animation:slideIn .35s ease both}
+.brand-mark,.gate-mark{animation:floaty 3s ease-in-out infinite}
 
 footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;padding:22px 10px 0}
 
@@ -584,6 +635,8 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
   .stage-nav{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.8fr)}
 }
 @media (max-width:820px){
+  .course-grid{grid-template-columns:1fr}
+  .course-card{min-height:0}
   .left-col{display:flex}
   .formula-grid{grid-template-columns:1fr}
   .curriculum{grid-template-columns:1fr}
@@ -591,6 +644,10 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
   .stage-nav{grid-template-columns:1fr}
 }
 @media (max-width:560px){
+  .course-gate{padding:22px 12px 30px}
+  .gate-brand{align-items:flex-start}
+  .gate-mark{width:50px;height:50px;flex:0 0 auto}
+  .lesson-step{padding:8px 4px;font-size:11px}
   .app{padding:10px 10px 24px}
   .brand-title{font-size:19px}
   .top-actions{width:100%;margin-left:0}
@@ -625,7 +682,38 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
 </style>
 </head>
 <body>
-<div class="app">
+<section class="course-gate" id="courseGate" aria-labelledby="gateTitle">
+  <div class="gate-brand">
+    <div class="gate-mark" aria-hidden="true">🧮</div>
+    <div>
+      <h1 class="gate-title" id="gateTitle" tabindex="-1">오늘의 수학 코스를 골라요</h1>
+      <p class="gate-subtitle">원하는 코스를 선택하면 짧은 활동을 하나씩 만나요. 천천히 보고, 눌러 보고, 스스로 해 볼 수 있어요.</p>
+    </div>
+  </div>
+  <div class="course-grid" role="list" aria-label="학습 코스 선택">
+    <button type="button" class="course-card" data-course="number">
+      <span class="course-icon" aria-hidden="true">🔢</span>
+      <h2>수 감각과 연산</h2>
+      <p>같은 것 찾기부터 세기, 덧셈·뺄셈, 자릿값 묶기, 곱셈·나눗셈, 분수와 소수까지 익혀요.</p>
+      <span class="course-meta">9개 학습 단계 · 묶음 그림과 분수·소수 모델</span>
+    </button>
+    <button type="button" class="course-card" data-course="daily">
+      <span class="course-icon" aria-hidden="true">🕒</span>
+      <h2>도형과 생활 속 측정</h2>
+      <p>길이·들이·무게·시각·돈을 재고, 여러 도형의 특징과 반복되는 규칙을 찾아요.</p>
+      <span class="course-meta">2개 학습 단계 · 생활 장면 연결</span>
+    </button>
+    <button type="button" class="course-card" data-course="data">
+      <span class="course-icon" aria-hidden="true">📊</span>
+      <h2>자료 읽기와 문제해결</h2>
+      <p>자료를 세어 그래프로 나타내고, 가장 많거나 적은 것을 찾아 생활 속 문제를 풀어요.</p>
+      <span class="course-meta">1개 학습 단계 · 그래프와 이야기 문제</span>
+    </button>
+  </div>
+  <p class="gate-note">💡 학습은 <b>살펴보기 → 함께 해보기 → 혼자 해보기</b> 순서로 진행돼요. 정답을 서두르지 않아도 괜찮아요. 터치, 마우스, 키보드와 음성 안내 중 편한 방법을 사용하세요.</p>
+</section>
+
+<div class="app" id="app" hidden>
 
   <header class="topbar">
     <div class="brand">
@@ -637,6 +725,7 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
     </div>
     <div class="top-actions">
       <button type="button" class="icon-btn on" id="voiceBtn" aria-pressed="true">🔊 음성 안내</button>
+      <button type="button" class="icon-btn off" id="courseBtn">🗂️ 코스 선택</button>
       <button type="button" class="icon-btn off" id="helpBtn">📚 단계 안내</button>
       <button type="button" class="icon-btn off" id="resetBtn">🧹 처음으로</button>
     </div>
@@ -648,10 +737,24 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
     <section class="left-col" aria-label="계산기와 단계별 교구">
       <div class="stage-head">
         <span class="stage-badge" id="stageBadge"></span>
-        <h1 class="stage-title" id="stageTitle"></h1>
+        <h1 class="stage-title" id="stageTitle" tabindex="-1"></h1>
         <div class="stage-sub" id="stageSub"></div>
         <p class="stage-hint" id="stageHint"></p>
       </div>
+
+      <section class="lesson-path" aria-label="단계별 학습 활동" id="lessonPanel">
+        <div class="lesson-path-top">
+          <h2 class="lesson-path-title" id="lessonTitle">이번 활동</h2>
+          <span class="lesson-count" id="lessonCount"></span>
+        </div>
+        <div class="lesson-steps" id="lessonSteps" aria-label="수업 순서"></div>
+        <p class="lesson-instruction" id="lessonInstruction" aria-live="polite"></p>
+        <div class="lesson-actions">
+          <button type="button" class="btn soft" id="goToolBtn">교구로 이동 ↓</button>
+          <button type="button" class="btn soft" id="lessonPrevBtn">← 이전</button>
+          <button type="button" class="btn primary" id="lessonNextBtn">다음 활동 →</button>
+        </div>
+      </section>
 
       <div class="calc-panel">
         <div class="calc-top">
@@ -671,12 +774,24 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
         <div class="toolbar">
           <div class="toolbar-row" id="themeRow"></div>
           <div class="toolbar-row" id="exampleRow"></div>
+          <div class="calc-extra" aria-label="수 표현 입력 도구">
+            <button type="button" class="chip-btn" id="decimalKey">소수점 ·</button>
+            <button type="button" class="chip-btn" id="fractionKey">분수선 /</button>
+          </div>
         </div>
 
         <div class="keypad" id="keypad" aria-label="계산기 키패드"></div>
+        <section class="calc-grouping" id="calcGrouping" aria-live="polite">
+          <div class="grouping-head"><span>🧩 자릿값 묶음 보기</span><span id="groupingValue">수를 입력해 보세요</span></div>
+          <div class="calc-extra">
+            <button type="button" class="chip-btn" data-group-size="10">10개씩 묶기</button>
+            <button type="button" class="chip-btn" data-group-size="100">100개씩 묶기</button>
+          </div>
+          <div class="grouping-visual" id="groupingVisual"></div>
+        </section>
       </div>
 
-      <div class="tool-card">
+      <div class="tool-card" id="toolCard">
         <div class="tool-head">
           <div>
             <div class="tool-title" id="toolTitle">단계별 교구</div>
@@ -755,7 +870,7 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
           <li>덧셈·뺄셈 전략</li>
           <li>자릿값과 세로식</li>
           <li>묶음 곱셈과 나누기</li>
-          <li>분수와 부분</li>
+          <li>분수와 소수</li>
         </ol>
       </div>
       <div class="cur-group shape">
@@ -783,6 +898,15 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
       <span class="kbd">+</span> <span class="kbd">-</span> <span class="kbd">*</span> <span class="kbd">/</span>,
       <span class="kbd">Enter</span> 계산, <span class="kbd">Backspace</span> 지우기,
       <span class="kbd">Esc</span> 처음으로
+    </div>
+    <div class="research-card">
+      <b>설계 참고 자료</b><br>
+      • IES What Works Clearinghouse (2021), <i>Assisting Students Struggling with Mathematics</i>: 체계적 지도, 수학 언어, 구체·반구체 표상, 수직선 활용 권고를 반영했습니다.<br>
+      • CAST (2024), <i>UDL Guidelines 3.0</i>: 학습자 선택, 여러 정보 제시 방식, 반응·이동 방법의 유연성을 반영했습니다.<br>
+      <a href="https://ies.ed.gov/ncee/wwc/practiceguide/26" target="_blank" rel="noopener noreferrer">IES 안내 보기</a> ·
+      <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer">CAST UDL 지침 보기</a> ·
+      <a href="https://udlguidelines.cast.org/action-expression/interaction/response-navigation-movement/" target="_blank" rel="noopener noreferrer">다양한 반응·이동 방법</a>
+      <br><small>이 코스웨어는 교사의 개별화된 교육계획과 관찰을 대신하지 않으며, 학생의 속도와 지원 수준에 맞게 활동을 조정해 주세요.</small>
     </div>
   </div>
 </dialog>
@@ -817,6 +941,47 @@ function applyOp(a, b, op) {
   if (op === '×') return a * b;
   if (op === '÷') return b === 0 ? null : Math.round((a / b) * 1000) / 1000;
   return null;
+}
+function normalizeRational(n, d) {
+  if (!d) return null;
+  if (d < 0) { n = -n; d = -d; }
+  const factor = gcd(Math.abs(n), d) || 1;
+  return { n: n / factor, d: d / factor };
+}
+function parseRational(raw) {
+  const text = String(raw ?? '').trim();
+  if (!text) return null;
+  const fraction = text.match(/^(-?\d+)\/(\d+)$/);
+  if (fraction) {
+    const d = Number(fraction[2]);
+    if (!d) return null;
+    return normalizeRational(Number(fraction[1]), d);
+  }
+  if (!/^-?(?:\d+\.?\d*|\.\d+)$/.test(text)) return null;
+  const value = Number(text);
+  if (!Number.isFinite(value)) return null;
+  const decimals = (text.split('.')[1] || '').length;
+  const denominator = 10 ** Math.min(decimals, 6);
+  return normalizeRational(Math.round(value * denominator), denominator);
+}
+function rationalValue(r) { return r ? r.n / r.d : null; }
+function rationalText(r) {
+  if (!r) return '계산할 수 없어요';
+  return r.d === 1 ? String(r.n) : `${r.n}/${r.d}`;
+}
+function exactFractionResult(aRaw, bRaw, op) {
+  const a = parseRational(aRaw), b = parseRational(bRaw);
+  if (!a || !b) return null;
+  if (op === '+') return normalizeRational(a.n * b.d + b.n * a.d, a.d * b.d);
+  if (op === '-') return normalizeRational(a.n * b.d - b.n * a.d, a.d * b.d);
+  if (op === '×') return normalizeRational(a.n * b.n, a.d * b.d);
+  if (op === '÷' && b.n !== 0) return normalizeRational(a.n * b.d, a.d * b.n);
+  return null;
+}
+function hasFractionInput(raw) { return String(raw || '').includes('/'); }
+function displayNumber(value) {
+  if (!Number.isFinite(value)) return String(value);
+  return String(Number(value.toFixed(6)));
 }
 function divideInfo(a, b) {
   if (b === 0) return null;
@@ -951,6 +1116,11 @@ function resultText(a, op, b, result) {
   }
   return String(result);
 }
+function expressionWord(raw, value) {
+  if (String(raw).includes('/')) return String(raw).replace('/', '분의 ');
+  if (String(raw).includes('.')) return `${raw} (소수)`;
+  return `${raw} (${countWord(value)})`;
+}
 function calcSpeech(first, op, second, result) {
   if (op === '÷') {
     const d = divideInfo(first, second);
@@ -986,7 +1156,7 @@ const STAGES = [
   { id: 6, domain: 'num', title: '덧셈·뺄셈 전략', short: '전략', subtitle: '모두 세기 · 이어 세기 · 거꾸로 세기', hint: '같은 계산도 여러 방법으로 풀 수 있어요. 수직선에서 점프하는 모습을 보며 전략을 골라 보세요.', preset: { first: '8', op: '+', second: '7' }, tool: 'strategy' },
   { id: 7, domain: 'num', title: '자릿값과 세로식', short: '자릿값', subtitle: '백·십·일 수모형과 받아올림·받아내림', hint: '일모형 10개가 모이면 십모형 1개로 묶어요. 자릿값을 맞춰 세로식을 써 보세요.', preset: { first: '24', op: '+', second: '18' }, tool: 'place' },
   { id: 8, domain: 'num', title: '묶음 곱셈과 나누기', short: '곱셈·나눗셈', subtitle: '같은 수씩 묶기 · 똑같이 나누기', hint: '곱셈은 같은 수씩 여러 묶음, 나눗셈은 전체를 여러 곳에 똑같이 나누는 것이에요.', preset: { first: '3', op: '×', second: '4' }, tool: 'multiply' },
-  { id: 9, domain: 'num', title: '분수와 부분', short: '분수', subtitle: '전체와 부분 · 통분', hint: '막대 조각을 눌러 분수를 만들고, 조각 크기가 같아지도록 맞추어 더해 보세요.', preset: { first: '3', op: '+', second: '5' }, tool: 'fraction' },
+  { id: 9, domain: 'num', title: '분수와 소수', short: '분수·소수', subtitle: '전체와 부분 · 소수 표현', hint: '전체를 똑같이 나눈 조각을 분수와 소수로 나타내고, 계산기에서 분수·소수를 직접 계산해 보세요.', preset: { first: '1/2', op: '+', second: '1/4' }, tool: 'fraction' },
   { id: 10, domain: 'shape', title: '측정하기', short: '측정', subtitle: '길이 · 들이 · 무게 · 시계 · 화폐', hint: '눈금을 움직이며 길이, 들이, 무게, 시간, 돈을 재어 보세요. 단위를 함께 읽는 습관이 중요해요.', preset: { first: '12', op: null, second: '' }, tool: 'measure' },
   { id: 11, domain: 'shape', title: '도형과 규칙성', short: '도형·규칙', subtitle: '평면도형 · 반복 규칙', hint: '도형의 변과 꼭짓점을 세어 보고, 반복되는 규칙에서 다음에 올 모양을 찾아보세요.', preset: { first: '4', op: '+', second: '4' }, tool: 'shape' },
   { id: 12, domain: 'data', title: '자료와 문제해결', short: '자료·문제', subtitle: '그래프 · 생활 속 문제', hint: '자료를 세어 그래프로 나타내고, 가장 많은 것을 찾아보세요. 생활 속 문제도 식으로 풀어 봅니다.', preset: { first: '3', op: '+', second: '5' }, tool: 'data' },
@@ -998,6 +1168,27 @@ const DOMAIN_META = {
   data: { label: '규칙성·자료', className: 'data' },
 };
 
+const COURSES = {
+  number: { title: '수 감각과 연산', stageIds: [1,2,3,4,5,6,7,8,9] },
+  daily: { title: '도형과 생활 속 측정', stageIds: [10,11] },
+  data: { title: '자료 읽기와 문제해결', stageIds: [12] },
+};
+
+const MICRO_LESSONS = {
+  1: { goal:'같은 모양이나 종류끼리 모으면 수를 세기 쉬워져요.', guided:'화면의 과일 하나를 눌러 알맞은 바구니로 보내 보세요. 모양과 이름을 먼저 말하거나 들어 보세요.', try:'남은 과일도 하나씩 분류한 뒤, 바구니마다 몇 개인지 세어 보세요.' },
+  2: { goal:'물건 하나에 숫자 하나를 연결해 순서대로 세어요.', guided:'10칸 판의 점을 왼쪽부터 하나씩 눌러 보세요. 누를 때마다 숫자를 소리 내거나 속으로 세어 보세요.', try:'다섯 칸을 채워 보고, 모두 몇 개인지 숫자 버튼으로 나타내 보세요.' },
+  3: { goal:'두 수를 비교해 더 많은 쪽과 같은 양을 찾아요.', guided:'두 묶음의 물건을 하나씩 짝지어 보세요. 짝이 없는 것이 어느 쪽에 남는지 살펴보세요.', try:'두 수 중 큰 수를 말하거나 가리키고, 수직선에서 어느 수가 오른쪽에 있는지 확인하세요.' },
+  4: { goal:'두 묶음을 합치거나 한 묶음을 나누며 덧셈과 뺄셈을 이해해요.', guided:'첫 번째 묶음과 두 번째 묶음의 물건을 살펴보세요. 하나씩 옮겨 합치며 모두 몇 개인지 세어 보세요.', try:'예시를 바꾸어 두 묶음을 만들고, 전체를 식과 말로 나타내 보세요.' },
+  5: { goal:'10칸을 먼저 채우면 더하기를 편하게 할 수 있어요.', guided:'7칸이 채워진 판을 보세요. 5개 중 몇 개를 옮기면 10칸이 되는지 눌러 확인하세요.', try:'8+5를 생각해 보세요. 먼저 10을 만들고 남은 것이 몇 개인지 말해 보세요.' },
+  6: { goal:'수를 세거나 수직선에서 움직여 덧셈과 뺄셈을 풀어요.', guided:'수직선의 시작 수를 확인하고, 더할 때는 앞으로, 뺄 때는 뒤로 움직여 보세요.', try:'같은 문제를 물건으로 세는 방법과 수직선으로 움직이는 방법 중 편한 방법으로 풀어 보세요.' },
+  7: { goal:'10개의 일 모형은 1개의 십 모형과 같다는 것을 알아봐요.', guided:'일 모형 10개를 한 묶음으로 바꾸어 보세요. 숫자의 자리가 바뀌면 값이 어떻게 달라지는지 확인하세요.', try:'24와 18을 십과 일로 나누어 더해 보고, 받아올림이 생기는 자리를 찾아보세요.' },
+  8: { goal:'같은 수씩 묶는 곱셈과 똑같이 나누는 나눗셈을 경험해요.', guided:'물건을 같은 개수씩 여러 묶음으로 놓아 보세요. 전체를 같은 수의 자리에 나누어 담는 모습도 확인하세요.', try:'3개씩 4묶음을 만들고 모두 몇 개인지 세어 보세요. 이어서 12개를 3곳에 똑같이 나눠 보세요.' },
+  9: { goal:'전체를 똑같이 나눈 조각은 분수로, 10분의 1이나 100분의 1은 소수로 나타내요.', guided:'분수 막대와 원 그림을 살펴보고, 계산기에서 소수점이나 분수선을 눌러 수를 입력해 보세요.', try:'1/2와 0.5가 같은 크기인지 그림으로 비교한 뒤 분수끼리 또는 소수끼리 계산해 보세요.' },
+  10: { goal:'길이·들이·무게·시간·돈을 알맞은 단위로 나타내요.', guided:'위의 측정 도구 탭에서 하나를 골라 눈금이나 값을 움직여 보세요. 단위 이름도 함께 읽어 보세요.', try:'원하는 측정 도구 하나를 골라 값을 정하고, 화면의 눈금·시계·동전과 숫자가 어떻게 연결되는지 설명해 보세요.' },
+  11: { goal:'도형의 특징을 살피고 반복되는 모양의 규칙을 찾아요.', guided:'도형을 하나 골라 변과 꼭짓점을 손가락으로 짚어 보세요. 다음에는 반복 무늬를 살펴보세요.', try:'도형 하나의 이름과 특징을 말하고, 반복 무늬에서 다음에 올 모양을 선택해 보세요.' },
+  12: { goal:'자료를 그래프로 나타내고 그래프에서 정보를 찾아요.', guided:'그래프의 항목별 개수를 확인하고 막대가 얼마나 길어지는지 살펴보세요.', try:'가장 많은 항목과 가장 적은 항목을 찾아보세요. 이야기 문제에서 무엇을 묻는지 표시한 다음 식을 만들어 보세요.' },
+};
+
 const ITEMS = [
   { id: 'apple', label: '🍎 사과', a: '🍎', b: '🍏' },
   { id: 'star', label: '⭐ 별', a: '⭐', b: '🌟' },
@@ -1006,7 +1197,10 @@ const ITEMS = [
 ];
 
 const state = {
+  course: null,
+  courseComplete: false,
   stage: 4,
+  lessonStep: 0,
   expr: { first: '3', operator: '+', second: '5' },
   resultVisible: true,
   formulaMode: 'both',
@@ -1018,6 +1212,7 @@ const state = {
   compare: { a: 6, b: 4 },
   strategy: 'forward',
   fractions: { a: { n: 1, d: 4 }, b: { n: 2, d: 4 } },
+  groupingSize: 10,
   measure: { tab: 'length', length: 12, volume: 6, weight: 450, minutes: 570, coins: { 10: 0, 50: 0, 100: 0, 500: 0 } },
   pattern: { index: 0, chosen: null, solved: false },
   shapeTab: 'shape',
@@ -1055,14 +1250,18 @@ function readHistory() {
 function writeHistory() {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(state.history.slice(0, 12))); } catch (e) { /* 저장 불가 환경 무시 */ }
 }
-function pushHistory(first, op, second, result) {
+function pushHistory(first, op, second, result, rawFirst, rawSecond, displayResult) {
   const item = {
     id: Date.now() + Math.random(),
     first, op, second, result,
+    inputA: rawFirst ?? String(first), inputB: rawSecond ?? String(second),
+    displayResult: displayResult ?? displayNumber(result),
     at: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-    steps: explainSteps(first, second, op),
+    steps: (String(rawFirst).includes('/') || String(rawSecond).includes('/') || String(rawFirst).includes('.') || String(rawSecond).includes('.'))
+      ? [`① ${rawFirst}와 ${rawSecond}를 그림이나 수직선으로 살펴봐요.`, `② ${rawFirst} ${op} ${rawSecond} = ${displayResult}`]
+      : explainSteps(first, second, op),
   };
-  state.history = [item, ...state.history.filter((h) => !(h.first === first && h.op === op && h.second === second))].slice(0, 12);
+  state.history = [item, ...state.history.filter((h) => !((h.inputA ?? String(h.first)) === item.inputA && h.op === op && (h.inputB ?? String(h.second)) === item.inputB))].slice(0, 12);
   writeHistory();
 }
 
@@ -1070,11 +1269,15 @@ function pushHistory(first, op, second, result) {
 function activeCalc() {
   const hasFirst = state.expr.first !== '';
   const hasSecond = state.expr.second !== '';
-  const first = hasFirst ? Number(state.expr.first) : null;
-  const second = hasSecond ? Number(state.expr.second) : null;
+  const first = hasFirst ? rationalValue(parseRational(state.expr.first)) : null;
+  const second = hasSecond ? rationalValue(parseRational(state.expr.second)) : null;
   const op = state.expr.operator;
   const result = first !== null && op && second !== null ? applyOp(first, second, op) : null;
-  return { first, op, second, result };
+  const exactResult = first !== null && op && second !== null && (hasFractionInput(state.expr.first) || hasFractionInput(state.expr.second))
+    ? exactFractionResult(state.expr.first, state.expr.second, op)
+    : null;
+  const resultText = exactResult ? rationalText(exactResult) : (result === null ? null : displayNumber(result));
+  return { first, op, second, result, exactResult, resultText, rawFirst: state.expr.first, rawSecond: state.expr.second };
 }
 function syncPartsFromExpr() {
   const { first, second, result } = activeCalc();
@@ -1113,11 +1316,33 @@ function pressDigit(d) {
   const isFirst = state.expr.operator === null;
   const target = isFirst ? state.expr.first : state.expr.second;
   const next = (target === '0' ? '' : target) + d;
-  if (next.length > 3) return;
+  if (next.length > 9) return;
   if (isFirst) state.expr.first = next;
   else state.expr.second = next;
   syncPartsFromExpr();
   speak(countWord(Number(next)));
+  render();
+}
+
+function appendNumberMark(mark) {
+  stopAnim();
+  if (state.resultVisible && state.expr.operator && state.expr.second !== '') {
+    state.expr = { first: '', operator: null, second: '' };
+    state.resultVisible = false;
+  }
+  const isFirst = state.expr.operator === null;
+  let target = isFirst ? state.expr.first : state.expr.second;
+  if (!target && mark === '.') target = '0';
+  if (!target || target.length >= 9) return;
+  if (mark === '.' && (target.includes('.') || target.includes('/'))) return;
+  if (mark === '/' && (target.includes('/') || target.includes('.'))) return;
+  if (mark === '/' && !/^\d+$/.test(target)) return;
+  if (mark === '.' && !/^\d+$/.test(target)) return;
+  const next = target + mark;
+  if (isFirst) state.expr.first = next;
+  else state.expr.second = next;
+  state.resultVisible = false;
+  syncPartsFromExpr();
   render();
 }
 
@@ -1154,10 +1379,20 @@ function pressEquals() {
   }
   state.resultVisible = true;
   syncPartsFromExpr();
-  pushHistory(first, op, second, result);
-  speak(calcSpeech(first, op, second, result));
+  const exact = exactFractionResult(state.expr.first, state.expr.second, op);
+  const isFraction = hasFractionInput(state.expr.first) || hasFractionInput(state.expr.second);
+  const isDecimal = String(state.expr.first).includes('.') || String(state.expr.second).includes('.');
+  const shownResult = isFraction ? rationalText(exact) : displayNumber(result);
+  pushHistory(first, op, second, result, state.expr.first, state.expr.second, shownResult);
+  speak(isFraction
+    ? `${state.expr.first} ${opWord(op)} ${state.expr.second}는 ${rationalText(exact)}예요`
+    : isDecimal
+      ? `${state.expr.first} ${opWord(op)} ${state.expr.second}는 ${displayNumber(result)}예요`
+      : calcSpeech(first, op, second, result));
   render();
-  if (op === '+' || op === '-') setTimeout(() => playConcrete(), 250);
+  if ((op === '+' || op === '-') && !hasFractionInput(state.expr.first) && !hasFractionInput(state.expr.second) && !String(state.expr.first).includes('.') && !String(state.expr.second).includes('.') && Number.isInteger(first) && Number.isInteger(second)) {
+    setTimeout(() => playConcrete(), 250);
+  }
 }
 
 function clearEntry() {
@@ -1182,7 +1417,10 @@ function loadExpression(first, op, second, options) {
   if (!opts.quiet) {
     const calc = activeCalc();
     if (calc.result !== null) {
-      speak(calcSpeech(calc.first, calc.op, calc.second, calc.result));
+      const exact = exactFractionResult(state.expr.first, state.expr.second, calc.op);
+      if (hasFractionInput(state.expr.first) || hasFractionInput(state.expr.second)) speak(`${state.expr.first} ${opWord(calc.op)} ${state.expr.second}는 ${rationalText(exact)}예요`);
+      else if (String(state.expr.first).includes('.') || String(state.expr.second).includes('.')) speak(`${state.expr.first} ${opWord(calc.op)} ${state.expr.second}는 ${displayNumber(calc.result)}예요`);
+      else speak(calcSpeech(calc.first, calc.op, calc.second, calc.result));
     } else if (calc.first !== null) {
       speak(countWord(calc.first));
     }
@@ -1320,6 +1558,7 @@ const PLACE_NAMES = ['일의 자리', '십의 자리', '백의 자리', '천의 
 function renderNav() {
   const nav = $('stageNav');
   nav.innerHTML = '';
+  const courseStages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
   ['num', 'shape', 'data'].forEach((domain) => {
     const meta = DOMAIN_META[domain];
     const group = document.createElement('div');
@@ -1329,7 +1568,7 @@ function renderNav() {
     label.textContent = meta.label;
     const chips = document.createElement('div');
     chips.className = 'stage-chips';
-    STAGES.filter((s) => s.domain === domain).forEach((stage) => {
+    STAGES.filter((s) => s.domain === domain && courseStages.includes(s.id)).forEach((stage) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'stage-chip' + (stage.id === state.stage ? ' active' : '');
@@ -1345,12 +1584,79 @@ function renderNav() {
   });
 }
 
+function renderLessonPath() {
+  const stage = currentStage();
+  const lesson = MICRO_LESSONS[stage.id];
+  const labels = ['살펴보기', '함께 해보기', '혼자 해보기'];
+  const stepText = state.courseComplete
+    ? '코스를 마쳤어요! 원하는 활동을 다시 연습하거나 위의 코스 선택 버튼으로 다른 코스를 골라 보세요.'
+    : [lesson.goal, lesson.guided, lesson.try][state.lessonStep];
+  $('lessonTitle').textContent = `${stage.id}단계 · ${stage.title}`;
+  const courseStages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
+  const position = Math.max(0, courseStages.indexOf(stage.id)) + 1;
+  $('lessonCount').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${position}/${courseStages.length}단계 · 활동 ${state.lessonStep + 1}/3`;
+  $('lessonSteps').innerHTML = labels.map((label, index) => `<div class="lesson-step${state.courseComplete || index < state.lessonStep ? ' done' : index === state.lessonStep ? ' current' : ''}"${!state.courseComplete && index === state.lessonStep ? ' aria-current="step"' : ''}>${state.courseComplete || index < state.lessonStep ? '✓ ' : `${index + 1}. `}${label}</div>`).join('');
+  $('lessonInstruction').textContent = stepText;
+  $('lessonPrevBtn').disabled = state.lessonStep === 0 || state.courseComplete;
+  const lastStage = position === courseStages.length;
+  const isLastActivity = state.lessonStep === 2;
+  $('lessonNextBtn').textContent = state.courseComplete ? '첫 단계 다시 보기' : !isLastActivity ? '다음 활동 →' : lastStage ? '코스 마치기 ✓' : '이 단계 마치고 다음으로 →';
+  $('lessonNextBtn').className = `btn ${isLastActivity ? 'green' : 'primary'}`;
+}
+
+function chooseCourse(courseId) {
+  if (!COURSES[courseId]) return;
+  state.course = courseId;
+  state.courseComplete = false;
+  state.lessonStep = 0;
+  $('courseGate').hidden = true;
+  $('app').hidden = false;
+  selectStage(COURSES[courseId].stageIds[0]);
+  $('stageTitle').focus?.();
+}
+
+function showCourseGate() {
+  stopAnim();
+  stopSpeech();
+  $('app').hidden = true;
+  $('courseGate').hidden = false;
+  $('gateTitle').focus?.();
+}
+
+function advanceLesson() {
+  if (state.courseComplete) {
+    const firstStage = COURSES[state.course].stageIds[0];
+    selectStage(firstStage);
+    return;
+  }
+  if (state.lessonStep < 2) {
+    state.lessonStep += 1;
+    renderLessonPath();
+    speak(['살펴본 내용을 떠올려 보세요.', '함께 해 보았어요. 이제 직접 해 볼까요?', '마지막 활동이에요. 천천히 해 보세요.'][state.lessonStep]);
+    return;
+  }
+  const stages = COURSES[state.course]?.stageIds || STAGES.map((s) => s.id);
+  const index = stages.indexOf(state.stage);
+  if (index >= 0 && index < stages.length - 1) {
+    selectStage(stages[index + 1]);
+    $('lessonPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    speak('좋아요. 다음 단계로 가요.');
+  } else {
+    state.courseComplete = true;
+    renderLessonPath();
+    speak('코스를 마쳤어요. 원하는 단계를 다시 연습하거나 코스를 다시 선택해 보세요.');
+    return;
+  }
+}
+
 function selectStage(id) {
   const stage = STAGES.find((s) => s.id === id);
-  if (!stage) return;
+  if (!stage || (state.course && !COURSES[state.course].stageIds.includes(stage.id))) return;
   stopAnim();
   stopSpeech();
   state.stage = stage.id;
+  state.courseComplete = false;
+  state.lessonStep = 0;
   if (stage.tool === 'sort' && state.sort.items.length === 0) newSortRound();
   if (stage.preset) {
     state.expr = {
@@ -1372,14 +1678,14 @@ function selectStage(id) {
 function renderStageHead() {
   const stage = currentStage();
   const meta = DOMAIN_META[stage.domain];
-  $('stageBadge').textContent = `${meta.label} · ${stage.id}단계`;
+  $('stageBadge').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${meta.label} · ${stage.id}단계`;
   $('stageTitle').textContent = stage.title;
   $('stageSub').textContent = stage.subtitle;
   $('stageHint').textContent = stage.hint;
 }
 
 function renderScreen() {
-  const { first, op, second, result } = activeCalc();
+  const { first, op, second, result, resultText: answerText, rawFirst, rawSecond } = activeCalc();
   const stage = currentStage();
   $('screenBadge').textContent = `${stage.id}단계 · ${stage.short}`;
   $('screenLive').textContent = result !== null ? '오른쪽 공식과 연결됨' : '식을 만들어 보세요';
@@ -1387,24 +1693,31 @@ function renderScreen() {
   let expr = '<span style="color:#64748b;font-size:22px">숫자를 눌러 보세요</span>';
   let word = '예: 3 + 5 를 누르면 오른쪽에 공식과 구체물이 나타나요';
   if (first !== null) {
-    expr = `<span>${first}</span>`;
-    word = `${first} (${countWord(first)})`;
+    expr = `<span>${rawFirst}</span>`;
+    word = expressionWord(rawFirst, first);
     if (op) {
       expr += `<span class="op">${op}</span>`;
       word += ` ${opWord(op)}`;
       if (second !== null) {
-        expr += `<span>${second}</span><span class="eq">=</span>`;
-        word += ` ${countWord(second)}`;
+        expr += `<span>${rawSecond}</span><span class="eq">=</span>`;
+        word += ` ${expressionWord(rawSecond, second)}`;
         if (result !== null) {
-          expr += `<span class="res">${resultText(first, op, second, result)}</span>`;
-          if (op === '÷') {
+          expr += `<span class="res">${answerText || resultText(first, op, second, result)}</span>`;
+          if (hasFractionInput(rawFirst) || hasFractionInput(rawSecond)) {
+            word = `${rawFirst} ${opWord(op)} ${rawSecond}는 ${answerText}`;
+          } else if (op === '÷') {
             const d = divideInfo(first, second);
             word = d.r === 0
               ? `${countWord(first)} 나누기 ${countWord(second)}${topicParticle(second)} ${countWord(d.q)}`
               : `${countWord(first)} 나누기 ${countWord(second)}${topicParticle(second)} ${countWord(d.q)}이고 ${countWord(d.r)}${subjectParticle(d.r)} 남아요`;
+          } else if (String(rawFirst).includes('.') || String(rawSecond).includes('.')) {
+            word = `${rawFirst} ${opWord(op)} ${rawSecond}는 ${displayNumber(result)}`;
           } else {
             word = `${countWord(first)} ${opWord(op)} ${countWord(second)}${topicParticle(second)} ${countWord(result)}`;
           }
+        } else if (second === null && /^\d+\/$/.test(rawSecond)) {
+          expr += '<span style="color:#64748b">?</span>';
+          word = '분모를 입력해 분수를 완성해 보세요';
         } else {
           expr += '<span class="er">0으로 나눌 수 없음</span>';
           word = '0으로는 나눌 수 없어요';
@@ -1419,7 +1732,7 @@ function renderScreen() {
   $('screenWord').textContent = word;
   $('screenTip').textContent = result !== null
     ? '= 를 누르면 기록에 저장되고 구체물이 하나씩 모여요'
-    : '숫자와 기호를 누르면 바로 계산돼요';
+    : '소수점 · 또는 분수선 / 버튼으로 수를 입력할 수 있어요';
 }
 
 function renderThemeRow() {
@@ -1445,6 +1758,9 @@ function renderExampleRow() {
     { label: '24 + 18', f: 24, op: '+', s: 18 },
     { label: '3 × 4', f: 3, op: '×', s: 4 },
     { label: '12 ÷ 3', f: 12, op: '÷', s: 3 },
+    { label: '0.5 + 0.25', f: '0.5', op: '+', s: '0.25' },
+    { label: '1/2 + 1/4', f: '1/2', op: '+', s: '1/4' },
+    { label: '3/4 − 1/4', f: '3/4', op: '-', s: '1/4' },
   ];
   examples.forEach((ex) => {
     const b = document.createElement('button');
@@ -1453,7 +1769,8 @@ function renderExampleRow() {
     b.textContent = ex.label;
     b.onclick = () => {
       let stageId = 4;
-      if (ex.op === '×' || ex.op === '÷') stageId = 8;
+      if (String(ex.f).includes('/') || String(ex.f).includes('.')) stageId = 9;
+      else if (ex.op === '×' || ex.op === '÷') stageId = 8;
       else if (ex.op === '+' && (ex.f >= 10 || ex.s >= 10)) stageId = 7;
       else if (ex.op === '+' && ex.f + ex.s > 10) stageId = 5;
       state.stage = stageId;
@@ -1508,35 +1825,36 @@ function renderKeypad() {
 /* ---------- 가로식 ---------- */
 function renderHorizontal() {
   const box = $('horizontalBox');
-  const { first, op, second, result } = activeCalc();
+  const { first, op, second, result, resultText: answerText, rawFirst, rawSecond } = activeCalc();
   if (first === null) {
     box.innerHTML = `<span class="box-badge">가로식</span><div class="vempty">왼쪽 계산기에서 <b>3 + 5</b>처럼 숫자와 기호를 눌러 보세요.</div>`;
     return;
   }
   if (!op) {
     box.innerHTML = `<span class="box-badge">가로식</span>
-      <div class="h-eq"><div class="h-term first"><span class="h-num">${first}</span><span class="h-word">${countWord(first)}</span></div></div>
+      <div class="h-eq"><div class="h-term first"><span class="h-num">${rawFirst}</span><span class="h-word">${expressionWord(rawFirst, first)}</span></div></div>
       <div class="formula-note">연산 기호를 누르면 식이 이어져요.</div>`;
     return;
   }
   if (second === null) {
     box.innerHTML = `<span class="box-badge">가로식</span>
       <div class="h-eq">
-        <div class="h-term first"><span class="h-num">${first}</span><span class="h-word">${countWord(first)}</span></div>
+        <div class="h-term first"><span class="h-num">${rawFirst}</span><span class="h-word">${expressionWord(rawFirst, first)}</span></div>
         <span class="h-op">${op}</span>
         <div class="h-term second" style="border-style:dashed"><span class="h-num" style="color:#94a3b8">?</span><span class="h-word">다음 수</span></div>
       </div>
       <div class="formula-note">다음 숫자를 누르면 결과가 나타나요.</div>`;
     return;
   }
-  const d = op === '÷' ? divideInfo(first, second) : null;
-  const shownResult = d ? (d.r === 0 ? String(d.q) : String(d.q)) : String(result ?? '✕');
-  const resultWord = d ? (d.r === 0 ? `${countWord(d.q)}` : `몫 ${d.q} · 나머지 ${d.r}`) : (result !== null ? countWord(result) : '나눌 수 없음');
+  const specialInput = hasFractionInput(rawFirst) || hasFractionInput(rawSecond) || String(rawFirst).includes('.') || String(rawSecond).includes('.');
+  const d = op === '÷' && !specialInput ? divideInfo(first, second) : null;
+  const shownResult = d ? (d.r === 0 ? String(d.q) : String(d.q)) : String(answerText ?? '✕');
+  const resultWord = d ? (d.r === 0 ? `${countWord(d.q)}` : `몫 ${d.q} · 나머지 ${d.r}`) : (result !== null ? (answerText || countWord(result)) : '나눌 수 없음');
   box.innerHTML = `<span class="box-badge">가로식</span>
     <div class="h-eq">
-      <div class="h-term first"><span class="h-num">${first}</span><span class="h-word">${countWord(first)}</span></div>
+      <div class="h-term first"><span class="h-num">${rawFirst}</span><span class="h-word">${expressionWord(rawFirst, first)}</span></div>
       <span class="h-op">${op}</span>
-      <div class="h-term second"><span class="h-num">${second}</span><span class="h-word">${countWord(second)}</span></div>
+      <div class="h-term second"><span class="h-num">${rawSecond}</span><span class="h-word">${expressionWord(rawSecond, second)}</span></div>
       <span class="h-op eq">=</span>
       <div class="h-term result"><span class="h-num">${shownResult}</span><span class="h-word">${resultWord}</span></div>
     </div>
@@ -1546,7 +1864,7 @@ function renderHorizontal() {
 /* ---------- 세로식 ---------- */
 function renderVertical() {
   const box = $('verticalBox');
-  const { first, op, second, result } = activeCalc();
+  const { first, op, second, result, rawFirst, rawSecond, resultText: answerText } = activeCalc();
   if (first === null) {
     box.innerHTML = `<span class="box-badge">세로식</span><div class="vempty">숫자를 입력하면 자릿값에 맞춰 세로식이 만들어집니다.</div>`;
     return;
@@ -1560,6 +1878,11 @@ function renderVertical() {
     return;
   }
 
+  if (String(state.expr.first).includes('/') || String(state.expr.first).includes('.') || String(state.expr.second).includes('/') || String(state.expr.second).includes('.')) {
+    box.innerHTML = `<span class="box-badge">세로식 · 수 표현</span>
+      <div class="vempty">분수와 소수는 자릿값 세로식 대신 <b>${rawFirst} ${op} ${rawSecond} = ${answerText || '…'}</b>로 나타내요.<br/>왼쪽 계산기의 그림 모델에서 크기도 확인해 보세요.</div>`;
+    return;
+  }
   if (op === '÷') {
     const d = divideInfo(first, second);
     if (!d) {
@@ -1662,7 +1985,10 @@ function renderFormula() {
 
   const { first, op, second } = activeCalc();
   const banner = $('stepsBanner');
-  if (first !== null && op && second !== null) {
+  if (first !== null && op && second !== null && (hasFractionInput(state.expr.first) || hasFractionInput(state.expr.second) || String(state.expr.first).includes('.') || String(state.expr.second).includes('.'))) {
+    const calc = activeCalc();
+    banner.innerHTML = `<div class="step-line">① <b>${state.expr.first}</b>와 <b>${state.expr.second}</b>를 각각 수로 살펴봐요.</div><div class="step-line">② ${state.expr.first} ${op} ${state.expr.second} = <b>${calc.resultText}</b></div><div class="step-line">③ 그림 모델과 계산기 결과를 비교해 보세요.</div>`;
+  } else if (first !== null && op && second !== null) {
     banner.innerHTML = explainSteps(first, second, op).map((line) => `<div class="step-line">${line}</div>`).join('');
   } else if (first !== null) {
     banner.innerHTML = `<div class="step-line">지금 입력한 수는 <b>${first} (${countWord(first)})</b>이에요. 연산 기호와 다음 숫자를 눌러 보세요.</div>`;
@@ -1695,12 +2021,83 @@ function placeSummaryHTML(n) {
   return `<div class="guide">수모형으로 보면 <b>${bits.join(' + ') || '0'}</b> = <b>${n}</b></div>`;
 }
 
+function groupIconSVG(size, index) {
+  const color = index % 2 ? '#16a34a' : '#2563eb';
+  const parts = size === 10
+    ? Array.from({ length: 10 }, (_, i) => `<circle cx="${13 + (i % 5) * 8}" cy="${16 + Math.floor(i / 5) * 13}" r="3" fill="${color}"/>`).join('')
+    : Array.from({ length: 100 }, (_, i) => `<rect x="${8 + (i % 10) * 4.2}" y="${8 + Math.floor(i / 10) * 4.2}" width="3.5" height="3.5" rx=".5" fill="${color}"/>`).join('');
+  return `<svg viewBox="0 0 56 56" role="img" aria-label="${size}개 묶음" class="group-unit" style="--d:${Math.min(index * 70, 420)}ms"><rect x="2" y="2" width="52" height="52" rx="10" fill="${size === 10 ? '#eff6ff' : '#fffbeb'}" stroke="${color}" stroke-width="2"/>${parts}</svg>`;
+}
+
+function renderGrouping() {
+  const calc = activeCalc();
+  const value = state.resultVisible && calc.result !== null ? calc.result : calc.second !== null ? calc.second : calc.first;
+  const label = $('groupingValue');
+  const visual = $('groupingVisual');
+  if (value === null) {
+    label.textContent = '수를 입력해 보세요';
+    visual.innerHTML = '<span class="guide">예: 347을 입력하면 백·십·일 묶음으로 볼 수 있어요.</span>';
+    return;
+  }
+  if (value < 0 || !Number.isInteger(value) || hasFractionInput(calc.rawFirst) || hasFractionInput(calc.rawSecond)) {
+    label.textContent = `${calc.rawFirst || ''}${calc.op || ''}${calc.rawSecond || ''}`;
+    visual.innerHTML = '<span class="guide">10개·100개 묶음은 자연수에서 살펴볼 수 있어요. 정수를 입력해 보세요.</span>';
+    return;
+  }
+  const size = state.groupingSize;
+  const groups = Math.floor(value / size);
+  const rest = value % size;
+  label.textContent = `${value}개를 ${size}개씩 묶어요`;
+  const shown = Math.min(groups, 6);
+  const icons = Array.from({ length: shown }, (_, i) => groupIconSVG(size, i)).join('');
+  const more = groups > shown ? `<span class="grouping-count">+ ${groups - shown}묶음</span>` : '';
+  const remainder = `<span class="grouping-count">${groups}묶음 × ${size}개${rest ? ` + ${rest}개` : ''} = ${value}개</span>`;
+  visual.innerHTML = `${icons || '<span class="guide">아직 묶음이 없어요.</span>'}${more}${remainder}`;
+}
+
+function fractionPieSVG(n, d, color) {
+  const pieces = Math.min(Math.max(d, 1), 12);
+  const filled = Math.round(Math.min(Math.max(n / d, 0), 1) * pieces);
+  const slices = Array.from({ length: pieces }, (_, i) => {
+    const start = (i / pieces) * Math.PI * 2 - Math.PI / 2;
+    const end = ((i + 1) / pieces) * Math.PI * 2 - Math.PI / 2;
+    const x1 = 50 + 43 * Math.cos(start), y1 = 50 + 43 * Math.sin(start);
+    const x2 = 50 + 43 * Math.cos(end), y2 = 50 + 43 * Math.sin(end);
+    const path = pieces === 1 ? 'M50 50 m-43 0 a43 43 0 1 0 86 0 a43 43 0 1 0 -86 0' : `M50 50 L${x1} ${y1} A43 43 0 0 1 ${x2} ${y2} Z`;
+    return `<path d="${path}" fill="${i < filled ? color : '#eff6ff'}" class="fraction-slice" style="animation-delay:${i * 25}ms"/>`;
+  }).join('');
+  return `<svg class="fraction-visual" viewBox="0 0 100 100" role="img" aria-label="${n}/${d}만큼 색칠한 원">${slices}<circle cx="50" cy="50" r="43" fill="none" stroke="#94a3b8" stroke-width="2"/></svg>`;
+}
+
+function fractionModelHTML(raw, value, color) {
+  const r = parseRational(raw) || normalizeRational(Math.round(value * 100), 100);
+  return `<div class="fraction-model">${fractionPieSVG(Math.abs(r.n), r.d, color)}<span class="fraction-model-label"><b>${raw}</b>${r.d === 1 ? '하나 전체와 같아요' : `${r.d}조각 중 ${Math.abs(r.n)}조각`}</span></div>`;
+}
+
+function decimalModelHTML(raw, value, color) {
+  const whole = Math.floor(Math.abs(value));
+  const hundredths = Math.round((Math.abs(value) - whole) * 100);
+  const grid = Array.from({ length: 100 }, (_, i) => `<i class="${i < hundredths ? 'on' : ''}" style="${i < hundredths ? `background:${color};border-color:${color};animation-delay:${Math.min(i * 4, 300)}ms` : ''}"></i>`).join('');
+  return `<div class="decimal-model"><div class="decimal-grid" role="img" aria-label="${raw}의 소수 부분을 100칸으로 나타낸 그림">${grid}</div><span class="decimal-copy"><b>${raw}</b><br/>${whole ? `온전한 수 ${whole} + ` : ''}100칸 중 ${hundredths}칸</span></div>`;
+}
+
 function renderConcrete() {
   const box = $('concreteStage');
-  const { first, op, second, result } = activeCalc();
+  const { first, op, second, result, resultText: answerText, rawFirst, rawSecond, exactResult } = activeCalc();
   const theme = currentTheme();
   const sub = $('concreteSub');
   const MAX = 30;
+
+  if (first !== null && (String(rawFirst).includes('/') || String(rawFirst).includes('.') || String(rawSecond).includes('/') || String(rawSecond).includes('.'))) {
+    const fractionMode = hasFractionInput(rawFirst) || hasFractionInput(rawSecond);
+    const model = (raw, value, color) => String(raw).includes('/')
+      ? fractionModelHTML(raw, value, color)
+      : decimalModelHTML(raw, value, color);
+    sub.textContent = fractionMode ? '같은 전체를 나눈 조각을 분수로 살펴보세요' : '소수점 아래의 크기를 100칸 그림으로 살펴보세요';
+    const equation = op && second !== null ? `<div class="guide" style="font-size:16px"><b>${rawFirst} ${op} ${rawSecond} = ${exactResult ? rationalText(exactResult) : answerText || '…'}</b></div>` : '';
+    box.innerHTML = `${equation}<div class="concrete-flow">${model(rawFirst, first, '#2563eb')}${second !== null ? `<div class="csign">${op}</div>${model(rawSecond, second, '#16a34a')}` : ''}${result !== null ? `<div class="csign">=</div><div class="fraction-model"><span class="fraction-model-label"><b>${exactResult ? rationalText(exactResult) : answerText}</b>계산 결과</span></div>` : ''}</div><div class="cmovehint">분수는 전체를 똑같이 나눈 수이고, 소수는 1보다 작은 부분을 십분의 일·백분의 일로 나타낸 수예요.</div>`;
+    return;
+  }
 
   if (first === null) {
     sub.textContent = '계산기에 숫자를 넣으면 구체물이 나타나요';
@@ -1858,6 +2255,7 @@ function playConcrete() {
   stopAnim();
   const { first, op, second, result } = activeCalc();
   if (first === null || !op || second === null) return;
+  if (!Number.isInteger(first) || !Number.isInteger(second) || hasFractionInput(state.expr.first) || hasFractionInput(state.expr.second) || String(state.expr.first).includes('.') || String(state.expr.second).includes('.')) return;
   if (op === '+' && result !== null) {
     const total = Math.min(Math.max(result, 0), 40);
     if (total <= 0) return;
@@ -1925,17 +2323,19 @@ function renderHistory() {
     const div = document.createElement('div');
     div.className = 'hitem';
     div.innerHTML = `<div class="hitem-top">
-        <span>${item.at || ''} · ${item.first} ${item.op} ${item.second} = ${resultText(item.first, item.op, item.second, item.result)}</span>
+        <span>${item.at || ''} · ${item.inputA ?? item.first} ${item.op} ${item.inputB ?? item.second} = ${item.displayResult ?? resultText(item.first, item.op, item.second, item.result)}</span>
         <span class="ops"><button type="button" class="mini" data-load>불러오기</button><button type="button" class="mini" data-speak>🔊</button><button type="button" class="mini del" data-del>삭제</button></span>
       </div>
       <div class="hitem-steps">${(item.steps || []).join('<br/>')}</div>`;
     div.querySelector('[data-load]').onclick = (e) => {
       e.stopPropagation();
-      loadExpression(item.first, item.op, item.second);
+      loadExpression(item.inputA ?? item.first, item.op, item.inputB ?? item.second);
     };
     div.querySelector('[data-speak]').onclick = (e) => {
       e.stopPropagation();
-      speak(calcSpeech(item.first, item.op, item.second, item.result));
+      if (String(item.inputA || '').includes('/') || String(item.inputB || '').includes('/')) speak(`${item.inputA} ${opWord(item.op)} ${item.inputB}는 ${item.displayResult}예요`);
+      else if (String(item.inputA || '').includes('.') || String(item.inputB || '').includes('.')) speak(`${item.inputA} ${opWord(item.op)} ${item.inputB}는 ${item.displayResult}예요`);
+      else speak(calcSpeech(item.first, item.op, item.second, item.result));
     };
     div.querySelector('[data-del]').onclick = (e) => {
       e.stopPropagation();
@@ -1943,7 +2343,7 @@ function renderHistory() {
       writeHistory();
       renderHistory();
     };
-    div.onclick = () => loadExpression(item.first, item.op, item.second);
+    div.onclick = () => loadExpression(item.inputA ?? item.first, item.op, item.inputB ?? item.second);
     list.appendChild(div);
   });
 }
@@ -1952,7 +2352,9 @@ function renderHistory() {
 function render() {
   renderNav();
   renderStageHead();
+  renderLessonPath();
   renderScreen();
+  renderGrouping();
   renderThemeRow();
   renderExampleRow();
   renderKeypad();
@@ -2482,6 +2884,14 @@ function modifyParts(kind) {
     if (p.units < 10) { speak('일모형이 10개 모이면 묶을 수 있어요'); return; }
     p.tens += Math.floor(p.units / 10);
     p.units %= 10;
+  } else if (kind === 'bundle100') {
+    if (p.tens < 10) { speak('십모형 10개가 모이면 백모형 하나로 묶을 수 있어요'); return; }
+    p.hundreds += Math.floor(p.tens / 10);
+    p.tens %= 10;
+  } else if (kind === 'unbundle100') {
+    if (p.hundreds <= 0) { speak('풀 백모형이 없어요'); return; }
+    p.hundreds -= 1;
+    p.tens += 10;
   } else if (kind === 'unbundle') {
     if (p.tens <= 0) { speak('풀 십모형이 없어요'); return; }
     p.tens -= 1;
@@ -2533,7 +2943,9 @@ function renderPlace() {
       <button type="button" class="btn amber" data-pa="add100">＋ 백모형 1</button>
       <button type="button" class="btn soft" data-pa="sub1">－ 1</button>
       <button type="button" class="btn soft" data-pa="bundle" ${p.units < 10 ? 'disabled' : ''}>10개 묶기</button>
+      <button type="button" class="btn soft" data-pa="bundle100" ${p.tens < 10 ? 'disabled' : ''}>100개 묶기</button>
       <button type="button" class="btn soft" data-pa="unbundle" ${p.tens <= 0 ? 'disabled' : ''}>십모형 풀기</button>
+      <button type="button" class="btn soft" data-pa="unbundle100" ${p.hundreds <= 0 ? 'disabled' : ''}>백모형 풀기</button>
       <button type="button" class="btn soft" data-pa="clear">비우기</button>
       <button type="button" class="btn violet" data-pa="use">계산기에 넣기</button>
     </div>`;
@@ -2676,6 +3088,7 @@ function renderFraction() {
     <div class="fcols">${bar(fa, '#2563eb', 'a', '첫 번째 분수')}${bar(fb, '#16a34a', 'b', '두 번째 분수')}</div>
     <div class="fresult">
       <div class="guide">${same ? '조각 크기가 같아서 분자끼리 더할 수 있어요.' : `조각 크기가 달라요. <b>${lcm}조각</b>으로 맞추면 더할 수 있어요.`}</div>
+      <div class="guide" style="margin-top:6px">분수를 소수로 읽으면 <b>${fa.n}/${fa.d} = ${displayNumber(fa.n / fa.d)}</b>, <b>${fb.n}/${fb.d} = ${displayNumber(fb.n / fb.d)}</b>예요.</div>
       ${same
         ? `<div class="rv" style="font-size:24px;font-weight:900;margin-top:5px">${fa.n}/${fa.d} + ${fb.n}/${fb.d} = ${rawSum.n}/${rawSum.d}${simp && (simp.n !== rawSum.n || simp.d !== rawSum.d) ? ` = ${simp.n}/${simp.d}` : ''}</div>
            ${rawSum.n >= rawSum.d ? `<div class="guide">가분수예요. 자연수 ${Math.floor(rawSum.n / rawSum.d)}과 ${rawSum.n % rawSum.d}/${rawSum.d}로 나타낼 수 있어요.</div>` : ''}`
@@ -2683,6 +3096,7 @@ function renderFraction() {
     </div>
     <div class="row-flex">
       <button type="button" class="btn violet" data-fa="lcm">조각 크기 같게 (${lcm}조각)</button>
+      <button type="button" class="btn primary" data-fa="send">계산기에 보내기</button>
       <button type="button" class="btn soft" data-fa="swap">두 분수 바꾸기</button>
       <button type="button" class="btn soft" data-fa="reset">처음으로</button>
     </div>`;
@@ -2708,7 +3122,10 @@ function renderFraction() {
   $('toolBody').querySelectorAll('[data-fa]').forEach((btn) => {
     btn.onclick = () => {
       const action = btn.dataset.fa;
-      if (action === 'lcm') {
+      if (action === 'send') {
+        loadExpression(`${fa.n}/${fa.d}`, '+', `${fb.n}/${fb.d}`);
+        return;
+      } else if (action === 'lcm') {
         if (same) { speak('이미 조각 크기가 같아요'); return; }
         state.fractions = {
           a: { n: fa.n * (lcm / fa.d), d: lcm },
@@ -3081,6 +3498,20 @@ function init() {
   if (!state.sort.items.length) newSortRound();
   state.history = readHistory();
 
+  document.querySelectorAll('[data-course]').forEach((button) => {
+    button.addEventListener('click', () => chooseCourse(button.dataset.course));
+  });
+  $('courseBtn').onclick = showCourseGate;
+  $('goToolBtn').onclick = () => $('toolCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('lessonPrevBtn').onclick = () => {
+    if (state.lessonStep > 0) {
+      state.lessonStep -= 1;
+      renderLessonPath();
+      speak(['살펴보기로 돌아왔어요.', '함께 해보기로 돌아왔어요.'][state.lessonStep]);
+    }
+  };
+  $('lessonNextBtn').onclick = advanceLesson;
+
   $('voiceBtn').onclick = () => {
     state.voice = !state.voice;
     const b = $('voiceBtn');
@@ -3092,6 +3523,15 @@ function init() {
   };
   $('resetBtn').onclick = () => clearEntry();
   $('playBtnTop').onclick = () => playConcrete();
+  $('decimalKey').onclick = () => appendNumberMark('.');
+  $('fractionKey').onclick = () => appendNumberMark('/');
+  $('calcGrouping').addEventListener('click', (e) => {
+    const button = e.target.closest('[data-group-size]');
+    if (!button) return;
+    state.groupingSize = Number(button.dataset.groupSize) === 100 ? 100 : 10;
+    renderGrouping();
+    speak(`${state.groupingSize}개씩 묶어 볼게요`);
+  });
   $('clearHistoryBtn').onclick = () => {
     state.history = [];
     writeHistory();
@@ -3115,6 +3555,7 @@ function init() {
   });
 
   window.addEventListener('keydown', (e) => {
+    if ($('app').hidden) return;
     if ($('helpDialog').open) return;
     const tag = (document.activeElement && document.activeElement.tagName) || '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -3124,6 +3565,7 @@ function init() {
     else if (e.key === '*') pressOperator('×');
     else if (e.key === '/') { e.preventDefault(); pressOperator('÷'); }
     else if (e.key === 'Enter' || e.key === '=') { e.preventDefault(); pressEquals(); }
+    else if (e.key === '.') appendNumberMark('.');
     else if (e.key === 'Backspace') { e.preventDefault(); pressBackspace(); }
     else if (e.key === 'Escape') clearEntry();
   });
