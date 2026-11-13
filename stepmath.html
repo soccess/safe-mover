@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#eef3f9" />
-<title>수학 공책 — 계산기 + 공식 + 구체물</title>
+<title>수학 공책 — 터치 구체물 활동 · 10·100 묶기 · 특수교육 지원</title>
 <style>
 /* ============================================================
    수학 공책 — 단일 HTML (외부 의존성 없음)
@@ -624,6 +624,235 @@ dialog.modal::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
 
 footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;padding:22px 10px 0}
 
+/* ============================================================
+   특수교육 지원 · 활동 중심 UI · 터치 드래그
+   ============================================================ */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:root{--tap-min:52px;--ui-scale:1}
+body.big-touch{--tap-min:64px}
+.btn,.icon-btn,.chip-btn,.support-btn,.stage-chip,.tab,.activity-tabs .atab,.bundle-big-btn{min-height:var(--tap-min)}
+body.big-touch .key,body.big-touch .cell,body.big-touch .shape-tile,body.big-touch .drag-token,body.big-touch .counter-chip{min-height:64px;min-width:64px}
+body.big-touch .aac-btn{min-height:82px}
+body.text-large{--text-scale:1.12}
+body.text-xlarge{--text-scale:1.24}
+body.text-large .stage-hint,body.text-large .lesson-instruction,body.text-large .guide,body.text-large .tool-sub,body.text-large .card-sub,body.text-large .course-card p,body.text-large .data-label,body.text-large .bundle-help{font-size:calc(1em * var(--text-scale))}
+body.easy-read{letter-spacing:.015em;word-spacing:.06em}
+body.easy-read .stage-hint,body.easy-read .lesson-instruction,body.easy-read .guide{line-height:1.85}
+body.high-contrast{--bg:#fff;--paper:#fff;--ink:#000;--ink-soft:#111827;--muted:#1f2937;--line:#111827;--line-strong:#000;--blue:#0033cc;--green:#006400;--amber:#8a4b00;--violet:#4c1d95;--rose:#9f1239;--shadow:none;--shadow-sm:none;background:#fff}
+body.high-contrast .card,body.high-contrast .tool-card,body.high-contrast .calc-panel,body.high-contrast .lesson-path,body.high-contrast .stage-nav,body.high-contrast .support-bar{background:#fff;border-color:#000}
+body.high-contrast .stage-chip.active{background:#000;border-color:#000}
+body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+
+/* 보기 전환 */
+.view-switch{display:inline-flex;background:#fff;border:2px solid var(--line);border-radius:14px;padding:3px;gap:3px;box-shadow:var(--shadow-sm)}
+.view-switch button{border:0;background:transparent;color:var(--ink-soft);min-height:38px;padding:0 13px;border-radius:11px;font-size:13px;font-weight:900;cursor:pointer}
+.view-switch button.on{background:var(--ink);color:#fff}
+.app[data-view="activity"] .calc-panel,.app[data-view="activity"] .right-col{display:none!important}
+.app[data-view="activity"] .layout{grid-template-columns:minmax(0,1fr)}
+.app[data-view="activity"] .left-col{max-width:1100px;margin:0 auto;width:100%}
+.app[data-view="activity"] .tool-card{border-color:#bfdbfe}
+.app[data-view="activity"] .tool-card .tool-body{min-height:260px}
+.app[data-view="activity"] .tool-card .tool-title{font-size:23px}
+.app[data-view="activity"] .tool-card .tool-sub{font-size:14px;line-height:1.6}
+.app[data-view="activity"] .lesson-path{background:linear-gradient(180deg,#f7faff,#fff)}
+.app[data-view="activity"] .stage-head::before{content:"지금 하는 활동";display:inline-block;font-size:11px;font-weight:950;letter-spacing:.04em;background:#fbbf24;color:#422006;border-radius:999px;padding:4px 10px;margin-bottom:8px}
+
+/* 지원 바 */
+.support-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.86);border:1.5px solid var(--line);border-radius:18px;padding:9px 11px;margin:-6px 0 14px;box-shadow:var(--shadow-sm)}
+.first-then{display:flex;align-items:center;gap:8px;flex:1 1 280px;min-width:0}
+.ft-card{border:2px solid var(--line);border-radius:13px;padding:6px 11px;background:#fff;min-width:0;flex:1 1 0}
+.ft-card .ft-label{font-size:9.5px;font-weight:950;letter-spacing:.05em;color:var(--muted)}
+.ft-card .ft-text{font-size:12.5px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ft-card.now{border-color:#93c5fd;background:#eff6ff}
+.ft-card.next{border-color:#fcd34d;background:#fffbeb}
+.ft-arrow{font-size:17px;color:var(--muted);font-weight:900}
+.token-board{display:flex;align-items:center;gap:7px;background:#fff7ed;border:2px solid #fed7aa;border-radius:13px;padding:5px 10px}
+.token-board .t-label{font-size:10.5px;font-weight:950;color:#9a3412}
+.token-dots{display:flex;gap:3px}
+.token-dot{width:18px;height:18px;border-radius:50%;border:2px solid #fdba74;background:#fff;display:grid;place-items:center;font-size:10px;line-height:1}
+.token-dot.on{background:#f59e0b;border-color:#d97706;color:#fff;animation:pop .3s ease both}
+.support-btn{border:2px solid var(--line);background:#fff;border-radius:12px;min-height:40px;padding:0 11px;font-size:12.5px;font-weight:900;cursor:pointer;box-shadow:var(--shadow-sm)}
+.support-btn:hover{border-color:#93c5fd}
+
+/* 활동 하단 · 프롬프트 */
+.activity-footer{border-top:2px dashed var(--line);margin-top:14px;padding-top:12px;display:flex;flex-direction:column;gap:9px}
+.activity-footer .footer-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.activity-footer .footer-row .spacer{flex:1}
+.prompt-meter{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.prompt-pill{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 9px;font-size:10.5px;font-weight:900;color:var(--muted)}
+.prompt-pill.on{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.progress-note{font-size:12px;font-weight:800;color:var(--ink-soft);line-height:1.55;background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:8px 10px}
+.progress-note b{color:var(--ink)}
+
+/* 드래그 공통 */
+.drag-ghost{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;opacity:.94;filter:drop-shadow(0 14px 22px rgba(15,23,42,.28));will-change:transform;transform-origin:center}
+.drag-source-active{opacity:.32;filter:grayscale(.3)}
+body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+.drop-hot{outline:4px solid #f59e0b!important;outline-offset:3px!important;background-color:#fffbeb!important}
+.hint-target{animation:hintPulse 1.3s ease-in-out infinite!important;outline:4px dashed #f59e0b!important;outline-offset:2px!important}
+@keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.35)}50%{box-shadow:0 0 0 10px rgba(245,158,11,0)}}
+.drag-tray{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#f8fafc;border:2px dashed var(--line-strong);border-radius:15px;padding:10px 12px;margin:9px 0}
+.drag-tray .tray-label{font-size:11.5px;font-weight:950;color:var(--muted);letter-spacing:.02em}
+.drag-token{min-width:54px;min-height:54px;border-radius:15px;border:2px solid #bfdbfe;background:#fff;display:inline-flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;font-size:12px;font-weight:950;color:#1d4ed8;cursor:grab;touch-action:none;box-shadow:0 4px 10px rgba(37,99,235,.12);user-select:none}
+.drag-token .big{font-size:23px;line-height:1}
+.drag-token .tiny{font-size:9.5px;color:var(--muted);font-weight:800}
+.drag-token.green{border-color:#86efac;color:#166534;box-shadow:0 4px 10px rgba(22,163,74,.12)}
+.drag-token.amber{border-color:#fcd34d;color:#92400e;box-shadow:0 4px 10px rgba(217,119,6,.12)}
+.drag-token.violet{border-color:#c4b5fd;color:#5b21b6;box-shadow:0 4px 10px rgba(124,58,237,.12)}
+.drag-token.rose{border-color:#fda4af;color:#9f1239}
+.drag-token:active{cursor:grabbing;transform:scale(.97)}
+.drop-plate{border:3px dashed #cbd5e1;border-radius:17px;background:#fff;padding:12px;min-height:110px;transition:border-color .15s,background .15s}
+.drop-plate .plate-title{font-size:12px;font-weight:950;color:var(--muted);display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:7px}
+.drop-plate .plate-items{display:flex;flex-wrap:wrap;gap:6px;min-height:52px;align-items:center}
+.drop-plate.first{border-color:#93c5fd;background:#f8fbff}
+.drop-plate.second{border-color:#86efac;background:#f7fff9}
+.drop-plate .plate-count{font-size:19px;font-weight:950;color:var(--ink)}
+.two-plates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+@media (max-width:620px){.two-plates{grid-template-columns:1fr}}
+.counter-chip{width:38px;height:38px;border-radius:50%;display:inline-grid;place-items:center;font-size:18px;border:2px solid #93c5fd;background:#dbeafe;touch-action:none;cursor:grab;user-select:none}
+.counter-chip.green{border-color:#86efac;background:#dcfce7}
+.counter-chip.amber{border-color:#fcd34d;background:#fef3c7}
+.counter-chip.violet{border-color:#c4b5fd;background:#ede9fe}
+.counter-chip:active{cursor:grabbing}
+
+/* 10·100 묶음 */
+.bundle-strip{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:8px 0;padding:8px 10px;border:1.5px solid var(--line);border-radius:12px;background:#f8fafc}
+.bundle-strip .bundle-item{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:4px 7px;font-size:11px;font-weight:900;color:var(--ink-soft)}
+.bundle-strip .bundle-item b{color:var(--ink)}
+.bundle-big-btn{min-height:52px;border-radius:14px;border:2px solid #fcd34d;background:#fffbeb;color:#92400e;font-size:14px;font-weight:950;padding:0 16px;cursor:pointer;box-shadow:0 4px 12px rgba(217,119,6,.12)}
+.bundle-big-btn.blue{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8}
+.bundle-big-btn:active{transform:scale(.98)}
+.bundle-board{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.7fr);gap:14px;align-items:start}
+@media (max-width:760px){.bundle-board{grid-template-columns:1fr}}
+.ones-frame{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:330px;padding:10px;border:3px solid #93c5fd;border-radius:16px;background:#f8fbff;min-height:160px}
+.ones-frame .one-cell{aspect-ratio:1;border:1.5px dashed #cbd5e1;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:18px}
+.ones-frame .one-cell.filled{background:#dbeafe;border-color:#60a5fa}
+.ones-frame .one-cell.bundled{background:#dcfce7;border-color:#4ade80}
+.bundle-summary{display:flex;flex-direction:column;gap:9px}
+.bundle-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1.5px solid var(--line);border-radius:13px;padding:8px 10px}
+.bundle-row .br-label{font-size:11px;font-weight:950;color:var(--muted);width:74px;flex:0 0 auto}
+.rod{display:inline-grid;grid-template-columns:repeat(10,6px);gap:2px;border:2px solid #16a34a;border-radius:6px;padding:3px;background:#dcfce7;cursor:pointer;touch-action:none}
+.rod span{width:6px;height:18px;background:#16a34a;border-radius:1px;display:block}
+.flat{display:inline-grid;grid-template-columns:repeat(10,5px);gap:1px;border:2px solid #d97706;border-radius:6px;padding:3px;background:#fef3c7;cursor:pointer;touch-action:none}
+.flat span{width:5px;height:5px;background:#d97706;border-radius:1px;display:block}
+.bundle-bigflat{display:grid;grid-template-columns:repeat(10,6px);gap:1px;border:2px solid #d97706;border-radius:7px;padding:4px;background:#fef3c7}
+.bundle-bigflat span{width:6px;height:6px;background:#d97706;border-radius:1px}
+.bundle-count{font-size:26px;font-weight:950;letter-spacing:-.5px}
+.bundle-help{font-size:12px;font-weight:800;color:var(--ink-soft);line-height:1.6}
+
+/* 자릿값 드래그 */
+.place-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:10px 0}
+@media (max-width:680px){.place-columns{grid-template-columns:1fr}}
+.place-col{border:3px dashed #cbd5e1;border-radius:15px;background:#fff;padding:9px;min-height:150px}
+.place-col.hundreds{border-color:#fcd34d;background:#fffdf5}
+.place-col.tens{border-color:#86efac;background:#f8fff9}
+.place-col.units{border-color:#93c5fd;background:#f8fbff}
+.place-col .pc-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:950;margin-bottom:6px}
+.place-col .pc-body{display:flex;flex-wrap:wrap;gap:5px;align-items:flex-end;min-height:66px}
+.place-source{min-width:58px;min-height:58px;border-radius:13px;border:2px solid var(--line);background:#fff;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:950;cursor:grab;touch-action:none;user-select:none}
+.place-source.one{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8}
+.place-source.ten{border-color:#86efac;background:#f0fdf4;color:#166534}
+.place-source.hundred{border-color:#fcd34d;background:#fffbeb;color:#92400e}
+.place-source .ps-icon{font-size:22px;line-height:1}
+.place-bundle-zones{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.place-bundle-zone{border:2.5px dashed #cbd5e1;border-radius:13px;background:#f8fafc;padding:9px;text-align:center;font-size:11.5px;font-weight:900;color:var(--ink-soft);min-height:58px;display:grid;place-items:center}
+.place-bundle-zone strong{display:block;font-size:13px;color:var(--ink)}
+
+/* 곱셈·나눗셈 드래그 */
+.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;margin:10px 0}
+.group-slot{border:2.5px dashed #cbd5e1;border-radius:14px;background:#fff;padding:8px;min-height:94px}
+.group-slot.filled{border-style:solid;border-color:#86efac;background:#f0fdf4}
+.group-slot .gs-title{font-size:11px;font-weight:950;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between}
+.group-slot .gs-dots{display:flex;flex-wrap:wrap;gap:3px;min-height:44px;align-items:center}
+.group-slot .gs-dot{width:14px;height:14px;border-radius:50%;background:#93c5fd;display:block}
+.group-slot.filled .gs-dot{background:#16a34a}
+.plate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin:10px 0}
+.plate-slot{border:2.5px dashed #cbd5e1;border-radius:14px;background:#fff;padding:8px;min-height:92px;text-align:center}
+.plate-slot .ps-title{font-size:11px;font-weight:950;color:var(--muted);margin-bottom:4px}
+.plate-slot .ps-dots{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;min-height:44px;align-items:center}
+.plate-slot .ps-dot{width:14px;height:14px;border-radius:50%;background:#2563eb;display:block}
+
+/* 분수 드래그 */
+.frac-shelf{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:9px;border:2px dashed #c4b5fd;border-radius:13px;background:#faf5ff}
+.frac-piece{width:42px;height:42px;border-radius:9px;border:2px solid #c4b5fd;background:#ede9fe;color:#5b21b6;display:grid;place-items:center;font-size:12px;font-weight:950;cursor:grab;touch-action:none;user-select:none}
+.frac-bar-drop{border:2.5px dashed #c4b5fd;border-radius:11px;padding:5px;background:#fff}
+.frac-bar-drop.drop-hot{border-color:#f59e0b}
+
+/* 수직선 드래그 */
+.nl-interactive{position:relative;margin:12px 0 4px;padding:28px 10px 32px;background:#f8fafc;border:1.5px solid var(--line);border-radius:15px;overflow:hidden}
+.nl-track{position:relative;height:10px;background:#334155;border-radius:999px;margin:18px 8px 0}
+.nl-stops{position:absolute;inset:0;display:grid;grid-template-columns:repeat(21,1fr)}
+.nl-stop{position:relative;border:0;background:transparent;cursor:pointer;touch-action:none;min-width:0;padding:0}
+.nl-stop::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:3px;height:16px;background:#64748b;border-radius:2px}
+.nl-stop.major::before{height:23px;width:4px;background:#0f172a}
+.nl-stop .nl-num{position:absolute;left:50%;top:23px;transform:translateX(-50%);font-size:10.5px;font-weight:900;color:#475569}
+.nl-stop.drop-hot::before{background:#f59e0b;height:28px;width:6px}
+.nl-marker{position:absolute;top:-13px;left:0;transform:translateX(-50%);min-width:48px;height:48px;border-radius:50%;background:#7c3aed;color:#fff;border:3px solid #fff;box-shadow:0 6px 15px rgba(124,58,237,.35);display:grid;place-items:center;font-size:22px;cursor:grab;touch-action:none;z-index:3;user-select:none}
+.nl-marker:active{cursor:grabbing}
+.nl-target{position:absolute;top:-22px;transform:translateX(-50%);font-size:18px;z-index:2;pointer-events:none}
+.nl-caption{text-align:center;font-size:12.5px;font-weight:900;color:var(--ink-soft);margin-top:8px}
+
+/* 도형 보드 */
+.shape-board-wrap{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;margin:10px 0}
+@media (max-width:700px){.shape-board-wrap{grid-template-columns:1fr}}
+.shape-palette{display:flex;flex-wrap:wrap;gap:7px;align-content:flex-start;background:#f8fafc;border:2px dashed var(--line-strong);border-radius:15px;padding:8px}
+.shape-tile{width:66px;height:66px;border-radius:13px;border:2px solid var(--line);background:#fff;display:grid;place-items:center;cursor:grab;touch-action:none;user-select:none;padding:5px}
+.shape-tile svg{width:100%;height:100%}
+.shape-tile span{font-size:8.5px;font-weight:900;color:var(--muted);line-height:1}
+.shape-board{position:relative;min-height:300px;border:3px dashed #cbd5e1;border-radius:18px;background:linear-gradient(180deg,#fff,#f8fafc);overflow:hidden;touch-action:none}
+.shape-board.drop-hot{border-color:#f59e0b;background:#fffbeb}
+.shape-board .board-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12.5px;font-weight:900;color:#94a3b8;text-align:center;pointer-events:none;line-height:1.6}
+.shape-instance{position:absolute;width:72px;height:72px;padding:0;border:2px solid transparent;border-radius:12px;background:transparent;cursor:grab;touch-action:none;display:grid;place-items:center;user-select:none}
+.shape-instance svg{width:100%;height:100%;pointer-events:none}
+.shape-instance.selected{border-color:#f59e0b;background:#fffbeb}
+.shape-instance .si-badge{position:absolute;right:-5px;top:-5px;background:#0f172a;color:#fff;border-radius:999px;font-size:8px;font-weight:900;padding:1px 4px}
+
+/* 측정 드래그 */
+.ruler{cursor:ew-resize;touch-action:none}
+.ruler-object{cursor:grab;touch-action:none;user-select:none}
+.beaker{cursor:ns-resize;touch-action:none}
+.clock{cursor:grab;touch-action:none}
+.clock-grab{fill:transparent;cursor:grab}
+.weight-tray{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:9px 0}
+.weight-token{min-width:58px;min-height:52px;border-radius:12px;border:2px solid #cbd5e1;background:#f1f5f9;display:grid;place-items:center;font-size:11px;font-weight:950;cursor:grab;touch-action:none;color:#334155}
+.weight-token.w500{border-color:#fda4af;background:#fff1f2;color:#9f1239}
+.wallet-drop{border:2.5px dashed #fcd34d;border-radius:13px;padding:9px;background:#fffbeb;min-height:58px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.wallet-drop .wd-label{font-size:11px;font-weight:950;color:#92400e}
+
+/* 기록 · 설정 · AAC */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:620px){.settings-grid{grid-template-columns:1fr}}
+.setting-field{background:#f8fafc;border:1.5px solid var(--line);border-radius:13px;padding:10px}
+.setting-field label{display:block;font-size:12px;font-weight:950;margin-bottom:5px}
+.setting-field select,.setting-field input[type="number"]{width:100%;min-height:44px;border:2px solid var(--line);border-radius:10px;padding:0 9px;font-family:inherit;font-size:14px;font-weight:800;background:#fff}
+.setting-field .hint{font-size:11px;font-weight:700;color:var(--muted);line-height:1.5;margin-top:4px}
+.switch-line{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+.switch-line:last-child{border-bottom:0}
+.switch-line span{font-size:12.5px;font-weight:900}
+.switch-line input{width:24px;height:24px;accent-color:#2563eb}
+.teacher-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}
+@media (max-width:620px){.teacher-summary{grid-template-columns:1fr 1fr}}
+.ts-card{background:#f8fafc;border:1.5px solid var(--line);border-radius:12px;padding:9px;text-align:center}
+.ts-card b{display:block;font-size:24px;font-weight:950;color:var(--blue)}
+.ts-card span{font-size:10.5px;font-weight:900;color:var(--muted)}
+.data-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.data-table th,.data-table td{border-bottom:1px solid var(--line);padding:6px 5px;text-align:left;font-weight:800}
+.data-table th{background:#f8fafc;font-weight:950;color:var(--muted)}
+.aac-sentence{min-height:62px;border:2px solid var(--line);border-radius:13px;background:#fff;padding:9px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:14px;font-weight:900}
+.aac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}
+@media (max-width:620px){.aac-grid{grid-template-columns:repeat(2,1fr)}}
+.aac-btn{min-height:66px;border:2px solid var(--line);border-radius:14px;background:#fff;font-size:13px;font-weight:950;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px}
+.aac-btn .aac-emoji{font-size:26px;line-height:1}
+.aac-btn:active{transform:scale(.98)}
+.break-stage{display:grid;place-items:center;gap:14px;padding:10px 0}
+.break-circle{width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bfdbfe,#7c3aed);display:grid;place-items:center;color:#fff;font-size:18px;font-weight:950;box-shadow:0 12px 30px rgba(124,58,237,.25);animation:breathe 6s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.86)}50%{transform:scale(1.04)}}
+.break-timer{font-size:30px;font-weight:950;letter-spacing:-.5px}
+.mode-help{font-size:11.5px;font-weight:800;color:var(--ink-soft);line-height:1.6;background:#f7faff;border:1px solid var(--line);border-radius:11px;padding:8px 10px}
+.activity-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.activity-tabs .atab{border:2px solid var(--line);background:#fff;border-radius:11px;min-height:42px;padding:0 11px;font-size:12px;font-weight:900;cursor:pointer;color:var(--ink-soft)}
+.activity-tabs .atab.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
 /* 반응형 */
 @media (max-width:1120px){
   .layout{grid-template-columns:1fr}
@@ -710,7 +939,11 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
       <span class="course-meta">1개 학습 단계 · 그래프와 이야기 문제</span>
     </button>
   </div>
-  <p class="gate-note">💡 학습은 <b>살펴보기 → 함께 해보기 → 혼자 해보기</b> 순서로 진행돼요. 정답을 서두르지 않아도 괜찮아요. 터치, 마우스, 키보드와 음성 안내 중 편한 방법을 사용하세요.</p>
+  <p class="gate-note">💡 학습은 <b>살펴보기 → 함께 해보기 → 혼자 해보기</b> 순서로 진행돼요. 구체물을 <b>손가락으로 끌어다 놓는 터치 활동</b>이며, 10개·100개 묶기, 도형 옮기기, 시계바늘·자를 끌기까지 직접 해 볼 수 있어요. 정답을 서두르지 않아도 괜찮아요.</p>
+  <div class="row-flex" style="justify-content:center;margin-top:14px">
+    <button type="button" class="btn primary" id="allActivitiesBtn">🎯 12개 활동 모두 보기</button>
+    <button type="button" class="btn soft" id="gateSettingsBtn">⚙️ 학습 지원 설정</button>
+  </div>
 </section>
 
 <div class="app" id="app" hidden>
@@ -720,18 +953,39 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
       <div class="brand-mark" aria-hidden="true">🧮</div>
       <div>
         <div class="brand-title">수학 공책</div>
-        <div class="brand-sub">계산기로 입력하고 · 공식과 구체물로 확인해요</div>
+        <div class="brand-sub">손가락으로 끌어 보는 12개 활동 · 10·100 묶기 · 특수교육 지원</div>
       </div>
     </div>
     <div class="top-actions">
+      <div class="view-switch" role="tablist" aria-label="화면 보기 선택">
+        <button type="button" id="viewActivityBtn" class="on" role="tab" aria-selected="true">🎯 활동</button>
+        <button type="button" id="viewCalcBtn" role="tab" aria-selected="false">🧮 계산기</button>
+      </div>
       <button type="button" class="icon-btn on" id="voiceBtn" aria-pressed="true">🔊 음성 안내</button>
       <button type="button" class="icon-btn off" id="courseBtn">🗂️ 코스 선택</button>
       <button type="button" class="icon-btn off" id="helpBtn">📚 단계 안내</button>
+      <button type="button" class="icon-btn off" id="settingsBtn">⚙️ 설정</button>
       <button type="button" class="icon-btn off" id="resetBtn">🧹 처음으로</button>
     </div>
   </header>
 
   <nav class="stage-nav" id="stageNav" aria-label="수학 학습 단계"></nav>
+
+  <div class="support-bar" id="supportBar" aria-label="학습 지원 도구">
+    <div class="first-then" aria-label="먼저 다음 보드">
+      <div class="ft-card now"><div class="ft-label">지금 · FIRST</div><div class="ft-text" id="ftNow">활동을 골라요</div></div>
+      <span class="ft-arrow" aria-hidden="true">→</span>
+      <div class="ft-card next"><div class="ft-label">다음 · THEN</div><div class="ft-text" id="ftNext">칭찬 별 5개 · 쉬는 시간</div></div>
+    </div>
+    <div class="token-board" aria-label="칭찬 별">
+      <span class="t-label">칭찬 별</span>
+      <div class="token-dots" id="tokenDots"></div>
+    </div>
+    <button type="button" class="support-btn" id="aacBtn">💬 말판</button>
+    <button type="button" class="support-btn" id="breakBtn">🌿 쉬는 시간</button>
+    <button type="button" class="support-btn" id="bundleBtn">🔟 10·100 묶기</button>
+    <button type="button" class="support-btn" id="teacherBtn">📋 기록</button>
+  </div>
 
   <main class="layout">
     <section class="left-col" aria-label="계산기와 단계별 교구">
@@ -799,6 +1053,18 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
           </div>
         </div>
         <div class="tool-body" id="toolBody"></div>
+        <div class="activity-footer" id="activityFooter">
+          <div class="footer-row">
+            <span class="prompt-meter" id="promptMeter" aria-live="polite"></span>
+            <span class="spacer"></span>
+            <button type="button" class="btn soft" id="retryBtn">🔄 다시</button>
+            <button type="button" class="btn amber" id="hintBtn">💡 도움</button>
+            <button type="button" class="btn green" id="independentBtn">✓ 스스로 했어요</button>
+            <button type="button" class="btn soft" id="helpedBtn">🤝 도움 받았어요</button>
+            <button type="button" class="btn primary" id="nextTaskBtn">다음 →</button>
+          </div>
+          <div class="progress-note" id="progressNote">손가락으로 구체물을 끌어다 놓아 보세요. 잘못 놓아도 괜찮아요. 다시 해 볼 수 있어요.</div>
+        </div>
       </div>
     </section>
 
@@ -889,24 +1155,228 @@ footer.foot{text-align:center;font-size:11.5px;color:var(--muted);font-weight:70
     </div>
     <div class="modal-note">
       수학과의 <b>수와 연산 · 도형 · 측정 · 규칙성 · 자료와 가능성</b> 영역을 12단계로 묶었습니다.
-      모든 단계는 <b>구체물 → 그림 → 숫자·기호</b> 순서로 이어집니다. 손으로 만지고, 눈으로 보고,
-      마지막에 식으로 써 보세요. 계산기에서 수식을 입력하면 오른쪽에 가로식·세로식과 구체물이
-      동시에 나타납니다.
+      모든 단계는 <b>구체물 → 그림 → 숫자·기호</b> 순서(CRA)로 이어지고, 각 활동은 <b>손가락으로 끌어다 놓는 터치 조작</b>으로 설계했습니다.
+      계산기 화면은 활동을 보조하는 확인 도구로 남겨 두었습니다.
+    </div>
+    <div class="modal-note" style="background:#f0fdf4;border-color:#86efac">
+      <b>이 화면에 적용된 미국 특수교육 지침</b><br>
+      • <b>NCAEP/AFIRM (2020, 28개 근거기반 실제)</b>: 시각적 지원, 촉진(prompting), 강화(reinforcement), 과제분석(task analysis), 기다림 시간(time delay), 모델링, 자기관리, AAC, 테크놀로지 기반 교수를 화면 구조에 반영했습니다.<br>
+      • <b>CEC High-Leverage Practices</b>: 명시적·체계적 교수, 비계(scaffolding), 보조공학, 진행 점검을 활동 하단의 ‘도움 수준’과 기록으로 구현했습니다.<br>
+      • <b>WWC (2021) 수학 중재 권고</b>: 체계적 교수, 시각적 표상, 수직선, 문제 유형별 언어 안내를 반영했습니다.<br>
+      • <b>CRA (Concrete–Representational–Abstract)</b>: 구체물 끌기 → 그림·10칸 판 → 식과 기호 순서로 연결했습니다.<br>
+      • <b>UDL 3.0</b>: 선택, 흥미, 노력의 지속, 여러 표상, 여러 행동·표현 수단을 제공합니다.<br>
+      • <b>WCAG 2.2 / WAI-ARIA</b>: 큰 터치 영역, 키보드 조작, 포커스 표시, 고대비, 음성·자막, 실시간 알림을 적용했습니다.<br>
+      • <b>TEACCH 구조화 교수</b>: 시각적 일정, 먼저-다음 보드, 작업 체계, 예측 가능한 순서, 감각 친화적 쉬는 시간을 넣었습니다.<br>
+      • <b>NCII 데이터 기반 개별화</b>: 시도·독립 수행·도움 수준을 자동 기록하고 CSV로 내려받을 수 있습니다.
+    </div>
+    <div class="modal-note" style="background:#fff7ed;border-color:#fdba74">
+      <b>지적장애 학생을 위한 조정</b><br>
+      • 과제분석: 활동을 ‘살펴보기 → 함께 → 혼자’의 작은 단계로 나누고, 한 번에 한 가지 지시만 제공합니다.<br>
+      • 구체물·반구체물: 실제로 끌 수 있는 점·수모형·10칸 판·분수 조각을 먼저 제공하고, 그림과 식으로 천천히 이동합니다.<br>
+      • 체계적 촉진과 즉각적 피드백: 시각 힌트 → 언어 힌트 → 모방 → 신체적 도움 순서로 지원하고, 성공을 바로 칭찬합니다.<br>
+      • 반복과 일반화: 같은 개념을 여러 활동(세기·묶기·측정·자료)에서 반복하고, 생활 속 상황(돈·시계·길이)과 연결합니다.<br><br>
+      <b>자폐성장애 학생을 위한 조정</b><br>
+      • 예측 가능한 구조: 시각적 일정, 먼저-다음 보드, 동일한 화면 순서, 활동 종료를 미리 알리는 신호를 제공합니다.<br>
+      • 명확하고 구체적인 언어: 짧은 문장, 한 단계씩, 은유보다 직접적인 표현을 사용합니다.<br>
+      • 선택과 흥미: 구체물 종류, 보상, 쉬는 시간을 학생이 고를 수 있게 합니다.<br>
+      • 감각·전환 지원: 동작 줄이기, 고대비, 큰 터치, 쉬는 시간, 소리 끄기를 제공합니다.<br>
+      • 오류 없는 학습과 강화: 정답 자리를 미리 보여 주고, 잘못 놓아도 중립적으로 다시 안내하며, 성공을 즉시 강화합니다.
     </div>
     <div class="modal-note" style="background:#f7faff;border-color:#bfdbfe">
       ⌨️ 키보드: 숫자 <span class="kbd">0</span>~<span class="kbd">9</span>,
       <span class="kbd">+</span> <span class="kbd">-</span> <span class="kbd">*</span> <span class="kbd">/</span>,
       <span class="kbd">Enter</span> 계산, <span class="kbd">Backspace</span> 지우기,
-      <span class="kbd">Esc</span> 처음으로
+      <span class="kbd">Esc</span> 처음으로 · 끌기 조작은 마우스·펜·터치 모두 지원합니다.
     </div>
     <div class="research-card">
-      <b>설계 참고 자료</b><br>
-      • IES What Works Clearinghouse (2021), <i>Assisting Students Struggling with Mathematics</i>: 체계적 지도, 수학 언어, 구체·반구체 표상, 수직선 활용 권고를 반영했습니다.<br>
-      • CAST (2024), <i>UDL Guidelines 3.0</i>: 학습자 선택, 여러 정보 제시 방식, 반응·이동 방법의 유연성을 반영했습니다.<br>
-      <a href="https://ies.ed.gov/ncee/wwc/practiceguide/26" target="_blank" rel="noopener noreferrer">IES 안내 보기</a> ·
-      <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer">CAST UDL 지침 보기</a> ·
-      <a href="https://udlguidelines.cast.org/action-expression/interaction/response-navigation-movement/" target="_blank" rel="noopener noreferrer">다양한 반응·이동 방법</a>
-      <br><small>이 코스웨어는 교사의 개별화된 교육계획과 관찰을 대신하지 않으며, 학생의 속도와 지원 수준에 맞게 활동을 조정해 주세요.</small>
+      <b>설계 참고 자료와 바로가기</b><br>
+      • National Clearinghouse on Autism Evidence and Practice (NCAEP), <i>Evidence-Based Practices for Children, Youth, and Young Adults with Autism</i> (2020) ·
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8510990/" target="_blank" rel="noopener noreferrer">Hume et al. (2021) 논문</a><br>
+      • AFIRM Modules (UNC Frank Porter Graham), 28개 근거기반 실제 모듈 ·
+        <a href="https://afirm.fpg.unc.edu/afirm-modules/" target="_blank" rel="noopener noreferrer">AFIRM 모듈 보기</a><br>
+      • CEC, <i>High-Leverage Practices for Students with Disabilities</i> ·
+        <a href="https://highleveragepractices.org/" target="_blank" rel="noopener noreferrer">HLP 안내 보기</a><br>
+      • IES What Works Clearinghouse (2021), <i>Assisting Students Struggling with Mathematics</i> ·
+        <a href="https://ies.ed.gov/ncee/wwc/practiceguide/26" target="_blank" rel="noopener noreferrer">WWC 실천 안내</a><br>
+      • NCTM/CEC, <i>Position Statement on Teaching Mathematics to Students with Disabilities</i> ·
+        <a href="https://www.nctm.org/Standards-and-Positions/Position-Statements/" target="_blank" rel="noopener noreferrer">NCTM 입장문</a><br>
+      • CAST (2024), <i>UDL Guidelines 3.0</i> ·
+        <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer">UDL 지침 보기</a> ·
+        <a href="https://udlguidelines.cast.org/action-expression/interaction/response-navigation-movement/" target="_blank" rel="noopener noreferrer">다양한 반응·이동 방법</a><br>
+      • W3C, <i>Web Content Accessibility Guidelines (WCAG) 2.2</i> ·
+        <a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener noreferrer">WCAG 2.2</a><br>
+      • TEACCH Autism Program, 구조화 교수 ·
+        <a href="https://teacch.com/" target="_blank" rel="noopener noreferrer">TEACCH</a> ·
+        National Center on Intensive Intervention ·
+        <a href="https://intensiveintervention.org/" target="_blank" rel="noopener noreferrer">NCII</a><br>
+      • Browder et al. (2014), <i>Evidence-Based Practices for Students With Severe Disabilities</i> ·
+        <a href="https://ceedar.education.ufl.edu/wp-content/uploads/2014/03/Evidence-based-Practices-for-Students-with-Severe-Disabilities.pdf" target="_blank" rel="noopener noreferrer">PDF 보기</a><br>
+      <small>이 코스웨어는 교사의 개별화된 교육계획(IEP)과 관찰을 대신하지 않으며, 학생의 속도·지원 수준·감각 선호에 맞게 활동을 조정해 주세요. 의학적·진단적 판단에 사용하지 마세요.</small>
+    </div>
+  </div>
+</dialog>
+
+<div class="sr-only" id="liveRegion" aria-live="polite" aria-atomic="true"></div>
+
+<dialog class="modal wide" id="bundleDialog" aria-labelledby="bundleTitle">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="bundleTitle">🔟 10개 묶기 · 100개 묶기</div>
+        <div class="modal-sub">하나를 10개씩 묶으면 십, 십 10개를 묶으면 백이 돼요. 손가락으로 끌어다 놓아 보세요.</div>
+      </div>
+      <button type="button" class="btn soft" id="closeBundleBtn">닫기</button>
+    </div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" id="bundleTenBtn">10개 묶기 → 십 1개</button>
+      <button type="button" class="bundle-big-btn" id="bundleHundredBtn">100개 묶기 → 백 1개</button>
+      <button type="button" class="btn soft" id="unbundleTenBtn">십 1개 풀기</button>
+      <button type="button" class="btn soft" id="bundleClearBtn">비우기</button>
+    </div>
+    <div id="bundleBoard" aria-live="polite"></div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="settingsDialog" aria-labelledby="settingsTitle">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="settingsTitle">⚙️ 학습 지원 설정</div>
+        <div class="modal-sub">학생에게 맞는 화면과 도움 수준을 골라 주세요. 이 브라우저에만 저장됩니다.</div>
+      </div>
+      <button type="button" class="btn soft" id="closeSettingsBtn">닫기</button>
+    </div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label for="setTextSize">글자 크기</label>
+        <select id="setTextSize">
+          <option value="normal">보통</option>
+          <option value="large">크게</option>
+          <option value="xlarge">아주 크게</option>
+        </select>
+        <div class="hint">읽기 부담을 줄이고 중요한 글자를 크게 보여 줘요.</div>
+      </div>
+      <div class="setting-field">
+        <label for="setTouch">터치 크기</label>
+        <select id="setTouch">
+          <option value="normal">보통 (52px)</option>
+          <option value="big">크게 (64px)</option>
+        </select>
+        <div class="hint">손가락으로 정확히 누르기 어려울 때 사용해요.</div>
+      </div>
+      <div class="setting-field">
+        <label for="setWait">기다려 주는 시간</label>
+        <select id="setWait">
+          <option value="5">5초</option>
+          <option value="8">8초</option>
+          <option value="12">12초</option>
+          <option value="0">자동 힌트 없음</option>
+        </select>
+        <div class="hint">학생이 스스로 생각할 시간을 먼저 주고, 그 뒤에 조용히 힌트를 보여요.</div>
+      </div>
+      <div class="setting-field">
+        <label for="setTokens">칭찬 별 개수</label>
+        <select id="setTokens">
+          <option value="3">3개</option>
+          <option value="5">5개</option>
+          <option value="10">10개</option>
+        </select>
+        <div class="hint">별을 다 모으면 좋아하는 보상이나 쉬는 시간을 골라요.</div>
+      </div>
+      <div class="setting-field" style="grid-column:1/-1">
+        <label>화면과 상호작용</label>
+        <div class="switch-line"><span>동작 줄이기 (깜빡임·움직임 최소화)</span><input type="checkbox" id="setMotion"></div>
+        <div class="switch-line"><span>고대비 화면 (흰 배경 · 진한 글자)</span><input type="checkbox" id="setContrast"></div>
+        <div class="switch-line"><span>쉬운 말로 안내</span><input type="checkbox" id="setEasy"></div>
+        <div class="switch-line"><span>끌어 놓을 때 정답 자리 미리 보여 주기 (오류 없는 학습)</span><input type="checkbox" id="setErrorless"></div>
+        <div class="switch-line"><span>손가락 진동 피드백 (지원되는 기기)</span><input type="checkbox" id="setHaptic"></div>
+      </div>
+    </div>
+    <div class="modal-note">이 설정은 <b>학생 개별화 교육계획(IEP)</b>과 교사의 관찰을 대신하지 않아요. 학생의 반응을 보고 지원을 조절해 주세요.</div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="rewardDialog" aria-labelledby="rewardTitle">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="rewardTitle">⭐ 칭찬 별을 모두 모았어요!</div>
+        <div class="modal-sub">스스로 해냈어요. 좋아하는 보상을 하나 골라 볼까요?</div>
+      </div>
+      <button type="button" class="btn soft" id="closeRewardBtn">닫기</button>
+    </div>
+    <div class="aac-grid" id="rewardChoices"></div>
+    <div class="modal-note" style="background:#f0fdf4;border-color:#86efac">보상은 활동을 방해하지 않는 선에서 짧게 제공해 주세요. 다음 활동으로 돌아오는 시간을 미리 알려 주면 전환이 쉬워져요.</div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="breakDialog" aria-labelledby="breakTitle">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="breakTitle">🌿 쉬는 시간</div>
+        <div class="modal-sub">숨을 천천히 들이쉬고 내쉬어요. 준비되면 다시 활동으로 돌아가요.</div>
+      </div>
+      <button type="button" class="btn soft" id="closeBreakBtn">돌아가기</button>
+    </div>
+    <div class="break-stage">
+      <div class="break-circle" id="breakCircle">천천히<br>숨 쉬기</div>
+      <div class="break-timer" id="breakTimer">01:00</div>
+      <div class="row-flex" style="justify-content:center">
+        <button type="button" class="btn soft" data-break-min="1">1분</button>
+        <button type="button" class="btn primary" data-break-min="3">3분</button>
+        <button type="button" class="btn soft" data-break-min="5">5분</button>
+        <button type="button" class="btn amber" id="breakPauseBtn">멈춤</button>
+      </div>
+      <div class="mode-help" id="breakChoiceText">지금 고르기: 조용히 앉아 숨 쉬기 · 물 한 모금 · 스트레칭</div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal wide" id="teacherDialog" aria-labelledby="teacherTitle">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="teacherTitle">📋 오늘의 학습 기록</div>
+        <div class="modal-sub">이 브라우저에만 저장돼요. 개별화 교육계획(IEP)과 진행 점검에 활용할 수 있어요.</div>
+      </div>
+      <button type="button" class="btn soft" id="closeTeacherBtn">닫기</button>
+    </div>
+    <div class="teacher-summary" id="teacherSummary"></div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="btn primary" id="exportCsvBtn">⬇ CSV로 저장</button>
+      <button type="button" class="btn soft" id="clearSessionBtn">기록 지우기</button>
+      <span class="muted" id="teacherNote"></span>
+    </div>
+    <div style="overflow:auto;max-height:280px;margin-top:10px">
+      <table class="data-table" aria-label="활동 시도 기록">
+        <thead><tr><th>시간</th><th>단계</th><th>결과</th><th>도움 수준</th><th>내용</th></tr></thead>
+        <tbody id="teacherLog"></tbody>
+      </table>
+    </div>
+    <div class="modal-note" style="background:#f7faff;border-color:#bfdbfe">
+      <b>교사용 체크리스트</b><br>
+      □ 학생이 스스로 시작했는가? □ 한 단계씩 안내했는가? □ 오류보다 성공 경험을 먼저 제공했는가?
+      □ 시각적 일정·먼저-다음 보드를 사용했는가? □ 쉬는 시간을 미리 알려 주었는가? □ 강점과 흥미를 반영했는가?
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal" id="aacDialog" aria-labelledby="aacTitle">
+  <div class="modal-inner">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="aacTitle">💬 말판</div>
+        <div class="modal-sub">말로 표현하기 어려울 때 큰 그림을 눌러 요구와 감정을 전해 보세요.</div>
+      </div>
+      <button type="button" class="btn soft" id="closeAacBtn">닫기</button>
+    </div>
+    <div class="aac-sentence" id="aacSentence" aria-live="polite"><span class="muted">그림을 눌러 문장을 만들어 보세요.</span></div>
+    <div class="aac-grid" id="aacGrid"></div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="btn primary" id="aacSpeakBtn">🔊 문장 읽기</button>
+      <button type="button" class="btn soft" id="aacClearBtn">지우기</button>
+      <span class="muted">핵심 어휘: 도와주세요 · 더 · 그만 · 또 · 좋아요 · 쉬고 싶어요</span>
     </div>
   </div>
 </dialog>
@@ -1217,13 +1687,90 @@ const state = {
   pattern: { index: 0, chosen: null, solved: false },
   shapeTab: 'shape',
   shapeId: 'triangle',
-  data: { apple: 5, banana: 3, grape: 4, answer: null, solved: false },
+  data: { apple: 5, banana: 3, grape: 4, answer: null, solved: false, wordSolved: false },
   sort: { items: [], counts: { apple: 0, lemon: 0, grape: 0 }, done: false },
   history: [],
+  view: 'activity',
+  tokens: 0,
+  promptLevel: 0,
+  lastInteraction: Date.now(),
+  settings: {
+    textSize: 'normal',
+    touch: 'normal',
+    wait: 8,
+    tokenMax: 5,
+    motion: false,
+    contrast: false,
+    easy: false,
+    errorless: true,
+    haptic: true,
+  },
+  session: { trials: 0, independent: 0, prompted: 0, errors: 0, started: Date.now(), log: [] },
+  bundle: { ones: 0, tens: 0, hundreds: 0 },
+  mulGroups: [],
+  mulKey: '',
+  divPlates: [],
+  divRem: 0,
+  divKey: '',
+  shapeBoard: [],
+  shapeSelected: null,
+  nlMarker: null,
+  nlBase: null,
+  composeRemoved: 0,
+  composeBaseA: null,
+  story: { apple: 0, orange: 0 },
+  sortSelected: null,
+  aacSentence: [],
 };
 
+const SETTINGS_KEY = 'stepmath.support.settings.v1';
+const SESSION_KEY = 'stepmath.support.session.v1';
 let animTimer = null;
 let countTimer = null;
+let autoHintTimer = null;
+let breakTimer = null;
+let breakRemaining = 60;
+let breakPaused = false;
+
+/* ---------- 쉬운 말 안내 ---------- */
+const EASY_LESSONS = {
+  1: { goal: '같은 것끼리 모아요.', guided: '과일을 손가락으로 끌어서 같은 바구니에 넣어요.', try: '다른 과일도 모두 넣어요.' },
+  2: { goal: '하나씩 세어요.', guided: '점을 손가락으로 끌어서 칸에 놓아요.', try: '10개를 채우고 10개 묶기를 눌러요.' },
+  3: { goal: '어느 쪽이 더 많은지 봐요.', guided: '점을 양쪽 접시에 나누어 놓아요.', try: '더 많은 쪽을 손가락으로 가리켜요.' },
+  4: { goal: '두 수를 모으고 갈라요.', guided: '점을 옆 칸으로 끌어서 옮겨요.', try: '10개를 채운 뒤 10개 묶기를 눌러요.' },
+  5: { goal: '먼저 10을 만들어요.', guided: '오른쪽 점을 왼쪽 빈칸으로 끌어요.', try: '10이 되면 남은 점을 세어요.' },
+  6: { goal: '수직선에서 점프해요.', guided: '보라색 표시를 끌어서 수직선 위에 놓아요.', try: '정답 자리에 놓아요.' },
+  7: { goal: '10개와 100개를 묶어요.', guided: '일 모형 10개를 10개 묶기 자리에 끌어요.', try: '십 모형 10개를 100개 묶기 자리에 끌어요.' },
+  8: { goal: '같은 수씩 묶어요.', guided: '묶음 카드를 빈 자리로 끌어요.', try: '모든 자리를 채워요.' },
+  9: { goal: '분수 조각을 옮겨요.', guided: '조각을 막대로 끌어요.', try: '분수끼리 더해요.' },
+  10: { goal: '눈금을 움직여 재요.', guided: '연필이나 시계바늘을 손가락으로 끌어요.', try: '값을 읽고 말해요.' },
+  11: { goal: '도형을 옮기고 돌려요.', guided: '도형을 보드로 끌어요.', try: '도형을 두 번 눌러 돌려요.' },
+  12: { goal: '그래프를 만들어요.', guided: '과일을 그래프 위로 끌어요.', try: '가장 많은 과일을 찾아요.' },
+};
+
+const AAC_ITEMS = [
+  { emoji: '🙋', label: '도와주세요', say: '도와주세요' },
+  { emoji: '➕', label: '더', say: '더 하고 싶어요' },
+  { emoji: '✋', label: '그만', say: '그만하고 싶어요' },
+  { emoji: '🔁', label: '또', say: '또 하고 싶어요' },
+  { emoji: '👍', label: '좋아요', say: '좋아요' },
+  { emoji: '🌿', label: '쉬고 싶어요', say: '쉬고 싶어요' },
+  { emoji: '💧', label: '물', say: '물 주세요' },
+  { emoji: '🚻', label: '화장실', say: '화장실에 가고 싶어요' },
+  { emoji: '😊', label: '기뻐요', say: '기뻐요' },
+  { emoji: '😢', label: '슬퍼요', say: '슬퍼요' },
+  { emoji: '😠', label: '화나요', say: '화나요' },
+  { emoji: '🤗', label: '안아 주세요', say: '안아 주세요' },
+];
+
+const REWARD_CHOICES = [
+  { emoji: '🌿', label: '쉬는 시간', say: '쉬는 시간을 고를게요' },
+  { emoji: '💧', label: '물 마시기', say: '물을 마실게요' },
+  { emoji: '🎵', label: '좋아하는 노래', say: '좋아하는 노래를 들을게요' },
+  { emoji: '🧸', label: '좋아하는 장난감', say: '좋아하는 장난감을 가지고 놀게요' },
+  { emoji: '🚶', label: '걷기', say: '잠깐 걸을게요' },
+  { emoji: '⭐', label: '스티커', say: '스티커를 받을게요' },
+];
 
 function validateState() {
   state.stage = clamp(Number(state.stage) || 4, 1, 12);
@@ -1236,6 +1783,292 @@ function validateState() {
   state.measure.volume = clamp(Number(state.measure.volume) || 0, 0, 10);
   state.measure.weight = clamp(Number(state.measure.weight) || 0, 0, 1000);
   state.measure.minutes = ((Number(state.measure.minutes) || 0) % 1440 + 1440) % 1440;
+  state.tokens = clamp(Number(state.tokens) || 0, 0, state.settings.tokenMax);
+  state.promptLevel = clamp(Number(state.promptLevel) || 0, 0, 4);
+}
+
+/* ============================================================
+   특수교육 지원 엔진
+   - 시각적 일정 · 먼저-다음 · 칭찬 별 · 프롬프트 위계
+   - 오류 없는 학습 · 기다림 시간 · 데이터 수집
+   ============================================================ */
+function loadSupportSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) Object.assign(state.settings, JSON.parse(raw));
+    const sess = localStorage.getItem(SESSION_KEY);
+    if (sess) {
+      const parsed = JSON.parse(sess);
+      if (parsed && typeof parsed === 'object') Object.assign(state.session, parsed);
+      if (!Array.isArray(state.session.log)) state.session.log = [];
+    }
+  } catch (e) { /* 저장 불가 환경 무시 */ }
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) state.settings.motion = true;
+  state.settings.tokenMax = clamp(Number(state.settings.tokenMax) || 5, 3, 10);
+  state.settings.wait = [0, 5, 8, 12].includes(Number(state.settings.wait)) ? Number(state.settings.wait) : 8;
+}
+function saveSupportSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch (e) { /* 무시 */ }
+}
+function saveSession() {
+  try {
+    const slim = { ...state.session, log: state.session.log.slice(0, 120) };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(slim));
+  } catch (e) { /* 무시 */ }
+}
+function applySettings() {
+  const s = state.settings;
+  document.body.classList.toggle('text-large', s.textSize === 'large');
+  document.body.classList.toggle('text-xlarge', s.textSize === 'xlarge');
+  document.body.classList.toggle('big-touch', s.touch === 'big');
+  document.body.classList.toggle('reduce-motion', Boolean(s.motion));
+  document.body.classList.toggle('high-contrast', Boolean(s.contrast));
+  document.body.classList.toggle('easy-read', Boolean(s.easy));
+  const set = (id, value) => { const el = $(id); if (el) el.value = value; };
+  const check = (id, value) => { const el = $(id); if (el) el.checked = Boolean(value); };
+  set('setTextSize', s.textSize);
+  set('setTouch', s.touch);
+  set('setWait', String(s.wait));
+  set('setTokens', String(s.tokenMax));
+  check('setMotion', s.motion);
+  check('setContrast', s.contrast);
+  check('setEasy', s.easy);
+  check('setErrorless', s.errorless);
+  check('setHaptic', s.haptic);
+  updateTokenBoard();
+  renderPromptMeter();
+}
+function announce(text) {
+  if (!text) return;
+  const live = $('liveRegion');
+  if (live) live.textContent = text;
+  speak(text);
+}
+function haptic(ms) {
+  if (!state.settings.haptic) return;
+  try { if (navigator.vibrate) navigator.vibrate(ms || 18); } catch (e) { /* 무시 */ }
+}
+function updateTokenBoard() {
+  const wrap = $('tokenDots');
+  if (!wrap) return;
+  const max = state.settings.tokenMax;
+  wrap.innerHTML = Array.from({ length: max }, (_, i) =>
+    `<span class="token-dot${i < state.tokens ? ' on' : ''}" aria-label="${i < state.tokens ? '별을 모았어요' : '빈 별'}">${i < state.tokens ? '★' : ''}</span>`).join('');
+}
+function awardToken(message) {
+  const max = state.settings.tokenMax;
+  if (state.tokens >= max) return;
+  state.tokens += 1;
+  updateTokenBoard();
+  haptic(22);
+  announce(message || '잘했어요! 칭찬 별 하나를 모았어요.');
+  if (state.tokens >= max) {
+    setTimeout(() => {
+      if (state.tokens >= max) openReward();
+    }, 650);
+  }
+}
+function recordTrial(outcome, promptLevel, detail) {
+  const level = promptLevel === undefined ? state.promptLevel : promptLevel;
+  state.session.trials += 1;
+  if (outcome === 'independent') state.session.independent += 1;
+  else if (outcome === 'prompted') state.session.prompted += 1;
+  else if (outcome === 'error') state.session.errors += 1;
+  state.session.log.unshift({
+    at: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+    stage: currentStage() ? `${currentStage().id}단계 ${currentStage().short}` : '',
+    outcome,
+    prompt: ['독립', '시각 힌트', '언어 힌트', '모방', '신체적 도움'][level] || '독립',
+    detail: detail || '',
+  });
+  state.session.log = state.session.log.slice(0, 120);
+  saveSession();
+  const note = $('progressNote');
+  if (note) {
+    const total = state.session.trials;
+    const ok = state.session.independent;
+    note.innerHTML = `오늘 <b>${total}번</b> 해 보았어요 · 스스로 <b>${ok}번</b> · 도움 받고 <b>${state.session.prompted}번</b> · 다시 해 볼 것 <b>${state.session.errors}번</b>`;
+  }
+}
+function renderPromptMeter() {
+  const meter = $('promptMeter');
+  if (!meter) return;
+  const labels = ['스스로', '보고', '듣고', '같이', '도움'];
+  meter.innerHTML = `<span class="prompt-pill${state.promptLevel === 0 ? ' on' : ''}">도움 수준</span>` +
+    labels.map((l, i) => `<span class="prompt-pill${state.promptLevel === i ? ' on' : ''}">${i === 0 ? '0 · ' : ''}${l}</span>`).join('');
+}
+function renderTeacher() {
+  const sum = $('teacherSummary');
+  if (!sum) return;
+  const s = state.session;
+  const rate = s.trials ? Math.round((s.independent / s.trials) * 100) : 0;
+  sum.innerHTML = `
+    <div class="ts-card"><b>${s.trials}</b><span>전체 시도</span></div>
+    <div class="ts-card"><b>${s.independent}</b><span>스스로 성공</span></div>
+    <div class="ts-card"><b>${s.prompted}</b><span>도움 받고 성공</span></div>
+    <div class="ts-card"><b>${rate}%</b><span>독립 수행률</span></div>`;
+  const tbody = $('teacherLog');
+  if (tbody) {
+    tbody.innerHTML = s.log.length
+      ? s.log.map((r) => `<tr><td>${r.at}</td><td>${r.stage}</td><td>${r.outcome === 'independent' ? '스스로' : r.outcome === 'prompted' ? '도움' : r.outcome === 'error' ? '다시' : '완료'}</td><td>${r.prompt}</td><td>${r.detail || ''}</td></tr>`).join('')
+      : '<tr><td colspan="5" style="color:#64748b">아직 기록이 없어요. 활동을 하면 자동으로 쌓여요.</td></tr>';
+  }
+  const note = $('teacherNote');
+  if (note) note.textContent = `시작: ${new Date(s.started || Date.now()).toLocaleString('ko-KR')}`;
+}
+function downloadCSV() {
+  const rows = [['시간', '단계', '결과', '도움 수준', '내용']];
+  state.session.log.forEach((r) => rows.push([r.at, r.stage, r.outcome, r.prompt, r.detail || '']));
+  const csv = '\ufeff' + rows.map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `stepmath-기록-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  announce('기록을 CSV 파일로 저장했어요.');
+}
+function setView(view) {
+  state.view = view === 'calc' ? 'calc' : 'activity';
+  const app = $('app');
+  if (app) app.dataset.view = state.view;
+  $('viewActivityBtn')?.classList.toggle('on', state.view === 'activity');
+  $('viewCalcBtn')?.classList.toggle('on', state.view === 'calc');
+  $('viewActivityBtn')?.setAttribute('aria-selected', state.view === 'activity' ? 'true' : 'false');
+  $('viewCalcBtn')?.setAttribute('aria-selected', state.view === 'calc' ? 'true' : 'false');
+  if (state.view === 'activity') setTimeout(() => $('toolCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+/* ---------- 터치·마우스 드래그 공통 엔진 ---------- */
+function makeDragGhost(el) {
+  const rect = el.getBoundingClientRect();
+  const ghost = el.cloneNode(true);
+  ghost.removeAttribute('id');
+  ghost.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+  ghost.classList.add('drag-ghost');
+  ghost.style.width = `${Math.max(rect.width, 42)}px`;
+  ghost.style.height = `${Math.max(rect.height, 42)}px`;
+  ghost.style.transform = `translate(${rect.left + rect.width / 2}px,${rect.top + rect.height / 2}px) translate(-50%,-50%)`;
+  document.body.appendChild(ghost);
+  return ghost;
+}
+function bindDrag(root, selector, payloadFn, onDrop, opts) {
+  const options = opts || {};
+  root.querySelectorAll(selector).forEach((el) => {
+    if (el.dataset.dragBound === '1') return;
+    el.dataset.dragBound = '1';
+    el.style.touchAction = 'none';
+    el.addEventListener('pointerdown', (ev) => {
+      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+      if (el.disabled) return;
+      const payload = payloadFn(el, ev);
+      if (payload === false || payload === null || payload === undefined) return;
+      startDrag(ev, el, payload, onDrop, options);
+    });
+    if (options.onActivate) {
+      el.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          const payload = payloadFn(el, ev);
+          if (payload !== false && payload !== null && payload !== undefined) options.onActivate(payload, el);
+        }
+      });
+    }
+  });
+}
+let dragClickGuard = false;
+document.addEventListener('click', (e) => {
+  if (!dragClickGuard) return;
+  e.preventDefault();
+  e.stopPropagation();
+}, true);
+function startDrag(ev, el, payload, onDrop, opts) {
+  const startX = ev.clientX;
+  const startY = ev.clientY;
+  const pointerId = ev.pointerId;
+  let ghost = null;
+  let moved = false;
+  let hot = null;
+  let lastEvent = ev;
+  try { el.setPointerCapture(pointerId); } catch (e) { /* 무시 */ }
+  const clearHot = () => {
+    if (hot) hot.classList.remove('drop-hot');
+    hot = null;
+  };
+  const onMove = (e) => {
+    if (e.pointerId !== pointerId) return;
+    lastEvent = e;
+    if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) < (opts.threshold || 8)) return;
+    if (!moved) {
+      moved = true;
+      document.body.classList.add('is-dragging');
+      ghost = makeDragGhost(el);
+      el.classList.add('drag-source-active');
+      if (opts.onStart) opts.onStart(payload, el);
+      haptic(10);
+    }
+    e.preventDefault();
+    ghost.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const zone = under ? under.closest(opts.zoneSelector || '[data-drop]') : null;
+    if (hot !== zone) {
+      clearHot();
+      hot = zone;
+      if (hot) hot.classList.add('drop-hot');
+    }
+  };
+  const onUp = (e) => {
+    if (e.pointerId !== pointerId) return;
+    el.removeEventListener('pointermove', onMove);
+    el.removeEventListener('pointerup', onUp);
+    el.removeEventListener('pointercancel', onUp);
+    try { el.releasePointerCapture(pointerId); } catch (err) { /* 무시 */ }
+    const dropZone = hot;
+    if (ghost) ghost.remove();
+    document.body.classList.remove('is-dragging');
+    el.classList.remove('drag-source-active');
+    clearHot();
+    if (moved) {
+      dragClickGuard = true;
+      setTimeout(() => { dragClickGuard = false; }, 300);
+      if (onDrop) onDrop(payload, dropZone, el, e);
+    } else if (opts.onTap) {
+      opts.onTap(payload, el, e);
+    }
+  };
+  el.addEventListener('pointermove', onMove);
+  el.addEventListener('pointerup', onUp);
+  el.addEventListener('pointercancel', onUp);
+}
+function clearHintTargets(root) {
+  (root || document).querySelectorAll('.hint-target').forEach((el) => el.classList.remove('hint-target'));
+}
+function showHintTarget(selector, root) {
+  const scope = root || document;
+  clearHintTargets(scope);
+  const el = scope.querySelector(selector);
+  if (el) {
+    el.classList.add('hint-target');
+    if (!document.body.classList.contains('is-dragging')) {
+      try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* 무시 */ }
+    }
+  }
+  return el;
+}
+function scheduleAutoHint() {
+  if (autoHintTimer) clearTimeout(autoHintTimer);
+  if (!state.settings.wait) return;
+  autoHintTimer = setTimeout(() => {
+    if ($('app').hidden || $('helpDialog').open || $('settingsDialog').open) return;
+    if (state.view !== 'activity') return;
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+    giveHint(true);
+  }, state.settings.wait * 1000);
+}
+function noteInteraction() {
+  state.lastInteraction = Date.now();
+  scheduleAutoHint();
 }
 
 /* ---------- 기록 (localStorage 전용) ---------- */
@@ -1554,6 +2387,7 @@ function explainSteps(a, b, op) {
    ============================================================ */
 const PLACE_COLORS = ['#2563eb', '#16a34a', '#d97706', '#7c3aed'];
 const PLACE_NAMES = ['일의 자리', '십의 자리', '백의 자리', '천의 자리'];
+const STAGE_ICONS = { 1: '🧺', 2: '🔢', 3: '⚖️', 4: '➕', 5: '🔟', 6: '🛣️', 7: '🧱', 8: '✖️', 9: '🍕', 10: '📏', 11: '🔺', 12: '📊' };
 
 function renderNav() {
   const nav = $('stageNav');
@@ -1573,7 +2407,7 @@ function renderNav() {
       b.type = 'button';
       b.className = 'stage-chip' + (stage.id === state.stage ? ' active' : '');
       b.setAttribute('aria-current', stage.id === state.stage ? 'step' : 'false');
-      b.innerHTML = `<span class="n">${stage.id}단계</span><span class="t">${stage.short}</span>`;
+      b.innerHTML = `<span class="n">${STAGE_ICONS[stage.id] || ''} ${stage.id}단계</span><span class="t">${stage.short}</span>`;
       b.title = `${stage.id}단계 · ${stage.title}`;
       b.onclick = () => selectStage(stage.id);
       chips.appendChild(b);
@@ -1586,12 +2420,12 @@ function renderNav() {
 
 function renderLessonPath() {
   const stage = currentStage();
-  const lesson = MICRO_LESSONS[stage.id];
-  const labels = ['살펴보기', '함께 해보기', '혼자 해보기'];
+  const lesson = (state.settings.easy && EASY_LESSONS[stage.id]) ? EASY_LESSONS[stage.id] : MICRO_LESSONS[stage.id];
+  const labels = ['👀 살펴보기', '🤝 함께 해보기', '⭐ 혼자 해보기'];
   const stepText = state.courseComplete
     ? '코스를 마쳤어요! 원하는 활동을 다시 연습하거나 위의 코스 선택 버튼으로 다른 코스를 골라 보세요.'
     : [lesson.goal, lesson.guided, lesson.try][state.lessonStep];
-  $('lessonTitle').textContent = `${stage.id}단계 · ${stage.title}`;
+  $('lessonTitle').textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.id}단계 · ${stage.title}`;
   const courseStages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
   const position = Math.max(0, courseStages.indexOf(stage.id)) + 1;
   $('lessonCount').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${position}/${courseStages.length}단계 · 활동 ${state.lessonStep + 1}/3`;
@@ -1602,6 +2436,13 @@ function renderLessonPath() {
   const isLastActivity = state.lessonStep === 2;
   $('lessonNextBtn').textContent = state.courseComplete ? '첫 단계 다시 보기' : !isLastActivity ? '다음 활동 →' : lastStage ? '코스 마치기 ✓' : '이 단계 마치고 다음으로 →';
   $('lessonNextBtn').className = `btn ${isLastActivity ? 'green' : 'primary'}`;
+  const ftNow = $('ftNow');
+  if (ftNow) ftNow.textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.short}`;
+  const ftNext = $('ftNext');
+  if (ftNext) {
+    const max = state.settings.tokenMax;
+    ftNext.textContent = state.tokens >= max ? '🎁 보상 고르기 · 🌿 쉬는 시간' : `⭐ 칭찬 별 ${state.tokens}/${max} · 🌿 쉬는 시간`;
+  }
 }
 
 function chooseCourse(courseId) {
@@ -1609,10 +2450,14 @@ function chooseCourse(courseId) {
   state.course = courseId;
   state.courseComplete = false;
   state.lessonStep = 0;
+  state.promptLevel = 0;
   $('courseGate').hidden = true;
   $('app').hidden = false;
+  setView('activity');
   selectStage(COURSES[courseId].stageIds[0]);
   $('stageTitle').focus?.();
+  setTimeout(() => $('toolCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 250);
+  noteInteraction();
 }
 
 function showCourseGate() {
@@ -1625,7 +2470,7 @@ function showCourseGate() {
 
 function advanceLesson() {
   if (state.courseComplete) {
-    const firstStage = COURSES[state.course].stageIds[0];
+    const firstStage = (COURSES[state.course]?.stageIds || STAGES.map((s) => s.id))[0];
     selectStage(firstStage);
     return;
   }
@@ -1657,6 +2502,18 @@ function selectStage(id) {
   state.stage = stage.id;
   state.courseComplete = false;
   state.lessonStep = 0;
+  state.promptLevel = 0;
+  state.mulGroups = [];
+  state.mulKey = '';
+  state.divPlates = [];
+  state.divRem = 0;
+  state.divKey = '';
+  state.nlMarker = null;
+  state.nlBase = null;
+  state.shapeSelected = null;
+  state.sortSelected = null;
+  state.composeRemoved = 0;
+  state.composeBaseA = null;
   if (stage.tool === 'sort' && state.sort.items.length === 0) newSortRound();
   if (stage.preset) {
     state.expr = {
@@ -1673,6 +2530,11 @@ function selectStage(id) {
     state.compare.b = clamp(c.second ?? 4, 0, 20);
   }
   render();
+  renderPromptMeter();
+  noteInteraction();
+  if (state.view === 'activity') {
+    setTimeout(() => $('toolCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  }
 }
 
 function renderStageHead() {
@@ -1681,7 +2543,7 @@ function renderStageHead() {
   $('stageBadge').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${meta.label} · ${stage.id}단계`;
   $('stageTitle').textContent = stage.title;
   $('stageSub').textContent = stage.subtitle;
-  $('stageHint').textContent = stage.hint;
+  $('stageHint').textContent = (state.settings.easy && EASY_LESSONS[stage.id]) ? EASY_LESSONS[stage.id].goal : stage.hint;
 }
 
 function renderScreen() {
@@ -2350,6 +3212,7 @@ function renderHistory() {
 
 /* ---------- 전체 렌더 ---------- */
 function render() {
+  applySettings();
   renderNav();
   renderStageHead();
   renderLessonPath();
@@ -2362,6 +3225,8 @@ function render() {
   renderConcrete();
   renderTool();
   renderHistory();
+  renderPromptMeter();
+  if ($('teacherDialog')?.open) renderTeacher();
 }
 
 /* ============================================================
@@ -2391,9 +3256,11 @@ function setToolHead(title, sub) {
 }
 
 /* ---------- 10칸 판 ---------- */
-function tenFrameHTML(total, blue, green, highlight) {
+function tenFrameHTML(total, blue, green, highlight, opts) {
+  const o = opts || {};
   const totalCells = Math.max(10, Math.ceil(Math.max(total, blue + green, 10) / 10) * 10);
   const frames = Math.ceil(totalCells / 10);
+  const frameId = o.frameId || 'frame';
   let html = '<div class="frames">';
   for (let f = 0; f < frames; f++) {
     html += '<div class="frame">';
@@ -2402,8 +3269,9 @@ function tenFrameHTML(total, blue, green, highlight) {
       for (let c = 0; c < 5; c++) {
         const idx = f * 10 + r * 5 + c;
         const filled = idx < blue + green;
-        const kind = idx < blue ? 'blue' : 'green';
-        html += `<button type="button" class="cell${filled ? ` filled ${kind}` : ''}${highlight === idx ? ' hl' : ''}" data-ten="${idx}" aria-label="${idx + 1}번째 칸">${filled ? `<span class="dot ${kind}"></span>` : '<span class="edot"></span>'}</button>`;
+        const kind = o.forceColor || (idx < blue ? 'blue' : 'green');
+        const dragAttr = filled && o.dragFilled ? ` data-cell-fill="${kind}" data-frame="${frameId}" data-value="${idx + 1}"` : '';
+        html += `<button type="button" class="cell${filled ? ` filled ${kind}` : ''}${highlight === idx ? ' hl' : ''}" data-ten="${idx}" data-frame="${frameId}" data-drop="${frameId}:${idx}"${dragAttr} aria-label="${idx + 1}번째 칸${filled ? ', 채워짐' : ', 비어 있음'}">${filled ? `<span class="dot ${kind}"></span>` : '<span class="edot"></span>'}</button>`;
       }
       html += '</div>';
     }
@@ -2411,92 +3279,195 @@ function tenFrameHTML(total, blue, green, highlight) {
   }
   return html + '</div>';
 }
+function bundleSummaryHTML(n, opts) {
+  const o = opts || {};
+  const p = partsFromValue(Math.max(0, Math.trunc(n)));
+  const bits = [];
+  if (p.hundreds) bits.push(`<span class="bundle-item">🟧 백 <b>${p.hundreds}</b></span>`);
+  if (p.tens) bits.push(`<span class="bundle-item">🟩 십 <b>${p.tens}</b></span>`);
+  if (p.units) bits.push(`<span class="bundle-item">🟦 일 <b>${p.units}</b></span>`);
+  return `<div class="bundle-strip">${bits.join('') || '<span class="bundle-item">아직 없음</span>'}${o.extra || ''}</div>`;
+}
+function bundleActionHTML(prefix) {
+  const p = prefix || 'bundle';
+  return `<div class="row-flex" style="margin-top:0">
+    <button type="button" class="bundle-big-btn blue" data-${p}="ten">10개 묶기</button>
+    <button type="button" class="bundle-big-btn" data-${p}="hundred">100개 묶기</button>
+    <button type="button" class="btn soft" data-${p}="unten">십 1개 풀기</button>
+    <button type="button" class="btn soft" data-${p}="unhundred">백 1개 풀기</button>
+  </div>`;
+}
 
 /* ---------- 1단계: 분류 ---------- */
 function renderSort() {
   if (!state.sort.items.length && !state.sort.done) newSortRound();
-  setToolHead('🧺 분류 바구니', '같은 과일끼리 눌러서 바구니에 담아 보세요');
+  const body = $('toolBody');
+  setToolHead('🧺 분류 바구니', '과일을 손가락으로 끌어서 같은 바구니에 넣어 보세요');
   const basketHtml = SORT_KINDS.map((kind) => `
-    <div class="basket" data-basket="${kind.id}">
+    <div class="basket" data-basket="${kind.id}" data-drop="basket:${kind.id}" role="group" aria-label="${kind.label} 바구니">
       <div class="basket-title"><span>${kind.emoji} ${kind.label}</span><b>${state.sort.counts[kind.id]}개</b></div>
-      <div class="basket-items">${Array.from({ length: state.sort.counts[kind.id] }, () => `<span class="sorted-item">${kind.emoji}</span>`).join('') || '<span class="muted">비어 있어요</span>'}</div>
+      <div class="basket-items">${Array.from({ length: state.sort.counts[kind.id] }, () => `<span class="sorted-item">${kind.emoji}</span>`).join('') || '<span class="muted">여기에 끌어다 놓아요</span>'}</div>
     </div>`).join('');
   const tray = state.sort.items.map((it, i) => {
     const kind = SORT_KINDS.find((k) => k.id === it.kind);
-    return `<button type="button" class="sort-item" data-sort="${i}" aria-label="${kind.label} 바구니에 담기" title="${kind.label}">${kind.emoji}</button>`;
+    return `<button type="button" class="sort-item" data-sort="${i}" data-sort-item="${i}" data-kind="${it.kind}" aria-label="${kind.label} 끌어서 바구니에 담기" title="${kind.label}">${kind.emoji}</button>`;
   }).join('');
-  $('toolBody').innerHTML = `
-    <div class="guide">색과 모양을 살펴보고 <b>같은 것끼리</b> 모아 보세요. 하나를 누르면 알맞은 바구니로 들어가요.</div>
+  body.innerHTML = `
+    <div class="guide">색과 모양을 살펴보고 <b>같은 것끼리</b> 모아 보세요. 과일을 <b>손가락으로 끌어서</b> 바구니에 놓아요. 그냥 눌러도 담을 수 있어요.</div>
     <div class="sort-baskets">${basketHtml}</div>
-    <div class="sort-tray">${tray || '<b style="color:#16a34a">분류 완성! 모든 것을 바구니에 담았어요 🎉</b>'}</div>
+    <div class="sort-tray" aria-label="분류할 과일">${tray || '<b style="color:#16a34a">분류 완성! 모든 것을 바구니에 담았어요 🎉</b>'}</div>
     <div class="row-flex">
       <button type="button" class="btn soft" data-sort-reset>🔄 다시 섞기</button>
       <span class="muted">${state.sort.items.length ? `남은 것 ${state.sort.items.length}개` : '모두 분류했어요'}</span>
     </div>`;
-  $('toolBody').querySelectorAll('[data-sort]').forEach((b) => {
-    b.onclick = () => {
-      const i = Number(b.dataset.sort);
-      const item = state.sort.items[i];
-      if (!item) return;
-      const kind = SORT_KINDS.find((k) => k.id === item.kind);
-      state.sort.items.splice(i, 1);
-      state.sort.counts[item.kind] += 1;
-      state.sort.done = state.sort.items.length === 0;
+
+  const place = (i) => {
+    const item = state.sort.items[i];
+    if (!item) return;
+    const kind = SORT_KINDS.find((k) => k.id === item.kind);
+    state.sort.items.splice(i, 1);
+    state.sort.counts[item.kind] += 1;
+    state.sort.done = state.sort.items.length === 0;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${kind.label} 분류`);
+    if (state.sort.done) {
+      awardToken('분류를 모두 마쳤어요. 정말 잘했어요!');
+      announce('분류를 모두 마쳤어요. 같은 것끼리 모았어요.');
+    } else {
       speak(`${kind.label} 바구니에 담았어요. ${countWord(state.sort.counts[item.kind])}개`);
-      renderTool();
-      if (state.sort.done) speak('분류를 모두 마쳤어요. 참 잘했어요!');
-    };
+    }
+    renderTool();
+  };
+
+  body.querySelectorAll('[data-sort]').forEach((b) => {
+    b.onclick = () => place(Number(b.dataset.sort));
   });
-  $('toolBody').querySelectorAll('[data-basket]').forEach((b) => {
+  bindDrag(body, '[data-sort-item]', (el) => ({ i: Number(el.dataset.sortItem), kind: el.dataset.kind }), (p, zone) => {
+    if (!zone) return;
+    const target = (zone.dataset.drop || '').split(':')[1];
+    if (target === p.kind) {
+      place(p.i);
+    } else {
+      recordTrial('error', state.promptLevel, '다른 바구니에 놓음');
+      haptic(40);
+      const kind = SORT_KINDS.find((k) => k.id === p.kind);
+      speak(`이것은 ${kind.label}예요. ${kind.label} 바구니에 넣어요.`);
+      showHintTarget(`[data-drop="basket:${p.kind}"]`, body);
+    }
+  }, {
+    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="basket:${p.kind}"]`, body); },
+    onActivate: (p) => place(p.i),
+  });
+
+  body.querySelectorAll('[data-basket]').forEach((b) => {
     b.onclick = () => {
       const kind = SORT_KINDS.find((k) => k.id === b.dataset.basket);
       speak(`${kind.label} ${countWord(state.sort.counts[kind.id])}개`);
     };
   });
-  const reset = $('toolBody').querySelector('[data-sort-reset]');
+  const reset = body.querySelector('[data-sort-reset]');
   if (reset) reset.onclick = () => { newSortRound(); speak('다시 섞었어요'); renderTool(); };
 }
 
 /* ---------- 2단계: 세기 ---------- */
 function renderCount() {
   const { first } = activeCalc();
-  const n = clamp(first ?? 0, 0, 20);
-  setToolHead('🔢 10칸 배열판', '칸을 하나씩 눌러 수를 세어 보세요');
-  $('toolBody').innerHTML = `
-    <div class="guide">칸을 누르면 <b>하나씩</b> 채워져요. 숫자 카드와 개수를 함께 읽어 보세요.</div>
-    ${tenFrameHTML(20, n, 0, state.countPlay.idx)}
-    ${(first ?? 0) > 20 ? '<div class="muted">이 단계는 20까지 세어요. 큰 수는 7단계 수모형으로 확인해 보세요.</div>' : ''}
+  const n = clamp(Math.trunc(Number(first) || 0), 0, 100);
+  const body = $('toolBody');
+  setToolHead('🔢 세기 · 10칸 판', '점을 손가락으로 끌어 칸에 놓으며 하나씩 세어 보세요');
+  const totalCells = Math.max(20, Math.ceil(Math.max(n, 1) / 10) * 10);
+  const tray = [1, 10, 100].map((v) => `
+    <div class="drag-token${v === 10 ? ' green' : v === 100 ? ' amber' : ''}" data-count-token="${v}" role="button" tabindex="0" aria-label="${v}개 끌기">
+      <span class="big">${v === 1 ? '●' : v === 10 ? '▥' : '▦'}</span><span class="tiny">${v}개</span>
+    </div>`).join('');
+  body.innerHTML = `
+    <div class="guide">점을 <b>손가락으로 끌어</b> 칸에 놓아요. 한 칸에 하나씩, 왼쪽 위부터 채워요.</div>
+    <div class="drag-tray"><span class="tray-label">끌어서 놓기</span>${tray}</div>
+    <div data-drop="count-add" aria-label="세기 판">${tenFrameHTML(totalCells, n, 0, state.countPlay.idx, { frameId: 'count', dragFilled: true })}</div>
+    ${bundleSummaryHTML(n, { extra: `<span class="bundle-item">전체 <b>${n}</b>개</span>` })}
     <div class="row-flex">
       <div class="num-card"><span class="v">${n}</span><span class="c">${countWord(n)}</span></div>
       <div class="row-flex" style="flex:1;margin-top:0">
         <button type="button" class="btn primary" data-count="p1">＋1</button>
         <button type="button" class="btn primary" data-count="p5">＋5</button>
+        <button type="button" class="btn primary" data-count="p10">＋10</button>
+        <button type="button" class="btn amber" data-count="p100">＋100</button>
         <button type="button" class="btn soft" data-count="m1">－1</button>
         <button type="button" class="btn soft" data-count="reset">0으로</button>
         <button type="button" class="btn violet" data-count="play">▶ 하나씩 짚어 세기</button>
       </div>
+    </div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-count-bundle="ten">10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-count-bundle="hundred">100개 묶기</button>
+      <div class="drop-plate" data-drop="count-minus" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2;flex:1">
+        <div class="plate-title" style="margin:0"><span>➖ 여기로 끌면 하나 빼기</span></div>
+      </div>
     </div>`;
-  $('toolBody').querySelectorAll('[data-ten]').forEach((b) => {
+
+  const setCount = (value, msg) => {
+    const v = clamp(Math.trunc(value), 0, 100);
+    setFirstNumber(v);
+    if (msg) speak(msg);
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${v}까지 세기`);
+  };
+
+  body.querySelectorAll('[data-ten]').forEach((b) => {
     b.onclick = () => {
       const idx = Number(b.dataset.ten) + 1;
-      setFirstNumber(idx === n ? idx - 1 : idx);
+      setCount(idx === n ? idx - 1 : idx, `${countWord(idx === n ? idx - 1 : idx)}`);
     };
   });
-  $('toolBody').querySelectorAll('[data-count]').forEach((b) => {
+  body.querySelectorAll('[data-count]').forEach((b) => {
     b.onclick = () => {
       const k = b.dataset.count;
-      if (k === 'p1') setFirstNumber(Math.min(20, n + 1));
-      else if (k === 'p5') setFirstNumber(Math.min(20, n + 5));
-      else if (k === 'm1') setFirstNumber(Math.max(0, n - 1));
-      else if (k === 'reset') setFirstNumber(0);
+      if (k === 'p1') setCount(n + 1, countWord(n + 1));
+      else if (k === 'p5') setCount(n + 5, countWord(n + 5));
+      else if (k === 'p10') setCount(n + 10, `${countWord(n + 10)}. 십 묶음이 하나 늘었어요`);
+      else if (k === 'p100') setCount(n + 100, '백 묶음이 하나 늘었어요');
+      else if (k === 'm1') setCount(n - 1, countWord(n - 1));
+      else if (k === 'reset') setCount(0, '영');
       else if (k === 'play') playCountSequence();
     };
   });
+  body.querySelectorAll('[data-count-bundle]').forEach((b) => {
+    b.onclick = () => {
+      if (b.dataset.countBundle === 'ten') {
+        if (n < 10) { speak('10개가 모이면 묶을 수 있어요. 점을 더 놓아 보세요.'); return; }
+        awardToken('10개를 십 묶음 하나로 묶었어요!');
+        speak(`${n}개 안에 십 묶음이 ${Math.floor(n / 10)}개 있어요.`);
+      } else {
+        if (n < 100) { speak('100개가 모이면 백 묶음 하나로 묶을 수 있어요.'); return; }
+        awardToken('100개를 백 묶음 하나로 묶었어요!');
+        speak('100개는 백 묶음 하나예요.');
+      }
+    };
+  });
+
+  bindDrag(body, '[data-count-token]', (el) => ({ add: Number(el.dataset.countToken) }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop === 'count-minus') {
+      setCount(n - 1, `${countWord(n - 1)}. 하나를 덜어냈어요`);
+      return;
+    }
+    if (drop.startsWith('count:')) {
+      const idx = Number(drop.split(':')[1]) + 1;
+      setCount(Math.max(n, idx - 1 + p.add), `${countWord(Math.max(n, idx - 1 + p.add))}`);
+    } else {
+      setCount(n + p.add, `${countWord(n + p.add)}`);
+    }
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="count-add"]', body); },
+    onActivate: (p) => setCount(n + p.add, countWord(n + p.add)),
+  });
+  bindDrag(body, '[data-cell-fill]', () => ({ remove: 1 }), (p, zone) => {
+    if (zone && (zone.dataset.drop === 'count-minus')) setCount(n - 1, `${countWord(n - 1)}. 하나를 덜어냈어요`);
+  }, { onActivate: () => setCount(n - 1, countWord(n - 1)) });
 }
 
 function playCountSequence() {
   stopAnim();
-  const n = clamp(Number(activeCalc().first) || 0, 0, 20);
+  const n = clamp(Number(activeCalc().first) || 0, 0, 100);
   if (n <= 0) { speak('먼저 칸을 눌러 수를 만들어 보세요'); return; }
   state.countPlay = { idx: 0, token: state.countPlay.token + 1 };
   renderTool();
@@ -2556,14 +3527,35 @@ function numberLineSVG(config) {
     ${ticks}${arcHtml}${markHtml}</svg></div>`;
 }
 
+function interactiveNumberLineHTML(start, target, op) {
+  const marker = clamp(Number(state.nlMarker ?? start), 0, 20);
+  const stops = Array.from({ length: 21 }, (_, i) => `
+    <button type="button" class="nl-stop${i % 5 === 0 ? ' major' : ''}" data-drop="nl:${i}" aria-label="${i} 자리">
+      <span class="nl-num">${i % 2 === 0 ? i : ''}</span>
+    </button>`).join('');
+  const pos = (v) => `calc(10px + (100% - 20px) * ${clamp(v, 0, 20) / 20})`;
+  return `<div class="nl-interactive" aria-label="0부터 20까지 끌 수 있는 수직선">
+    <div class="nl-target" style="left:${pos(target)}" title="목표">🎯</div>
+    <div class="nl-track"><div class="nl-stops">${stops}</div></div>
+    <div class="nl-marker" data-nl-marker style="left:${pos(marker)}" role="button" tabindex="0" aria-label="현재 ${marker}, 목표 ${target}. 끌어서 옮기세요">🐸</div>
+    <div class="nl-caption">🐸를 손가락으로 끌어 <b>${target}</b> 자리에 놓아 보세요. (${start}에서 ${op === '+' ? '앞으로' : '뒤로'} ${Math.abs(target - start)}칸)</div>
+  </div>`;
+}
+
 /* ---------- 3단계: 비교 ---------- */
 function renderCompare() {
   const a = state.compare.a;
   const b = state.compare.b;
+  const body = $('toolBody');
   const sign = a > b ? '>' : a < b ? '<' : '=';
   const diff = Math.abs(a - b);
   const theme = currentTheme();
   const maxLen = Math.min(Math.max(a, b, 1), 15);
+  const plate = (which, value, cls) => `
+    <div class="drop-plate ${cls}" data-drop="cmp:${which}" aria-label="${which === 'a' ? '첫 번째' : '두 번째'} 수 놓는 곳">
+      <div class="plate-title"><span>${which === 'a' ? '🔵 첫 번째 수' : '🟢 두 번째 수'}</span><span class="plate-count">${value}</span></div>
+      <div class="plate-items">${Array.from({ length: value }, (_, i) => `<span class="counter-chip${which === 'b' ? ' green' : ''}" data-cmp-move="${which}" role="button" tabindex="0" aria-label="${i + 1}번째 점">●</span>`).join('') || '<span class="muted">점을 끌어다 놓아요</span>'}</div>
+    </div>`;
   let pairCols = '';
   for (let i = 0; i < maxLen; i++) {
     const hasA = i < a;
@@ -2575,39 +3567,94 @@ function renderCompare() {
       <span class="pair-emoji">${hasB ? theme.b : '·'}</span>
     </div>`;
   }
-  setToolHead('⚖️ 어느 쪽이 더 많을까?', '하나씩 짝을 지어 크기를 비교해 보세요');
-  $('toolBody').innerHTML = `
-    <div class="compare-board">
-      <div class="compare-cards">
-        <div class="num-card"><span class="v">${a}</span><span class="c">첫 번째 · ${countWord(a)}</span></div>
-        <div class="sign-badge">${sign}</div>
-        <div class="num-card green"><span class="v">${b}</span><span class="c">두 번째 · ${countWord(b)}</span></div>
-      </div>
-      <div class="row-flex" style="margin-top:0;justify-content:center">
-        <button type="button" class="btn soft" data-cmp="a:-1">첫째 －1</button>
-        <button type="button" class="btn soft" data-cmp="a:1">첫째 ＋1</button>
-        <button type="button" class="btn soft" data-cmp="b:-1">둘째 －1</button>
-        <button type="button" class="btn soft" data-cmp="b:1">둘째 ＋1</button>
-        <button type="button" class="btn primary" data-cmp-load>계산기에 ${a} + ${b} 넣기</button>
-      </div>
-      <div class="pair-grid">${pairCols}</div>
-      <div class="guide" style="text-align:center">
-        ${a === b ? `두 수가 <b>${a}개</b>로 똑같아요! (${a} = ${b})`
-          : a > b ? `첫 번째 수(${a})가 두 번째 수(${b})보다 <b>${diff}개 더 많아요!</b> (${a} > ${b})`
-            : `두 번째 수(${b})가 첫 번째 수(${a})보다 <b>${diff}개 더 많아요!</b> (${a} < ${b})`}
-      </div>
-      ${numberLineSVG({ max: 20, marks: [{ value: a, label: String(a), color: '#2563eb' }, { value: b, label: String(b), color: '#16a34a' }] })}
-      ${Math.max(a, b) > 15 ? '<div class="muted">15보다 큰 수는 그림 대신 수직선과 숫자로 비교해요.</div>' : ''}
-    </div>`;
-  $('toolBody').querySelectorAll('[data-cmp]').forEach((btn) => {
+  setToolHead('⚖️ 어느 쪽이 더 많을까?', '점을 끌어 양쪽에 놓고 하나씩 짝을 지어 보세요');
+  body.innerHTML = `
+    <div class="guide">점을 <b>양쪽 접시로 끌어다 놓아요</b>. 점을 다른 접시로 옮기면 수가 바뀌어요.</div>
+    <div class="two-plates">${plate('a', a, 'first')}${plate('b', b, 'second')}</div>
+    <div class="drag-tray"><span class="tray-label">점을 끌어서 놓기</span>
+      <div class="drag-token" data-cmp-token="a" role="button" tabindex="0"><span class="big">●</span><span class="tiny">첫째 +1</span></div>
+      <div class="drag-token green" data-cmp-token="b" role="button" tabindex="0"><span class="big">●</span><span class="tiny">둘째 +1</span></div>
+      <div class="drop-plate" data-drop="cmp-minus" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>➖ 여기로 끌면 하나 빼기</span></div></div>
+    </div>
+    <div class="compare-cards">
+      <div class="num-card"><span class="v">${a}</span><span class="c">첫 번째 · ${countWord(a)}</span></div>
+      <div class="sign-badge">${sign}</div>
+      <div class="num-card green"><span class="v">${b}</span><span class="c">두 번째 · ${countWord(b)}</span></div>
+    </div>
+    <div class="row-flex" style="margin-top:0;justify-content:center">
+      <button type="button" class="btn soft" data-cmp="a:-1">첫째 －1</button>
+      <button type="button" class="btn soft" data-cmp="a:1">첫째 ＋1</button>
+      <button type="button" class="btn soft" data-cmp="b:-1">둘째 －1</button>
+      <button type="button" class="btn soft" data-cmp="b:1">둘째 ＋1</button>
+      <button type="button" class="btn primary" data-cmp-load>계산기에 ${a} + ${b} 넣기</button>
+    </div>
+    ${bundleSummaryHTML(a, { extra: `<span class="bundle-item">첫째 ${a}개</span>` })}
+    ${bundleSummaryHTML(b, { extra: `<span class="bundle-item">둘째 ${b}개</span>` })}
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-cmp-bundle="ten">10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-cmp-bundle="hundred">100개 묶기</button>
+    </div>
+    <div class="pair-grid">${pairCols}</div>
+    <div class="guide" style="text-align:center">
+      ${a === b ? `두 수가 <b>${a}개</b>로 똑같아요! (${a} = ${b})`
+        : a > b ? `첫 번째 수(${a})가 두 번째 수(${b})보다 <b>${diff}개 더 많아요!</b> (${a} > ${b})`
+          : `두 번째 수(${b})가 첫 번째 수(${a})보다 <b>${diff}개 더 많아요!</b> (${a} < ${b})`}
+    </div>
+    ${numberLineSVG({ max: 20, marks: [{ value: a, label: String(a), color: '#2563eb' }, { value: b, label: String(b), color: '#16a34a' }] })}
+    ${Math.max(a, b) > 15 ? '<div class="muted">15보다 큰 수는 그림 대신 수직선과 숫자로 비교해요.</div>' : ''}`;
+
+  const setCompare = (which, value, msg) => {
+    state.compare[which] = clamp(Math.trunc(value), 0, 20);
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${which === 'a' ? '첫째' : '둘째'} ${state.compare[which]}개`);
+    renderTool();
+    if (msg) speak(msg);
+  };
+  body.querySelectorAll('[data-cmp]').forEach((btn) => {
     btn.onclick = () => {
       const [which, delta] = btn.dataset.cmp.split(':');
-      state.compare[which] = clamp(state.compare[which] + Number(delta), 0, 20);
-      renderTool();
-      speak(`${countWord(state.compare[which])}`);
+      setCompare(which, state.compare[which] + Number(delta), countWord(state.compare[which] + Number(delta)));
     };
   });
-  const load = $('toolBody').querySelector('[data-cmp-load]');
+  body.querySelectorAll('[data-cmp-token]').forEach((t) => {
+    t.onclick = () => {
+      const which = t.dataset.cmpToken;
+      setCompare(which, state.compare[which] + 1, countWord(state.compare[which] + 1));
+    };
+  });
+  bindDrag(body, '[data-cmp-token]', (el) => ({ add: 1, which: el.dataset.cmpToken }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop.startsWith('cmp:')) {
+      const which = drop.split(':')[1];
+      setCompare(which, state.compare[which] + 1, `${countWord(state.compare[which] + 1)}`);
+    }
+  }, { onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="cmp:${p.which}"]`, body); } });
+  bindDrag(body, '[data-cmp-move]', (el) => ({ from: el.dataset.cmpMove }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop === 'cmp-minus') {
+      setCompare(p.from, state.compare[p.from] - 1, `${countWord(state.compare[p.from] - 1)}`);
+      return;
+    }
+    if (drop.startsWith('cmp:')) {
+      const to = drop.split(':')[1];
+      if (to === p.from) return;
+      state.compare[p.from] = Math.max(0, state.compare[p.from] - 1);
+      setCompare(to, state.compare[to] + 1, `${countWord(state.compare[to] + 1)}`);
+    }
+  });
+  body.querySelectorAll('[data-cmp-bundle]').forEach((btn) => {
+    btn.onclick = () => {
+      if (btn.dataset.cmpBundle === 'ten') {
+        if (Math.max(a, b) < 10) { speak('10개가 모이면 묶을 수 있어요.'); return; }
+        awardToken('10개를 십 묶음 하나로 묶었어요!');
+        speak(`10개는 십 묶음 하나예요. 첫째는 십 ${Math.floor(a / 10)}개, 둘째는 십 ${Math.floor(b / 10)}개예요.`);
+      } else {
+        speak('100개가 모이면 백 묶음 하나로 묶을 수 있어요. 10개씩 먼저 묶어 보세요.');
+      }
+    };
+  });
+  const load = body.querySelector('[data-cmp-load]');
   if (load) load.onclick = () => loadExpression(a, '+', b);
 }
 
@@ -2628,6 +3675,7 @@ function changeComposeSub(which, delta) {
 function renderCompose() {
   const calc = activeCalc();
   const isSub = calc.op === '-';
+  const body = $('toolBody');
   let a = calc.first ?? (isSub ? 8 : 3);
   let b = calc.second ?? (isSub ? 3 : 5);
   if (!Number.isFinite(a) || a < 0) a = isSub ? 8 : 3;
@@ -2636,14 +3684,14 @@ function renderCompose() {
   b = clamp(b, 0, 10);
   if (isSub && b > a) {
     setToolHead('➖ 가르기', '빼는 수가 처음 수보다 커요');
-    $('toolBody').innerHTML = `
+    body.innerHTML = `
       <div class="guide">처음 수 <b>${a}</b>보다 빼는 수 <b>${b}</b>가 커서 0보다 작아져요. 이때는 가로식으로 확인해요.</div>
       <div class="row-flex">
         <button type="button" class="btn primary" data-compose-ex="8,3">8 - 3</button>
         <button type="button" class="btn green" data-compose-ex="7,2">7 - 2</button>
         <button type="button" class="btn soft" data-compose-ex="5,5">5 - 5</button>
       </div>`;
-    $('toolBody').querySelectorAll('[data-compose-ex]').forEach((btn) => {
+    body.querySelectorAll('[data-compose-ex]').forEach((btn) => {
       btn.onclick = () => {
         const [x, y] = btn.dataset.composeEx.split(',').map(Number);
         loadExpression(x, '-', y);
@@ -2652,21 +3700,33 @@ function renderCompose() {
     return;
   }
   if (isSub) b = Math.min(b, a);
+  if (isSub && state.composeBaseA !== a) { state.composeBaseA = a; state.composeRemoved = 0; }
+  const removed = isSub ? clamp(state.composeRemoved, 0, b) : 0;
+  const leftPart = isSub ? a - removed : a;
+  const rightPart = isSub ? b : b;
   const total = isSub ? a : a + b;
-  const leftPart = isSub ? a - b : a;
-  const rightPart = b;
   const fits = isSub || a + b <= 10;
   const headline = isSub
-    ? `<b>${countWord(a)}</b>에서 <b>${countWord(b)}</b>${subjectParticle(b)} 가르면 <b>${countWord(a - b)}</b>이 남아요.`
+    ? `<b>${countWord(a)}</b>에서 <b>${countWord(b)}</b>${subjectParticle(b)} 하나씩 끌어내면 <b>${countWord(a - b)}</b>이 남아요.`
     : `<b>${countWord(a)}</b>과 <b>${countWord(b)}</b>를 모으면 <b>${countWord(a + b)}</b>이에요.`;
-  setToolHead(isSub ? '➖ 가르기' : '➕ 모으기와 가르기', '두 수를 모으고, 다시 갈라 보세요');
-  $('toolBody').innerHTML = `
-    <div class="guide">${headline} 10칸 판에서 색깔 점을 세어 보세요.</div>
-    ${tenFrameHTML(10, Math.min(leftPart, 10), Math.min(rightPart, 10), -1)}
+  setToolHead(isSub ? '➖ 가르기' : '➕ 모으기와 가르기', '점을 손가락으로 끌어 옮기며 모으고 갈라 보세요');
+  const leftFrame = tenFrameHTML(10, Math.min(leftPart, 10), 0, -1, { frameId: 'composeA', dragFilled: true });
+  const rightFrame = isSub
+    ? `<div class="drop-plate" data-drop="compose-minus" style="border-color:#fda4af;background:#fff1f2;min-height:180px">
+        <div class="plate-title"><span>➖ 빼는 곳 · ${removed}/${b}</span><span class="plate-count">${removed}</span></div>
+        <div class="plate-items">${Array.from({ length: removed }, (_, i) => `<span class="counter-chip rose" role="button" tabindex="0" aria-label="${i + 1}번째 뺀 점">●</span>`).join('') || '<span class="muted">왼쪽 점을 여기로 끌어와요</span>'}</div>
+      </div>`
+    : tenFrameHTML(10, Math.min(rightPart, 10), 0, -1, { frameId: 'composeB', dragFilled: true, forceColor: 'green' });
+  body.innerHTML = `
+    <div class="guide">${headline} <b>점을 끌어다</b> 다른 칸으로 옮겨 보세요. 그냥 눌러도 돼요.</div>
+    <div class="two-plates">
+      <div><div class="guide" style="margin-bottom:5px"><b>${isSub ? '처음 수' : '첫 번째 수'} ${leftPart}</b></div>${leftFrame}</div>
+      <div><div class="guide" style="margin-bottom:5px"><b>${isSub ? '빼는 곳' : '두 번째 수'} ${isSub ? b : rightPart}</b></div>${rightFrame}</div>
+    </div>
     <div class="bond">
       <div class="bond-total">${total}</div>
       <div class="bond-lines"></div>
-      <div class="bond-parts"><div class="bond-part">${leftPart}</div><div class="bond-part second">${rightPart}</div></div>
+      <div class="bond-parts"><div class="bond-part">${leftPart}</div><div class="bond-part second">${isSub ? removed : rightPart}</div></div>
     </div>
     <div class="row-flex" style="justify-content:center;margin-top:0">
       <button type="button" class="btn soft" data-compose="a:-1">${isSub ? '처음 수' : '첫째'} －1</button>
@@ -2674,20 +3734,77 @@ function renderCompose() {
       <button type="button" class="btn soft" data-compose="b:-1">${isSub ? '빼는 수' : '둘째'} －1</button>
       <button type="button" class="btn soft" data-compose="b:1">${isSub ? '빼는 수' : '둘째'} ＋1</button>
     </div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-compose-bundle="ten">10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-compose-bundle="hundred">100개 묶기</button>
+    </div>
     <div class="guide" style="text-align:center;font-size:15px">
       ${isSub
-        ? `<b>${leftPart} + ${rightPart} = ${total}</b><br/><b>${total} - ${rightPart} = ${leftPart}</b> · <b>${total} - ${leftPart} = ${rightPart}</b>`
+        ? `<b>${a} - ${removed} = ${leftPart}</b>${removed === b ? ` · <b>${a} - ${b} = ${a - b}</b> 완성!` : ` · ${b}개 중 ${removed}개를 덜어냈어요.`}`
         : `<b>${a} + ${b} = ${total}</b><br/><b>${total} - ${a} = ${b}</b> · <b>${total} - ${b} = ${a}</b>`}
     </div>
     ${fits ? '' : '<div class="feedback" style="color:#b45309">10보다 커요. 10칸 판 안에서 다시 맞춰 보세요.</div>'}`;
-  $('toolBody').querySelectorAll('[data-compose]').forEach((btn) => {
+
+  const transfer = (from, to) => {
+    if (from === to) return;
+    if (isSub) {
+      if (from === 'composeA' && to === 'compose-minus' && removed < b) {
+        state.composeRemoved = removed + 1;
+        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '하나 덜어내기');
+        renderTool();
+        if (state.composeRemoved >= b) awardToken('가르기를 완성했어요!');
+        else speak(`${countWord(a - state.composeRemoved)}개가 남았어요`);
+      }
+      return;
+    }
+    let newA = a;
+    let newB = b;
+    if (from === 'composeA' && to === 'composeB') { newA = a - 1; newB = b + 1; }
+    else if (from === 'composeB' && to === 'composeA') { newA = a + 1; newB = b - 1; }
+    else return;
+    if (newA < 0 || newB < 0 || newA > 10 || newB > 10) return;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${newA} + ${newB}`);
+    loadExpression(newA, '+', newB, { quiet: true });
+    if (newA === 10 || newB === 10) awardToken('10을 만들었어요!');
+    else speak(`${newA}개와 ${newB}개로 나누었어요`);
+  };
+
+  body.querySelectorAll('[data-compose]').forEach((btn) => {
     btn.onclick = () => {
       const [part, delta] = btn.dataset.compose.split(':');
       if (isSub) changeComposeSub(part, Number(delta));
       else changeCompose(part, Number(delta));
     };
   });
-  $('toolBody').querySelectorAll('.bond-part, .bond-total').forEach((el) => {
+  bindDrag(body, '[data-cell-fill]', (el) => ({ frame: el.dataset.frame, value: Number(el.dataset.value) }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    const target = drop.split(':')[0];
+    if (isSub) {
+      if (p.frame === 'composeA' && target === 'compose-minus') transfer('composeA', 'compose-minus');
+      else if (target === 'composeA') speak('이미 처음 수 칸이에요.');
+    } else {
+      transfer(p.frame, target);
+    }
+  }, {
+    onStart: (p) => {
+      if (!state.settings.errorless) return;
+      if (isSub) showHintTarget('[data-drop="compose-minus"]', body);
+      else showHintTarget(`[data-drop="${p.frame === 'composeA' ? 'composeB' : 'composeA'}:0"]`, body);
+    },
+  });
+  body.querySelectorAll('[data-compose-bundle]').forEach((btn) => {
+    btn.onclick = () => {
+      if (btn.dataset.composeBundle === 'ten') {
+        if (Math.max(a, b) < 10) { speak('10개가 모이면 십 묶음 하나로 묶을 수 있어요.'); return; }
+        awardToken('10개를 십 묶음 하나로 묶었어요!');
+        speak(`10개는 십 묶음 하나예요. ${a} + ${b} = ${total}이에요.`);
+      } else {
+        speak('100개는 십 묶음 10개예요. 10개씩 먼저 묶어 보세요.');
+      }
+    };
+  });
+  body.querySelectorAll('.bond-part, .bond-total').forEach((el) => {
     el.onclick = () => speak(countWord(Number(el.textContent)));
   });
 }
@@ -2713,39 +3830,40 @@ function renderMakeTen() {
     if (go) go.onclick = () => { state.stage = 4; render(); };
     return;
   }
+  const body = $('toolBody');
   let a = calc.op === '+' && calc.first !== null ? calc.first : 7;
   let b = calc.op === '+' && calc.second !== null ? calc.second : 5;
-  a = clamp(a, 0, 9);
-  b = clamp(b, 0, 20);
+  a = clamp(Math.trunc(a), 0, 9);
+  b = clamp(Math.trunc(b), 0, 20);
   const need = Math.max(0, 10 - a);
   const moved = Math.min(b, need);
   const rest = Math.max(0, b - moved);
   const total = a + b;
-  const tenMade = a + moved === 10;
+  const tenMade = a === 10 || a + moved === 10;
   const canMakeTen = total >= 10 && tenMade && b > 0;
-  const intro = canMakeTen
-    ? (rest > 0
-      ? `① <b>${a}</b>에 <b>${moved}</b>개를 채워 <b>10</b>을 만들고, ② 남은 <b>${rest}</b>개를 더하면 <b>${total}</b>!`
-      : `① <b>${a}</b>에 <b>${moved}</b>개를 채우면 <b>10</b>! 남은 수가 없어서 그대로 <b>${total}</b>이에요.`)
-    : `두 수를 그냥 모으면 <b>${total}</b>이에요. 10을 만들 필요가 없어요.`;
+  const intro = a === 10
+    ? `10칸 판이 가득 찼어요! 남은 <b>${b}</b>개를 더하면 <b>${total}</b>이에요.`
+    : canMakeTen
+      ? (rest > 0
+        ? `① <b>${a}</b>에 <b>${moved}</b>개를 채워 <b>10</b>을 만들고, ② 남은 <b>${rest}</b>개를 더하면 <b>${total}</b>!`
+        : `① <b>${a}</b>에 <b>${moved}</b>개를 채우면 <b>10</b>! 남은 수가 없어서 그대로 <b>${total}</b>이에요.`)
+      : `두 수를 그냥 모으면 <b>${total}</b>이에요. 10을 만들 필요가 없어요.`;
   const equation = canMakeTen && rest > 0
     ? `<b>${a} + ${b} = (${a} + ${moved}) + ${rest} = 10 + ${rest} = ${total}</b>`
     : `<b>${a} + ${b} = ${total}</b>`;
-  setToolHead('🔟 10을 먼저 만들기', '빈칸을 채워 10을 만들고 남은 수를 더해요');
-  $('toolBody').innerHTML = `
+  setToolHead('🔟 10을 먼저 만들기', '오른쪽 점을 왼쪽 빈칸으로 끌어 10을 만들어요');
+  body.innerHTML = `
     <div class="guide">${intro}</div>
-    <div class="frames">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-        ${tenFrameHTML(10, a, moved, -1)}
-        <span class="muted">10칸 판 · 파랑 ${a} + 초록 ${moved}</span>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-        ${tenFrameHTML(10, 0, rest, -1)}
-        <span class="muted">남은 수 ${rest}개</span>
-      </div>
+    <div class="two-plates">
+      <div><div class="guide" style="margin-bottom:5px"><b>10칸 판 · ${a}개</b></div>${tenFrameHTML(10, a, 0, -1, { frameId: 'mtLeft', dragFilled: true })}</div>
+      <div><div class="guide" style="margin-bottom:5px"><b>더할 수 · ${b}개</b></div>${tenFrameHTML(Math.max(10, Math.ceil(Math.max(b, 1) / 10) * 10), b, 0, -1, { frameId: 'mtRight', dragFilled: true, forceColor: 'green' })}</div>
     </div>
     <div class="guide" style="text-align:center;font-size:15px">${equation}</div>
     ${canMakeTen ? '' : '<div class="feedback" style="color:#b45309">두 수의 합이 10보다 작아요. 4단계에서 모으기로 확인해 보세요.</div>'}
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-mt-bundle="ten">10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-mt-bundle="hundred">100개 묶기</button>
+    </div>
     <div class="row-flex">
       <button type="button" class="btn primary" data-mt="7,5">7 + 5</button>
       <button type="button" class="btn green" data-mt="8,4">8 + 4</button>
@@ -2753,10 +3871,36 @@ function renderMakeTen() {
       <button type="button" class="btn soft" data-mt="6,7">6 + 7</button>
       <button type="button" class="btn soft" data-mt="5,8">5 + 8</button>
     </div>`;
-  $('toolBody').querySelectorAll('[data-mt]').forEach((btn) => {
+
+  body.querySelectorAll('[data-mt]').forEach((btn) => {
     btn.onclick = () => {
       const [x, y] = btn.dataset.mt.split(',').map(Number);
       loadExpression(x, '+', y);
+    };
+  });
+  bindDrag(body, '[data-cell-fill]', (el) => ({ frame: el.dataset.frame, value: Number(el.dataset.value) }), (p, zone) => {
+    if (!zone) return;
+    const target = (zone.dataset.drop || '').split(':')[0];
+    if (p.frame === 'mtRight' && target === 'mtLeft' && b > 0 && a < 10) {
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '10 만들기');
+      loadExpression(a + 1, '+', b - 1, { quiet: true });
+      if (a + 1 === 10) awardToken('10을 만들었어요! 남은 수를 더해 보세요.');
+      else speak(`${a + 1}개. 10이 되려면 ${9 - a}개 더 필요해요.`);
+    } else if (target === 'mtRight' && p.frame === 'mtLeft') {
+      speak('왼쪽 10칸 판에서 오른쪽으로 옮기면 10을 만들 수 없어요.');
+    }
+  }, {
+    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="${p.frame === 'mtRight' ? 'mtLeft' : 'mtRight'}:0"]`, body); },
+  });
+  body.querySelectorAll('[data-mt-bundle]').forEach((btn) => {
+    btn.onclick = () => {
+      if (btn.dataset.mtBundle === 'ten') {
+        if (a < 10) { speak('왼쪽 10칸 판을 먼저 가득 채워요.'); return; }
+        awardToken('10개를 십 묶음 하나로 묶었어요!');
+        speak('10개는 십 묶음 하나예요.');
+      } else {
+        speak('100개는 십 묶음 10개예요. 10개씩 먼저 묶어 보세요.');
+      }
     };
   });
 }
@@ -2794,6 +3938,7 @@ function renderStrategy() {
     { id: 'back', label: '거꾸로 세기' },
   ];
   if (!strategies.some((s) => s.id === state.strategy)) state.strategy = 'forward';
+  if (state.nlBase !== a) { state.nlBase = a; state.nlMarker = a; }
   let explain = '';
   let line = '';
   if (!inRange) {
@@ -2809,11 +3954,7 @@ function renderStrategy() {
     explain = op === '+'
       ? `<b>${a}</b>에서 시작해 <b>${b}</b>만큼 앞으로 점프하면 <b>${total}</b>이에요. (이어 세기)`
       : `<b>${a}</b>에서 시작해 <b>${b}</b>만큼 뒤로 점프하면 <b>${total}</b>이에요.`;
-    line = numberLineSVG({
-      max: 20,
-      marks: [{ value: a, label: String(a), color: '#2563eb' }, { value: total, label: String(total), color: '#d97706' }],
-      arcs: [{ from: a, to: total, label: op === '+' ? `+${b}` : `-${b}`, color: op === '+' ? '#7c3aed' : '#e11d48' }],
-    });
+    line = interactiveNumberLineHTML(a, total, op);
   } else if (state.strategy === 'maketen') {
     if (op === '+' && a < 10 && total > 10) {
       const need = 10 - a;
@@ -2842,15 +3983,9 @@ function renderStrategy() {
     } else {
       explain = `더하기에서는 <b>${total}</b>에서 <b>${b}</b>만큼 거꾸로 가면 <b>${a}</b>가 되는지 확인할 수 있어요.`;
     }
-    line = numberLineSVG({
-      max: 20,
-      marks: [{ value: a, label: String(a), color: '#2563eb' }, { value: total, label: String(total), color: '#d97706' }],
-      arcs: [op === '-'
-        ? { from: a, to: total, label: `-${b}`, color: '#e11d48' }
-        : { from: total, to: a, label: `-${b}`, color: '#e11d48' }],
-    });
+    line = interactiveNumberLineHTML(a, total, op);
   }
-  setToolHead('🛣️ 계산 전략 고르기', '수직선에서 점프하는 모습을 보세요');
+  setToolHead('🛣️ 계산 전략 고르기', '🐸를 손가락으로 끌어 목표 자리에 놓아 보세요');
   $('toolBody').innerHTML = `
     <div class="tabs" style="background:#eef3f9">${strategies.map((s) => `<button type="button" class="tab${state.strategy === s.id ? ' active' : ''}" data-strategy="${s.id}">${s.label}</button>`).join('')}</div>
     <div class="guide" style="font-size:14px">${explain}</div>
@@ -2861,10 +3996,36 @@ function renderStrategy() {
       <button type="button" class="btn amber" data-st="13,-,5">13 - 5</button>
       <button type="button" class="btn soft" data-st="15,-,8">15 - 8</button>
     </div>`;
-  $('toolBody').querySelectorAll('[data-strategy]').forEach((b) => {
+  const body = $('toolBody');
+  const moveMarker = (value) => {
+    const v = clamp(Math.trunc(value), 0, 20);
+    state.nlMarker = v;
+    if (v === total) {
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `수직선 ${v}`);
+      awardToken('목표 자리에 정확히 놓았어요!');
+      announce(`${a}에서 ${v}까지 왔어요. 정답은 ${total}이에요.`);
+    } else {
+      recordTrial('error', state.promptLevel, `수직선 ${v}`);
+      speak(`${v} 자리예요. 목표 ${total}까지 ${Math.abs(total - v)}칸 남았어요.`);
+      haptic(35);
+    }
+    renderTool();
+  };
+  body.querySelectorAll('.nl-stop').forEach((stop) => {
+    stop.onclick = () => moveMarker(Number((stop.dataset.drop || 'nl:0').split(':')[1]));
+  });
+  bindDrag(body, '[data-nl-marker]', () => ({ value: state.nlMarker ?? a }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop.startsWith('nl:')) moveMarker(Number(drop.split(':')[1]));
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget(`[data-drop="nl:${total}"]`, body); },
+    onActivate: () => moveMarker(total),
+  });
+  body.querySelectorAll('[data-strategy]').forEach((b) => {
     b.onclick = () => { state.strategy = b.dataset.strategy; renderTool(); };
   });
-  $('toolBody').querySelectorAll('[data-st]').forEach((b) => {
+  body.querySelectorAll('[data-st]').forEach((b) => {
     b.onclick = () => {
       const [x, o, y] = b.dataset.st.split(',');
       loadExpression(Number(x), o, Number(y));
@@ -2914,87 +4075,232 @@ function modifyParts(kind) {
 function renderPlace() {
   const p = state.parts;
   const total = totalOf(p);
-  const flats = Array.from({ length: p.hundreds }, () => `<div class="flat">${'<span></span>'.repeat(100)}</div>`).join('');
-  const rods = Array.from({ length: p.tens }, () => `<button type="button" class="rod" data-unbundle title="누르면 일모형 10개로 풀려요">${'<span></span>'.repeat(10)}</button>`).join('');
-  const units = Array.from({ length: p.units }, () => `<button type="button" class="unit" data-remove title="누르면 1개 줄어요"></button>`).join('');
-  setToolHead('🧱 자릿값 수모형', '10개가 모이면 묶고, 부족하면 풀어요');
-  $('toolBody').innerHTML = `
+  const body = $('toolBody');
+  const flats = Array.from({ length: p.hundreds }, () => `<div class="flat" data-place-item="hundreds" role="button" tabindex="0" title="백모형 · 끌어서 풀 수 있어요">${'<span></span>'.repeat(100)}</div>`).join('');
+  const rods = Array.from({ length: p.tens }, () => `<button type="button" class="rod" data-unbundle data-place-item="tens" title="십모형 · 누르거나 끌어서 일모형 10개로 풀 수 있어요">${'<span></span>'.repeat(10)}</button>`).join('');
+  const units = Array.from({ length: p.units }, () => `<button type="button" class="unit" data-remove data-place-item="units" title="일모형 · 누르면 1개 줄어요"></button>`).join('');
+  setToolHead('🧱 자릿값 수모형', '수모형을 끌어 자리 칸에 놓고, 10개·100개를 묶어요');
+  body.innerHTML = `
     <div class="chips">
       <span class="chip" style="background:#d97706">백모형(100) <b>${p.hundreds}</b></span>
       <span class="chip" style="background:#16a34a">십모형(10) <b>${p.tens}</b></span>
       <span class="chip" style="background:#2563eb">일모형(1) <b>${p.units}</b></span>
       <span class="total-badge">${total}</span>
     </div>
+    <div class="drag-tray">
+      <span class="tray-label">수모형을 끌어서 자리 칸에 놓기</span>
+      <div class="place-source one" data-place-source="1" role="button" tabindex="0"><span class="ps-icon">🟦</span>일 1</div>
+      <div class="place-source ten" data-place-source="10" role="button" tabindex="0"><span class="ps-icon">🟩</span>십 10</div>
+      <div class="place-source hundred" data-place-source="100" role="button" tabindex="0"><span class="ps-icon">🟧</span>백 100</div>
+    </div>
+    <div class="place-columns">
+      <div class="place-col hundreds" data-drop="place:hundreds">
+        <div class="pc-head"><span>🟧 백의 자리</span><span>${p.hundreds}개</span></div>
+        <div class="pc-body">${flats || '<span class="muted">백모형을 놓아요</span>'}</div>
+      </div>
+      <div class="place-col tens" data-drop="place:tens">
+        <div class="pc-head"><span>🟩 십의 자리</span><span>${p.tens}개</span></div>
+        <div class="pc-body">${rods || '<span class="muted">십모형을 놓아요</span>'}</div>
+      </div>
+      <div class="place-col units" data-drop="place:units">
+        <div class="pc-head"><span>🟦 일의 자리</span><span>${p.units}개</span></div>
+        <div class="pc-body">${units || '<span class="muted">일모형을 놓아요</span>'}</div>
+      </div>
+    </div>
+    <div class="place-bundle-zones">
+      <div class="place-bundle-zone" data-drop="place-bundle10"><strong>10개 묶기</strong>일모형 10개를 여기로 끌어요</div>
+      <div class="place-bundle-zone" data-drop="place-bundle100"><strong>100개 묶기</strong>십모형 10개를 여기로 끌어요</div>
+      <div class="place-bundle-zone" data-drop="place-unbundle10"><strong>십 1개 풀기</strong>십모형을 여기로 끌면 일 10개</div>
+      <div class="place-bundle-zone" data-drop="place-unbundle100"><strong>백 1개 풀기</strong>백모형을 여기로 끌면 십 10개</div>
+    </div>
     <div class="digit-table">
       <div class="digit-col"><span class="p">백의 자리</span><span class="d">${p.hundreds}</span></div>
       <div class="digit-col"><span class="p">십의 자리</span><span class="d">${p.tens}</span></div>
       <div class="digit-col"><span class="p">일의 자리</span><span class="d">${p.units}</span></div>
     </div>
-    <div class="board">
-      <div class="board-row">${flats || ''}</div>
-      <div class="board-row">${rods || ''}</div>
-      <div class="board-row">${units || ''}</div>
-      ${total === 0 ? '<div class="guide">＋ 버튼으로 수모형을 놓아 보세요.</div>' : ''}
-    </div>
     <div class="guide"><b>${total} = ${p.hundreds * 100} + ${p.tens * 10} + ${p.units}</b> · ${countWord(total)}</div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-pa="bundle" ${p.units < 10 ? 'disabled' : ''}>10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-pa="bundle100" ${p.tens < 10 ? 'disabled' : ''}>100개 묶기</button>
+      <button type="button" class="btn soft" data-pa="unbundle" ${p.tens <= 0 ? 'disabled' : ''}>십모형 풀기</button>
+      <button type="button" class="btn soft" data-pa="unbundle100" ${p.hundreds <= 0 ? 'disabled' : ''}>백모형 풀기</button>
+    </div>
     <div class="row-flex">
       <button type="button" class="btn primary" data-pa="add1">＋ 일모형 1</button>
       <button type="button" class="btn green" data-pa="add10">＋ 십모형 1</button>
       <button type="button" class="btn amber" data-pa="add100">＋ 백모형 1</button>
       <button type="button" class="btn soft" data-pa="sub1">－ 1</button>
-      <button type="button" class="btn soft" data-pa="bundle" ${p.units < 10 ? 'disabled' : ''}>10개 묶기</button>
-      <button type="button" class="btn soft" data-pa="bundle100" ${p.tens < 10 ? 'disabled' : ''}>100개 묶기</button>
-      <button type="button" class="btn soft" data-pa="unbundle" ${p.tens <= 0 ? 'disabled' : ''}>십모형 풀기</button>
-      <button type="button" class="btn soft" data-pa="unbundle100" ${p.hundreds <= 0 ? 'disabled' : ''}>백모형 풀기</button>
       <button type="button" class="btn soft" data-pa="clear">비우기</button>
       <button type="button" class="btn violet" data-pa="use">계산기에 넣기</button>
     </div>`;
-  $('toolBody').querySelectorAll('[data-pa]').forEach((b) => {
+
+  const afterModify = (kind) => {
+    const before = totalOf(state.parts);
+    modifyParts(kind);
+    if (kind === 'bundle' && before !== totalOf(state.parts)) awardToken('일 10개를 십 1개로 묶었어요!');
+    if (kind === 'bundle100' && before !== totalOf(state.parts)) awardToken('십 10개를 백 1개로 묶었어요!');
+  };
+  body.querySelectorAll('[data-pa]').forEach((b) => {
     b.onclick = () => {
       if (b.dataset.pa === 'use') setFirstNumber(total);
-      else modifyParts(b.dataset.pa);
+      else afterModify(b.dataset.pa);
     };
   });
-  $('toolBody').querySelectorAll('[data-remove]').forEach((b) => { b.onclick = () => modifyParts('sub1'); });
-  $('toolBody').querySelectorAll('[data-unbundle]').forEach((b) => { b.onclick = () => modifyParts('unbundle'); });
+  body.querySelectorAll('[data-remove]').forEach((b) => { b.onclick = () => afterModify('sub1'); });
+  body.querySelectorAll('[data-unbundle]').forEach((b) => { b.onclick = () => afterModify('unbundle'); });
+
+  const placeSource = (value, zone) => {
+    const drop = (zone.dataset.drop || '');
+    const expected = value === 1 ? 'place:units' : value === 10 ? 'place:tens' : 'place:hundreds';
+    if (drop !== expected) {
+      recordTrial('error', state.promptLevel, `수모형 ${value} 자리`);
+      haptic(35);
+      speak(value === 1 ? '일모형은 일의 자리에 놓아요.' : value === 10 ? '십모형은 십의 자리에 놓아요.' : '백모형은 백의 자리에 놓아요.');
+      showHintTarget(`[data-drop="${expected}"]`, body);
+      return;
+    }
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `수모형 ${value} 놓기`);
+    afterModify(value === 1 ? 'add1' : value === 10 ? 'add10' : 'add100');
+  };
+  body.querySelectorAll('[data-place-source]').forEach((t) => {
+    t.onclick = () => {
+      const v = Number(t.dataset.placeSource);
+      afterModify(v === 1 ? 'add1' : v === 10 ? 'add10' : 'add100');
+    };
+  });
+  bindDrag(body, '[data-place-source]', (el) => ({ value: Number(el.dataset.placeSource) }), (p, zone) => {
+    if (!zone) return;
+    placeSource(p.value, zone);
+  }, {
+    onStart: (p) => {
+      if (!state.settings.errorless) return;
+      showHintTarget(`[data-drop="${p.value === 1 ? 'place:units' : p.value === 10 ? 'place:tens' : 'place:hundreds'}"]`, body);
+    },
+    onActivate: (p) => afterModify(p.value === 1 ? 'add1' : p.value === 10 ? 'add10' : 'add100'),
+  });
+  bindDrag(body, '[data-place-item]', (el) => ({ from: el.dataset.placeItem }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop === 'place-bundle10' && p.from === 'units') {
+      if (state.parts.units < 10) { speak('일모형이 10개 모이면 묶을 수 있어요.'); return; }
+      afterModify('bundle');
+    } else if (drop === 'place-bundle100' && p.from === 'tens') {
+      if (state.parts.tens < 10) { speak('십모형이 10개 모이면 묶을 수 있어요.'); return; }
+      afterModify('bundle100');
+    } else if (drop === 'place-unbundle10' && p.from === 'tens') {
+      afterModify('unbundle');
+    } else if (drop === 'place-unbundle100' && p.from === 'hundreds') {
+      afterModify('unbundle100');
+    } else if (drop.startsWith('place:')) {
+      speak('같은 자리 안에서는 그대로 있어요.');
+    }
+  }, {
+    onStart: (p) => {
+      if (!state.settings.errorless) return;
+      if (p.from === 'units') showHintTarget('[data-drop="place-bundle10"]', body);
+      if (p.from === 'tens') showHintTarget('[data-drop="place-bundle100"]', body);
+    },
+  });
 }
 
 function renderMultiply() {
   const { first, op, second, result } = activeCalc();
+  const body = $('toolBody');
   if (op === '÷') {
     const d = second === 0 ? null : divideInfo(first, second);
     if (!d) {
       setToolHead('➗ 똑같이 나누기', '0으로는 나눌 수 없어요');
-      $('toolBody').innerHTML = '<div class="guide">다른 수를 골라 보세요.</div>';
+      body.innerHTML = '<div class="guide">다른 수를 골라 보세요.</div>';
       return;
     }
-    const plates = Math.min(second, 10);
-    let html = '';
-    for (let i = 0; i < plates; i++) {
-      html += `<div class="bundle"><div class="bundle-title">${i + 1}번 접시 · ${d.q}개</div><div class="citems" style="min-height:44px">${Array.from({ length: Math.min(d.q, 10) }, () => `<span style="width:16px;height:16px;border-radius:50%;background:#2563eb;display:inline-block"></span>`).join('')}</div></div>`;
-    }
-    setToolHead('➗ 똑같이 나누기', `${first}개를 ${second}곳에 나누어요`);
-    $('toolBody').innerHTML = `
-      <div class="guide">전체 <b>${first}개</b>를 <b>${second}곳</b>에 똑같이 나누면 한 곳에 <b>${d.q}개씩</b>, 남는 것은 <b>${d.r}개</b>예요.</div>
-      <div class="bundle-grid">${html}</div>
-      <div class="guide" style="font-size:15px"><b>${first} ÷ ${second} = ${d.q}${d.r ? ` … ${d.r}` : ''}</b></div>
+    const key = `${first}÷${second}`;
+    if (state.divKey !== key) { state.divKey = key; state.divPlates = Array(Math.min(second, 12)).fill(0); state.divRem = 0; }
+    const plateCount = Math.min(second, 12);
+    if (state.divPlates.length !== plateCount) state.divPlates = Array(plateCount).fill(0);
+    const totalPlaced = state.divPlates.reduce((s, v) => s + v, 0) + state.divRem;
+    const finished = totalPlaced >= first;
+    const platesHtml = Array.from({ length: plateCount }, (_, i) => `
+      <div class="plate-slot" data-drop="div:${i}">
+        <div class="ps-title">${i + 1}번 접시 · ${state.divPlates[i]}개</div>
+        <div class="ps-dots">${Array.from({ length: state.divPlates[i] }, () => '<span class="ps-dot"></span>').join('') || '<span class="muted" style="font-size:10px">여기에 놓아요</span>'}</div>
+      </div>`).join('');
+    setToolHead('➗ 똑같이 나누기', `${first}개를 ${second}곳에 똑같이 끌어 나누어요`);
+    body.innerHTML = `
+      <div class="guide">전체 <b>${first}개</b>를 <b>${second}곳</b>에 똑같이 나누어요. 점을 접시로 <b>끌어다 놓으세요</b>. 남는 점은 남는 곳에 놓아요.</div>
+      <div class="drag-tray"><span class="tray-label">점을 끌어서 접시에 나누기</span>
+        <div class="drag-token blue" data-div-token role="button" tabindex="0"><span class="big">●</span><span class="tiny">1개</span></div>
+        <div class="drop-plate" data-drop="div-rem" style="min-height:52px;padding:7px 10px;border-color:#fcd34d;background:#fffbeb;flex:1">
+          <div class="plate-title" style="margin:0"><span>🟡 남는 것 · ${state.divRem}개</span></div>
+        </div>
+      </div>
+      <div class="plate-grid">${platesHtml}</div>
+      <div class="guide" style="font-size:15px"><b>${first} ÷ ${second} = ${d.q}${d.r ? ` … ${d.r}` : ''}</b> · 지금까지 놓은 점 <b>${totalPlaced}</b>개</div>
+      ${finished ? `<div class="feedback" style="color:#16a34a">한 곳에 ${d.q}개씩, 남는 것 ${d.r}개예요. 나누기를 완성했어요!</div>` : ''}
+      <div class="row-flex" style="margin-top:0">
+        <button type="button" class="bundle-big-btn blue" data-div-bundle="ten">10개 묶기</button>
+        <button type="button" class="bundle-big-btn" data-div-bundle="hundred">100개 묶기</button>
+      </div>
       <div class="row-flex">
         <button type="button" class="btn green" data-div="12,3">12 ÷ 3</button>
         <button type="button" class="btn green" data-div="14,4">14 ÷ 4</button>
         <button type="button" class="btn soft" data-div="20,5">20 ÷ 5</button>
+        <button type="button" class="btn soft" data-div-reset>처음부터</button>
       </div>`;
-    $('toolBody').querySelectorAll('[data-div]').forEach((b) => {
+    const afterDivide = () => {
+      const placed = state.divPlates.reduce((s, v) => s + v, 0) + state.divRem;
+      if (placed >= first) awardToken('똑같이 나누기를 완성했어요!');
+      else speak(`${placed}개를 나누었어요. ${first - placed}개 남았어요.`);
+      renderTool();
+    };
+    body.querySelectorAll('[data-div]').forEach((b) => {
       b.onclick = () => {
         const [x, y] = b.dataset.div.split(',').map(Number);
         loadExpression(x, '÷', y);
       };
+    });
+    const reset = body.querySelector('[data-div-reset]');
+    if (reset) reset.onclick = () => { state.divPlates = Array(plateCount).fill(0); state.divRem = 0; renderTool(); };
+    body.querySelectorAll('[data-div-bundle]').forEach((b) => {
+      b.onclick = () => {
+        if (b.dataset.divBundle === 'ten') {
+          if (first < 10) { speak('10개가 모이면 십 묶음 하나로 묶을 수 있어요.'); return; }
+          awardToken('10개를 십 묶음 하나로 묶었어요!');
+          speak(`10개는 십 묶음 하나예요. ${first}개는 십 ${Math.floor(first / 10)}개와 ${first % 10}개예요.`);
+        } else {
+          speak('100개는 십 묶음 10개예요.');
+        }
+      };
+    });
+    bindDrag(body, '[data-div-token]', () => ({ one: 1 }), (p, zone) => {
+      if (!zone) return;
+      const drop = zone.dataset.drop || '';
+      if (drop.startsWith('div:')) {
+        const i = Number(drop.split(':')[1]);
+        if (state.divPlates[i] >= d.q) { speak('이 접시는 가득 찼어요. 다른 접시에 놓아 보세요.'); return; }
+        if (state.divPlates[i] + state.divRem + state.divPlates.reduce((s, v, idx) => idx === i ? s : s + v, 0) >= first) { speak('이미 모든 점을 나누었어요.'); return; }
+        state.divPlates[i] += 1;
+        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${i + 1}번 접시`);
+        afterDivide();
+      } else if (drop === 'div-rem') {
+        if (state.divRem >= d.r) { speak('남는 것은 이만큼이에요.'); return; }
+        state.divRem += 1;
+        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '남는 것');
+        afterDivide();
+      }
+    }, {
+      onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="div:0"]', body); },
+      onActivate: () => {
+        const i = state.divPlates.findIndex((v) => v < d.q);
+        if (i >= 0) { state.divPlates[i] += 1; afterDivide(); }
+        else if (state.divRem < d.r) { state.divRem += 1; afterDivide(); }
+      },
     });
     return;
   }
 
   if (op !== '×') {
     setToolHead('✖️ 묶음 곱셈', '같은 수씩 여러 묶음을 만들어 보세요');
-    $('toolBody').innerHTML = `
+    body.innerHTML = `
       <div class="guide">계산기에서 <b>×</b>를 누르면 같은 수씩 묶는 곱셈 교구가 나타나요. <b>÷</b>는 똑같이 나누는 교구로 바뀝니다.</div>
       <div class="row-flex">
         <button type="button" class="btn primary" data-mul-ex="3,4">3 × 4</button>
@@ -3002,7 +4308,7 @@ function renderMultiply() {
         <button type="button" class="btn green" data-mul-ex="12,3">12 ÷ 3</button>
         <button type="button" class="btn soft" data-mul-ex="14,4">14 ÷ 4</button>
       </div>`;
-    $('toolBody').querySelectorAll('[data-mul-ex]').forEach((b) => {
+    body.querySelectorAll('[data-mul-ex]').forEach((b) => {
       b.onclick = () => {
         const [x, y] = b.dataset.mulEx.split(',').map(Number);
         loadExpression(x, b.textContent.includes('÷') ? '÷' : '×', y);
@@ -3015,37 +4321,47 @@ function renderMultiply() {
   const b = clamp(second ?? 4, 1, 10);
   if (second === null) {
     setToolHead('✖️ 묶음 곱셈', '다음 수를 눌러 주세요');
-    $('toolBody').innerHTML = `<div class="guide">한 묶음에 몇 개씩 담을지, 모두 몇 묶음인지 숫자를 넣어 보세요.</div>
+    body.innerHTML = `<div class="guide">한 묶음에 몇 개씩 담을지, 모두 몇 묶음인지 숫자를 넣어 보세요.</div>
       <div class="row-flex"><button type="button" class="btn primary" data-mul-ex2="3,4">3 × 4로 연습하기</button></div>`;
-    const nextEx = $('toolBody').querySelector('[data-mul-ex2]');
+    const nextEx = body.querySelector('[data-mul-ex2]');
     if (nextEx) nextEx.onclick = () => loadExpression(3, '×', 4);
     return;
   }
   if (second === 0) {
     setToolHead('✖️ 묶음 곱셈', '0묶음이면 모두 0개예요');
-    $('toolBody').innerHTML = `
+    body.innerHTML = `
       <div class="guide"><b>${first}개씩 0묶음</b>이면 아무것도 없어서 <b>0개</b>예요. (${first} × 0 = 0)</div>
       <div class="row-flex">
         <button type="button" class="btn primary" data-mul-ex2="3,4">3 × 4로 연습하기</button>
       </div>`;
-    const zeroEx = $('toolBody').querySelector('[data-mul-ex2]');
+    const zeroEx = body.querySelector('[data-mul-ex2]');
     if (zeroEx) zeroEx.onclick = () => loadExpression(3, '×', 4);
     return;
   }
-  const rows = [];
-  for (let g = 0; g < b; g++) {
-    rows.push(`<div class="bundle">
-      <div class="bundle-title">${g + 1}묶음 · ${a}개</div>
-      <div style="display:grid;grid-template-columns:repeat(${a},14px);gap:3px">
-        ${Array.from({ length: a }, () => `<span style="width:14px;height:14px;border-radius:50%;background:${g % 2 ? '#16a34a' : '#2563eb'};display:block"></span>`).join('')}
-      </div>
-    </div>`);
-  }
-  setToolHead('✖️ 묶음 곱셈', `${a}개씩 ${b}묶음`);
-  $('toolBody').innerHTML = `
-    <div class="guide">한 묶음에 <b>${a}개씩</b> <b>${b}묶음</b>이면 모두 <b>${a * b}개</b>예요.</div>
-    <div class="bundle-grid">${rows.join('')}</div>
-    <div class="guide" style="font-size:15px"><b>${a} × ${b} = ${a * b}</b> · ${Array.from({ length: b }, () => a).join(' + ')} = ${a * b}</div>
+
+  const key = `${a}x${b}`;
+  if (state.mulKey !== key) { state.mulKey = key; state.mulGroups = Array(b).fill(false); }
+  if (state.mulGroups.length !== b) state.mulGroups = Array(b).fill(false);
+  const filled = state.mulGroups.filter(Boolean).length;
+  const groupSlots = Array.from({ length: b }, (_, g) => `
+    <div class="group-slot${state.mulGroups[g] ? ' filled' : ''}" data-drop="mul:${g}">
+      <div class="gs-title"><span>${g + 1}묶음</span><span>${state.mulGroups[g] ? `${a}개` : '비어 있음'}</span></div>
+      <div class="gs-dots">${state.mulGroups[g] ? Array.from({ length: a }, () => '<span class="gs-dot"></span>').join('') : '<span class="muted" style="font-size:10px">묶음 카드를 끌어오세요</span>'}</div>
+    </div>`).join('');
+  setToolHead('✖️ 묶음 곱셈', `${a}개씩 ${b}묶음 · 묶음 카드를 끌어 채워요`);
+  body.innerHTML = `
+    <div class="guide">한 묶음에 <b>${a}개씩</b> <b>${b}묶음</b>이면 모두 <b>${a * b}개</b>예요. 묶음 카드를 빈 자리로 <b>끌어다 놓으세요</b>.</div>
+    <div class="drag-tray"><span class="tray-label">묶음 카드</span>
+      <div class="drag-token violet" data-mul-bundle role="button" tabindex="0"><span class="big">${a}개</span><span class="tiny">한 묶음</span></div>
+      <span class="bundle-help">카드를 한 번 끌면 ${a}개가 한 묶음으로 들어가요.</span>
+    </div>
+    <div class="group-grid">${groupSlots}</div>
+    <div class="guide" style="font-size:15px"><b>${a} × ${b} = ${a * b}</b> · 지금 ${filled}묶음 채움 · ${Array.from({ length: filled }, () => a).join(' + ') || '0'} = ${filled * a}</div>
+    ${filled === b ? `<div class="feedback" style="color:#16a34a">${a}개씩 ${b}묶음은 모두 ${a * b}개예요!</div>` : ''}
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-mul-bundle-btn="ten">10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-mul-bundle-btn="hundred">100개 묶기</button>
+    </div>
     <div class="row-flex">
       <button type="button" class="btn soft" data-mul="a:-1" ${a <= 1 ? 'disabled' : ''}>한 묶음 －1</button>
       <button type="button" class="btn soft" data-mul="a:1" ${a >= 12 ? 'disabled' : ''}>한 묶음 ＋1</button>
@@ -3053,14 +4369,52 @@ function renderMultiply() {
       <button type="button" class="btn soft" data-mul="b:1" ${b >= 10 ? 'disabled' : ''}>묶음 ＋1</button>
       <button type="button" class="btn primary" data-mul-ex2="3,4">3 × 4로</button>
     </div>`;
-  $('toolBody').querySelectorAll('[data-mul]').forEach((btn) => {
+
+  const fillGroup = (index) => {
+    if (state.mulGroups[index]) { speak('이미 채운 묶음이에요. 빈 자리에 놓아 보세요.'); return; }
+    state.mulGroups[index] = true;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${index + 1}묶음 채우기`);
+    const count = state.mulGroups.filter(Boolean).length;
+    if (count === b) awardToken(`${a}개씩 ${b}묶음을 모두 채웠어요!`);
+    else speak(`${index + 1}묶음에 ${a}개를 넣었어요. ${b - count}묶음 남았어요.`);
+    renderTool();
+  };
+  body.querySelectorAll('[data-mul-bundle]').forEach((t) => {
+    t.onclick = () => {
+      const i = state.mulGroups.findIndex((v) => !v);
+      if (i >= 0) fillGroup(i);
+    };
+  });
+  bindDrag(body, '[data-mul-bundle]', () => ({ a }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop.startsWith('mul:')) fillGroup(Number(drop.split(':')[1]));
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="mul:0"]', body); },
+    onActivate: () => {
+      const i = state.mulGroups.findIndex((v) => !v);
+      if (i >= 0) fillGroup(i);
+    },
+  });
+  body.querySelectorAll('[data-mul-bundle-btn]').forEach((btn) => {
+    btn.onclick = () => {
+      if (btn.dataset.mulBundleBtn === 'ten') {
+        if (a < 10) { speak('한 묶음이 10개 이상일 때 10개씩 묶을 수 있어요.'); return; }
+        awardToken('10개씩 묶으면 더 빨리 셀 수 있어요!');
+        speak(`${a}개는 십 ${Math.floor(a / 10)}개와 ${a % 10}개예요.`);
+      } else {
+        speak('100개는 십 묶음 10개예요. 10개씩 먼저 묶어 보세요.');
+      }
+    };
+  });
+  body.querySelectorAll('[data-mul]').forEach((btn) => {
     btn.onclick = () => {
       const [which, delta] = btn.dataset.mul.split(':');
       if (which === 'a') loadExpression(clamp(a + Number(delta), 1, 12), '×', b);
       else loadExpression(a, '×', clamp(b + Number(delta), 1, 10));
     };
   });
-  const ex = $('toolBody').querySelector('[data-mul-ex2]');
+  const ex = body.querySelector('[data-mul-ex2]');
   if (ex) ex.onclick = () => loadExpression(3, '×', 4);
 }
 
@@ -3078,14 +4432,20 @@ function renderFraction() {
         <b style="font-size:13px">${label}</b>
         <span class="num-card" style="min-width:0;padding:4px 10px;border-color:${color}"><span class="v" style="font-size:20px;color:${color}">${f.n}/${f.d}</span></span>
       </div>
-      <div class="fbar">${Array.from({ length: f.d }, (_, i) =>
+      <div class="fbar frac-bar-drop" data-drop="frac:${target}" aria-label="${label} 막대">${Array.from({ length: f.d }, (_, i) =>
         `<button type="button" class="fslice" data-f="${target}:${i}" style="background:${i < f.n ? color : '#fff'}" aria-label="${i + 1}조각"></button>`).join('')}</div>
       <div class="denom-row">${[2, 3, 4, 5, 6, 8, 10].map((d) =>
         `<button type="button" class="denom${f.d === d ? ' active' : ''}" data-d="${target}:${d}" ${f.d === d ? `style="background:${color};border-color:${color}"` : ''}>${d}조각</button>`).join('')}</div>
     </div>`;
-  setToolHead('🍕 분수 막대', '조각을 눌러 분수를 만들고 더해 보세요');
+  setToolHead('🍕 분수 막대', '조각을 손가락으로 끌어 막대에 놓아 분수를 만들어요');
   $('toolBody').innerHTML = `
     <div class="fcols">${bar(fa, '#2563eb', 'a', '첫 번째 분수')}${bar(fb, '#16a34a', 'b', '두 번째 분수')}</div>
+    <div class="frac-shelf" aria-label="분수 조각 상자">
+      <span class="tray-label" style="align-self:center;font-size:11px;font-weight:950;color:#6d28d9">조각을 끌어다 놓기</span>
+      ${Array.from({ length: 10 }, (_, i) => `<div class="frac-piece" data-frac-piece="a" role="button" tabindex="0" aria-label="첫 번째 분수에 조각 하나">${i < fa.d ? `${i + 1}/${fa.d}` : '＋'}</div>`).join('')}
+      ${Array.from({ length: 10 }, (_, i) => `<div class="frac-piece" data-frac-piece="b" role="button" tabindex="0" aria-label="두 번째 분수에 조각 하나" style="border-color:#86efac;background:#dcfce7;color:#166534">${i < fb.d ? `${i + 1}/${fb.d}` : '＋'}</div>`).join('')}
+      <div class="drop-plate" data-drop="frac-minus" style="min-height:44px;padding:6px 10px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>➖ 조각 빼기</span></div></div>
+    </div>
     <div class="fresult">
       <div class="guide">${same ? '조각 크기가 같아서 분자끼리 더할 수 있어요.' : `조각 크기가 달라요. <b>${lcm}조각</b>으로 맞추면 더할 수 있어요.`}</div>
       <div class="guide" style="margin-top:6px">분수를 소수로 읽으면 <b>${fa.n}/${fa.d} = ${displayNumber(fa.n / fa.d)}</b>, <b>${fb.n}/${fb.d} = ${displayNumber(fb.n / fb.d)}</b>예요.</div>
@@ -3094,13 +4454,49 @@ function renderFraction() {
            ${rawSum.n >= rawSum.d ? `<div class="guide">가분수예요. 자연수 ${Math.floor(rawSum.n / rawSum.d)}과 ${rawSum.n % rawSum.d}/${rawSum.d}로 나타낼 수 있어요.</div>` : ''}`
         : `<div class="guide">통분하면 <b>${fa.n * (lcm / fa.d)}/${lcm} + ${fb.n * (lcm / fb.d)}/${lcm}</b>이 돼요.</div>`}
     </div>
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-frac-bundle="ten">10조각으로 보기</button>
+      <button type="button" class="bundle-big-btn" data-frac-bundle="hundred">100칸으로 보기</button>
+    </div>
     <div class="row-flex">
       <button type="button" class="btn violet" data-fa="lcm">조각 크기 같게 (${lcm}조각)</button>
       <button type="button" class="btn primary" data-fa="send">계산기에 보내기</button>
       <button type="button" class="btn soft" data-fa="swap">두 분수 바꾸기</button>
       <button type="button" class="btn soft" data-fa="reset">처음으로</button>
     </div>`;
-  $('toolBody').querySelectorAll('[data-f]').forEach((btn) => {
+  const body = $('toolBody');
+  const addPiece = (which, delta) => {
+    const cur = state.fractions[which];
+    cur.n = clamp(cur.n + delta, 0, cur.d);
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${which} ${cur.n}/${cur.d}`);
+    if (cur.n === cur.d) awardToken('전체를 가득 채웠어요!');
+    else speak(`${cur.d}조각 중 ${countWord(cur.n)}조각`);
+    renderTool();
+  };
+  body.querySelectorAll('[data-frac-piece]').forEach((t) => { t.onclick = () => addPiece(t.dataset.fracPiece, 1); });
+  bindDrag(body, '[data-frac-piece]', (el) => ({ which: el.dataset.fracPiece }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop.startsWith('frac:')) addPiece(drop.split(':')[1], 1);
+    else if (drop === 'frac-minus') addPiece(p.which, -1);
+  }, {
+    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="frac:${p.which}"]`, body); },
+    onActivate: (p) => addPiece(p.which, 1),
+  });
+  body.querySelectorAll('[data-frac-bundle]').forEach((btn) => {
+    btn.onclick = () => {
+      if (btn.dataset.fracBundle === 'ten') {
+        state.fractions = { a: { n: Math.min(3, 10), d: 10 }, b: { n: Math.min(4, 10), d: 10 } };
+        awardToken('10조각 분수로 바꾸었어요!');
+        renderTool();
+      } else {
+        state.fractions = { a: { n: 25, d: 100 }, b: { n: 30, d: 100 } };
+        awardToken('100칸 분수로 바꾸었어요! 0.25 + 0.30을 살펴보세요.');
+        renderTool();
+      }
+    };
+  });
+  body.querySelectorAll('[data-f]').forEach((btn) => {
     btn.onclick = () => {
       const [which, idx] = btn.dataset.f.split(':');
       const cur = state.fractions[which];
@@ -3164,12 +4560,14 @@ function clockSVG(minutes) {
     const rad = (i * 30 - 90) * Math.PI / 180;
     ticks += `<line x1="${100 + 86 * Math.cos(rad)}" y1="${100 + 86 * Math.sin(rad)}" x2="${100 + 92 * Math.cos(rad)}" y2="${100 + 92 * Math.sin(rad)}" class="clock-tick major"/>`;
   }
-  return `<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="시계">
+  return `<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="시계" data-drop="clock">
     <circle cx="100" cy="100" r="94" class="clock-face"/>
     ${ticks}${numbers}
-    <line x1="100" y1="100" x2="${hx}" y2="${hy}" class="clock-hand hour"/>
-    <line x1="100" y1="100" x2="${mx}" y2="${my}" class="clock-hand minute"/>
+    <line x1="100" y1="100" x2="${hx}" y2="${hy}" class="clock-hand hour" data-hand="hour"/>
+    <line x1="100" y1="100" x2="${mx}" y2="${my}" class="clock-hand minute" data-hand="minute"/>
     <circle cx="100" cy="100" r="6" class="clock-center"/>
+    <circle cx="${hx}" cy="${hy}" r="13" class="clock-grab" data-clock-hand="hour" aria-label="시침 끌기"/>
+    <circle cx="${mx}" cy="${my}" r="13" class="clock-grab" data-clock-hand="minute" aria-label="분침 끌기"/>
   </svg>`;
 }
 function timeText(minutes) {
@@ -3183,6 +4581,7 @@ function timeText(minutes) {
 
 function renderMeasure() {
   const m = state.measure;
+  const body = $('toolBody');
   const tabs = [
     { id: 'length', label: '📏 길이' },
     { id: 'volume', label: '🥤 들이' },
@@ -3200,12 +4599,12 @@ function renderMeasure() {
       <div class="measure-panel">
         <div class="measure-line"><span class="guide">자를 보고 길이를 재어 보세요.</span><span class="measure-value" id="lenVal">${m.length} cm</span></div>
         <input type="range" id="lenRange" min="0" max="20" step="1" value="${m.length}" aria-label="길이 조절" />
-        <div class="ruler">
+        <div class="ruler" id="ruler" data-drop="ruler" aria-label="자를 끌어 길이 재기">
           <div class="ruler-ticks">${ticks}</div>
           <div class="ruler-fill" id="rulerFill" style="width:${pct}%"></div>
-          <div class="ruler-object" id="rulerObj" style="left:${pct}%">✏️</div>
+          <div class="ruler-object" id="rulerObj" style="left:${pct}%" role="button" tabindex="0" aria-label="연필을 끌어 길이 재기">✏️</div>
         </div>
-        <div class="guide">자는 <b>0 cm</b>부터 시작해요. 연필 끝이 가리키는 눈금을 읽어 보세요. <b>${m.length} cm = ${m.length}센티미터</b></div>
+        <div class="guide">연필을 <b>손가락으로 끌어</b> 길이를 재어 보세요. 자는 <b>0 cm</b>부터 시작해요. <b>${m.length} cm = ${m.length}센티미터</b></div>
       </div>`;
   } else if (m.tab === 'volume') {
     const pct = (m.volume / 10) * 100;
@@ -3213,12 +4612,12 @@ function renderMeasure() {
       <div class="measure-panel">
         <div class="measure-line"><span class="guide">컵에 담긴 양을 재어 보세요.</span><span class="measure-value" id="volVal">${m.volume}컵</span></div>
         <input type="range" id="volRange" min="0" max="10" step="1" value="${m.volume}" aria-label="들이 조절" />
-        <div class="beaker">
+        <div class="beaker" id="beaker" data-drop="beaker" aria-label="컵의 물 높이를 끌어 조절">
           <div class="beaker-fill" id="beakerFill" style="height:${pct}%"></div>
           <span class="beaker-mark" style="bottom:49%">5</span>
           <span class="beaker-mark" style="bottom:98%">10</span>
         </div>
-        <div class="guide"><b>${m.volume}컵</b>은 눈금으로 <b>${m.volume}</b>만큼 채운 것이에요. 가득 채우면 10컵이에요.</div>
+        <div class="guide">컵 안의 물을 <b>위아래로 끌어</b> 양을 맞춰 보세요. <b>${m.volume}컵</b>은 눈금으로 <b>${m.volume}</b>만큼 채운 것이에요.</div>
       </div>`;
   } else if (m.tab === 'weight') {
     panel = `
@@ -3228,6 +4627,18 @@ function renderMeasure() {
           <span class="u">g (그램)</span>
         </div>
         <input type="range" id="wtRange" min="0" max="1000" step="50" value="${m.weight}" aria-label="무게 조절" />
+        <div class="weight-tray" aria-label="무게 추를 끌어 저울에 놓기">
+          <div class="weight-token" data-weight="100" role="button" tabindex="0">100g</div>
+          <div class="weight-token" data-weight="200" role="button" tabindex="0">200g</div>
+          <div class="weight-token w500" data-weight="500" role="button" tabindex="0">500g</div>
+          <div class="drop-plate" data-drop="weight" style="min-height:52px;padding:7px 10px;border-color:#fcd34d;background:#fffbeb;flex:1">
+            <div class="plate-title" style="margin:0"><span>⚖️ 저울 접시 · 여기로 끌어요</span></div>
+          </div>
+        </div>
+        <div class="row-flex" style="margin-top:0">
+          <button type="button" class="bundle-big-btn blue" data-weight-bundle="ten">100g 10개 묶기 = 1kg</button>
+          <button type="button" class="bundle-big-btn" data-weight-bundle="hundred">10g 100개 묶기 = 1kg</button>
+        </div>
         <div class="guide" style="text-align:center"><b>${m.weight} g</b> · 1 kg은 1000 g이에요. ${m.weight === 1000 ? '가득 1 kg!' : ''}</div>
       </div>`;
   } else if (m.tab === 'clock') {
@@ -3246,7 +4657,7 @@ function renderMeasure() {
             </div>
           </div>
         </div>
-        <div class="guide" style="text-align:center">짧은바늘은 <b>시</b>, 긴바늘은 <b>분</b>을 가리켜요.</div>
+        <div class="guide" style="text-align:center">시계의 <b>짧은바늘(시)</b>과 <b>긴바늘(분)</b>을 손가락으로 끌어 시간을 맞춰 보세요.</div>
       </div>`;
   } else {
     const coins = [
@@ -3260,18 +4671,23 @@ function renderMeasure() {
     const breakdown = coins.filter((c) => m.coins[c.v] > 0).map((c) => `${c.label} × ${m.coins[c.v]}`).join(' + ');
     panel = `
       <div class="measure-panel">
-        <div class="guide">동전을 눌러 돈을 모아 보세요. 같은 동전은 여러 번 눌러도 돼요.</div>
-        <div class="coins">${coins.map((c) => `<button type="button" class="coin ${c.cls}" data-coin="${c.v}" aria-label="${c.label} 넣기">${c.label}</button>`).join('')}</div>
-        <div class="coin-footer">
+        <div class="guide">동전을 <b>손가락으로 끌어 지갑에 넣어</b> 돈을 모아 보세요. 그냥 눌러도 돼요.</div>
+        <div class="coins">${coins.map((c) => `<button type="button" class="coin ${c.cls}" data-coin="${c.v}" data-coin-drag="${c.v}" aria-label="${c.label} 끌어서 넣기">${c.label}</button>`).join('')}</div>
+        <div class="wallet-drop" data-drop="wallet">
+          <span class="wd-label">👛 지갑</span>
+          <span class="guide" style="flex:1">${breakdown || '동전을 여기로 끌어오세요'}</span>
           <span class="measure-value" id="moneyVal">${totalMoney}원</span>
-          <span class="guide" style="flex:1">${breakdown || '아직 담긴 동전이 없어요'}</span>
+        </div>
+        <div class="row-flex" style="margin-top:0">
+          <button type="button" class="bundle-big-btn blue" data-money-bundle="ten">10원 10개 = 100원</button>
+          <button type="button" class="bundle-big-btn" data-money-bundle="hundred">100원 10개 = 1,000원</button>
           <button type="button" class="btn soft" data-coin-clear>비우기</button>
         </div>
       </div>`;
   }
-  setToolHead('📏 측정 실험실', '눈금을 움직이며 길이·들이·무게·시간·돈을 재어요');
-  $('toolBody').innerHTML = `<div class="tabs measure-tabs">${tabHtml}</div>${panel}`;
-  $('toolBody').querySelectorAll('[data-mtab]').forEach((b) => {
+  setToolHead('📏 측정 실험실', '연필·물·시계바늘·동전을 손가락으로 끌어 재어요');
+  body.innerHTML = `<div class="tabs measure-tabs">${tabHtml}</div>${panel}`;
+  body.querySelectorAll('[data-mtab]').forEach((b) => {
     b.onclick = () => { state.measure.tab = b.dataset.mtab; renderTool(); };
   });
 
@@ -3306,7 +4722,7 @@ function renderMeasure() {
     };
     wt.onchange = () => speak(`${state.measure.weight} 그램`);
   }
-  $('toolBody').querySelectorAll('[data-clock]').forEach((b) => {
+  body.querySelectorAll('[data-clock]').forEach((b) => {
     b.onclick = () => {
       const v = Number(b.dataset.clock);
       if (v === 0) state.measure.minutes = 9 * 60;
@@ -3315,18 +4731,159 @@ function renderMeasure() {
       speak(timeText(state.measure.minutes));
     };
   });
-  $('toolBody').querySelectorAll('[data-coin]').forEach((b) => {
+  const addCoin = (v) => {
+    state.measure.coins[v] = (state.measure.coins[v] || 0) + 1;
+    let sum = 0;
+    Object.keys(state.measure.coins).forEach((k) => { sum += Number(k) * state.measure.coins[k]; });
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${v}원`);
+    speak(`${v}원을 넣었어요. 모두 ${countWord(sum)}원`);
+    renderTool();
+  };
+  body.querySelectorAll('[data-coin]').forEach((b) => {
+    b.onclick = () => addCoin(Number(b.dataset.coin));
+  });
+  bindDrag(body, '[data-coin-drag]', (el) => ({ v: Number(el.dataset.coinDrag) }), (p, zone) => {
+    if (zone && zone.dataset.drop === 'wallet') addCoin(p.v);
+  }, { onActivate: (p) => addCoin(p.v) });
+  body.querySelectorAll('[data-money-bundle]').forEach((b) => {
     b.onclick = () => {
-      const v = Number(b.dataset.coin);
-      state.measure.coins[v] = (state.measure.coins[v] || 0) + 1;
-      let sum = 0;
-      Object.keys(state.measure.coins).forEach((k) => { sum += Number(k) * state.measure.coins[k]; });
-      speak(`${v}원을 넣었어요. 모두 ${countWord(sum)}원`);
+      if (b.dataset.moneyBundle === 'ten') {
+        state.measure.coins[10] = (state.measure.coins[10] || 0) + 10;
+        awardToken('10원 10개를 100원 하나로 묶었어요!');
+      } else {
+        state.measure.coins[100] = (state.measure.coins[100] || 0) + 10;
+        awardToken('100원 10개를 1,000원으로 묶었어요!');
+      }
       renderTool();
     };
   });
-  const cc = $('toolBody').querySelector('[data-coin-clear]');
+  const cc = body.querySelector('[data-coin-clear]');
   if (cc) cc.onclick = () => { state.measure.coins = { 10: 0, 50: 0, 100: 0, 500: 0 }; renderTool(); };
+
+  /* 길이: 연필 끌기 */
+  const ruler = $('ruler');
+  const pencil = $('rulerObj');
+  if (ruler && pencil) {
+    let dragging = false;
+    const updateLen = (clientX) => {
+      const r = ruler.getBoundingClientRect();
+      const v = clamp(Math.round(((clientX - r.left) / r.width) * 20), 0, 20);
+      state.measure.length = v;
+      $('lenVal').textContent = `${v} cm`;
+      $('rulerFill').style.width = `${(v / 20) * 100}%`;
+      pencil.style.left = `${(v / 20) * 100}%`;
+      const range = $('lenRange');
+      if (range) range.value = String(v);
+    };
+    ruler.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      try { ruler.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+      updateLen(e.clientX);
+      noteInteraction();
+    });
+    ruler.addEventListener('pointermove', (e) => { if (dragging) updateLen(e.clientX); });
+    ruler.addEventListener('pointerup', (e) => {
+      dragging = false;
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `길이 ${state.measure.length}cm`);
+      speak(`${state.measure.length} 센티미터`);
+    });
+    ruler.addEventListener('pointercancel', () => { dragging = false; });
+  }
+
+  /* 들이: 물 높이 끌기 */
+  const beaker = $('beaker');
+  if (beaker) {
+    let dragging = false;
+    const updateVol = (clientY) => {
+      const r = beaker.getBoundingClientRect();
+      const v = clamp(Math.round(((r.bottom - clientY) / r.height) * 10), 0, 10);
+      state.measure.volume = v;
+      $('volVal').textContent = `${v}컵`;
+      $('beakerFill').style.height = `${(v / 10) * 100}%`;
+      const range = $('volRange');
+      if (range) range.value = String(v);
+    };
+    beaker.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      try { beaker.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+      updateVol(e.clientY);
+      noteInteraction();
+    });
+    beaker.addEventListener('pointermove', (e) => { if (dragging) updateVol(e.clientY); });
+    beaker.addEventListener('pointerup', () => {
+      dragging = false;
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `들이 ${state.measure.volume}컵`);
+      speak(`${state.measure.volume}컵`);
+    });
+    beaker.addEventListener('pointercancel', () => { dragging = false; });
+  }
+
+  /* 무게: 추 끌기 */
+  const addWeight = (v) => {
+    state.measure.weight = clamp(state.measure.weight + v, 0, 1000);
+    const range = $('wtRange');
+    if (range) range.value = String(state.measure.weight);
+    const scale = $('scaleVal');
+    if (scale) scale.textContent = String(state.measure.weight);
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `무게 ${state.measure.weight}g`);
+    if (state.measure.weight >= 1000) awardToken('1킬로그램을 가득 채웠어요!');
+    else speak(`${state.measure.weight} 그램`);
+  };
+  body.querySelectorAll('[data-weight]').forEach((t) => { t.onclick = () => addWeight(Number(t.dataset.weight)); });
+  bindDrag(body, '[data-weight]', (el) => ({ v: Number(el.dataset.weight) }), (p, zone) => {
+    if (zone && zone.dataset.drop === 'weight') addWeight(p.v);
+  }, { onActivate: (p) => addWeight(p.v) });
+  body.querySelectorAll('[data-weight-bundle]').forEach((b) => {
+    b.onclick = () => {
+      if (b.dataset.weightBundle === 'ten') { state.measure.weight = 1000; awardToken('100g 10개는 1kg이에요!'); }
+      else { state.measure.weight = 1000; awardToken('10g 100개는 1kg이에요!'); }
+      renderTool();
+    };
+  });
+
+  /* 시계: 바늘 끌기 */
+  const clock = body.querySelector('.clock');
+  if (clock) {
+    let hand = null;
+    const setFromPointer = (e) => {
+      const r = clock.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+      if (angle < 0) angle += 360;
+      const current = state.measure.minutes;
+      const h24 = Math.floor(current / 60);
+      const m = current % 60;
+      if (hand === 'minute') {
+        const minute = Math.round(angle / 6) % 60;
+        state.measure.minutes = ((h24 * 60 + minute) % 1440 + 1440) % 1440;
+      } else if (hand === 'hour') {
+        const hour = Math.round(angle / 30) % 12;
+        state.measure.minutes = ((hour * 60 + m) % 1440 + 1440) % 1440;
+      }
+      const digital = body.querySelector('.digital');
+      if (digital) digital.textContent = timeText(state.measure.minutes);
+      const small = body.querySelector('.digital[style]');
+      if (small) small.textContent = `${String(Math.floor(state.measure.minutes / 60) % 24).padStart(2, '0')}:${String(state.measure.minutes % 60).padStart(2, '0')}`;
+    };
+    clock.addEventListener('pointerdown', (e) => {
+      const grab = e.target.closest('[data-clock-hand]');
+      hand = grab ? grab.dataset.clockHand : 'minute';
+      try { clock.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+      setFromPointer(e);
+      noteInteraction();
+    });
+    clock.addEventListener('pointermove', (e) => { if (hand) setFromPointer(e); });
+    clock.addEventListener('pointerup', () => {
+      hand = null;
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, timeText(state.measure.minutes));
+      speak(timeText(state.measure.minutes));
+      renderTool();
+    });
+    clock.addEventListener('pointercancel', () => { hand = null; });
+  }
 }
 
 /* ---------- 11단계: 도형과 규칙성 ---------- */
@@ -3347,13 +4904,31 @@ const PATTERNS = [
 
 function renderShape() {
   const tab = state.shapeTab === 'pattern' ? 'pattern' : 'shape';
+  const body = $('toolBody');
   const tabs = `<div class="tabs">${[{ id: 'shape', label: '🔺 도형' }, { id: 'pattern', label: '🔁 규칙' }].map((t) => `<button type="button" class="tab${tab === t.id ? ' active' : ''}" data-stab="${t.id}">${t.label}</button>`).join('')}</div>`;
   if (tab === 'shape') {
     const selected = SHAPES.find((s) => s.id === state.shapeId) || SHAPES[0];
-    const grid = SHAPES.map((s) => `<button type="button" class="shape-card${selected.id === s.id ? ' active' : ''}" data-shape="${s.id}" aria-label="${s.name}"><svg viewBox="0 0 100 100">${s.svg}</svg><span>${s.name}</span></button>`).join('');
-    setToolHead('🔺 도형 탐험', '도형의 변과 꼭짓점을 세어 보세요');
-    $('toolBody').innerHTML = `${tabs}
-      <div class="shape-grid">${grid}</div>
+    const palette = SHAPES.map((s) => `<div class="shape-tile" data-shape-source="${s.id}" role="button" tabindex="0" aria-label="${s.name} 끌어서 보드에 놓기"><svg viewBox="0 0 100 100">${s.svg}</svg><span>${s.name}</span></div>`).join('');
+    const boardShapes = state.shapeBoard.map((inst, i) => {
+      const s = SHAPES.find((x) => x.id === inst.id) || SHAPES[0];
+      return `<button type="button" class="shape-instance${state.shapeSelected === i ? ' selected' : ''}" data-shape-instance="${i}" style="left:${inst.x}%;top:${inst.y}%;transform:translate(-50%,-50%) rotate(${inst.rot || 0}deg)" aria-label="${s.name} ${i + 1}번째, 두 번 누르면 돌아가요"><svg viewBox="0 0 100 100">${s.svg}</svg><span class="si-badge">${i + 1}</span></button>`;
+    }).join('');
+    setToolHead('🔺 도형 탐험', '도형을 손가락으로 끌어 보드에 놓고, 두 번 눌러 돌려 보세요');
+    body.innerHTML = `${tabs}
+      <div class="shape-board-wrap">
+        <div class="shape-board" data-drop="shape-board" aria-label="도형 놀이 보드">
+          ${boardShapes || '<div class="board-hint">도형을 여기로 끌어다 놓아요.<br/>여러 도형으로 그림을 만들어 보세요.</div>'}
+        </div>
+        <div>
+          <div class="shape-palette" aria-label="도형 상자">${palette}</div>
+          <div class="row-flex" style="margin-top:8px">
+            <button type="button" class="btn soft" data-shape-rotate ${state.shapeSelected === null ? 'disabled' : ''}>↻ 돌리기</button>
+            <button type="button" class="btn soft" data-shape-remove ${state.shapeSelected === null ? 'disabled' : ''}>🗑 빼기</button>
+            <button type="button" class="btn soft" data-shape-clear>모두 지우기</button>
+          </div>
+          <div class="drop-plate" data-drop="shape-trash" style="margin-top:8px;min-height:48px;padding:7px 9px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>🗑 여기로 끌면 빼기</span></div></div>
+        </div>
+      </div>
       <div class="shape-detail">
         <svg viewBox="0 0 100 100">${selected.svg}</svg>
         <div class="shape-info">
@@ -3362,26 +4937,103 @@ function renderShape() {
           <div class="shape-fact">${selected.fact}</div>
         </div>
       </div>
-      <div class="guide">도형을 눌러 이름과 특징을 확인해 보세요. 주변에서 같은 모양을 찾아보는 것도 좋아요.</div>`;
-    $('toolBody').querySelectorAll('[data-shape]').forEach((b) => {
-      b.onclick = () => {
-        state.shapeId = b.dataset.shape;
-        const s = SHAPES.find((x) => x.id === state.shapeId);
-        speak(`${s.name}. 변 ${countWord(s.sides)}개, 꼭짓점 ${countWord(s.corners)}개`);
+      <div class="guide">도형을 눌러 이름과 특징을 확인해 보세요. 보드에 놓은 도형을 <b>두 번 누르면</b> 돌아가요. 주변에서 같은 모양도 찾아보세요.</div>`;
+
+    const addShape = (id, x, y) => {
+      state.shapeBoard.push({ id, x: clamp(x ?? 50, 8, 92), y: clamp(y ?? 50, 10, 90), rot: 0 });
+      state.shapeSelected = state.shapeBoard.length - 1;
+      state.shapeId = id;
+      const s = SHAPES.find((z) => z.id === id);
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${s.name} 놓기`);
+      if (state.shapeBoard.length === 1 || state.shapeBoard.length % 5 === 0) awardToken(`${s.name}을 놓았어요!`);
+      else speak(`${s.name}. 변 ${countWord(s.sides)}개, 꼭짓점 ${countWord(s.corners)}개`);
+      renderTool();
+    };
+    body.querySelectorAll('[data-shape-source]').forEach((tile) => {
+      tile.onclick = () => addShape(tile.dataset.shapeSource, 50, 50);
+    });
+    bindDrag(body, '[data-shape-source]', (el) => ({ id: el.dataset.shapeSource }), (p, zone, el, ev) => {
+      if (!zone) return;
+      if (zone.dataset.drop === 'shape-board') {
+        const board = body.querySelector('.shape-board');
+        const r = board.getBoundingClientRect();
+        const x = ((ev.clientX - r.left) / r.width) * 100;
+        const y = ((ev.clientY - r.top) / r.height) * 100;
+        addShape(p.id, x, y);
+      }
+    }, {
+      onStart: (p) => { if (state.settings.errorless) showHintTarget('[data-drop="shape-board"]', body); },
+      onActivate: (p) => addShape(p.id, 50, 50),
+    });
+    bindDrag(body, '[data-shape-instance]', (el) => ({ i: Number(el.dataset.shapeInstance) }), (p, zone, el, ev) => {
+      if (!zone) return;
+      if (zone.dataset.drop === 'shape-trash') {
+        state.shapeBoard.splice(p.i, 1);
+        state.shapeSelected = null;
+        speak('도형을 뺐어요.');
+        renderTool();
+        return;
+      }
+      if (zone.dataset.drop === 'shape-board') {
+        const board = body.querySelector('.shape-board');
+        const r = board.getBoundingClientRect();
+        const inst = state.shapeBoard[p.i];
+        if (!inst) return;
+        inst.x = clamp(((ev.clientX - r.left) / r.width) * 100, 8, 92);
+        inst.y = clamp(((ev.clientY - r.top) / r.height) * 100, 10, 90);
+        state.shapeSelected = p.i;
+        renderTool();
+      }
+    }, {
+      onActivate: (p) => {
+        const inst = state.shapeBoard[p.i];
+        if (!inst) return;
+        inst.rot = ((inst.rot || 0) + 45) % 360;
+        state.shapeSelected = p.i;
+        renderTool();
+      },
+    });
+    body.querySelectorAll('[data-shape-instance]').forEach((el) => {
+      el.ondblclick = () => {
+        const i = Number(el.dataset.shapeInstance);
+        const inst = state.shapeBoard[i];
+        if (!inst) return;
+        inst.rot = ((inst.rot || 0) + 45) % 360;
+        state.shapeSelected = i;
+        speak('도형을 돌렸어요');
         renderTool();
       };
     });
+    const rotate = body.querySelector('[data-shape-rotate]');
+    if (rotate) rotate.onclick = () => {
+      if (state.shapeSelected === null) return;
+      const inst = state.shapeBoard[state.shapeSelected];
+      if (inst) inst.rot = ((inst.rot || 0) + 45) % 360;
+      renderTool();
+    };
+    const remove = body.querySelector('[data-shape-remove]');
+    if (remove) remove.onclick = () => {
+      if (state.shapeSelected === null) return;
+      state.shapeBoard.splice(state.shapeSelected, 1);
+      state.shapeSelected = null;
+      renderTool();
+    };
+    const clear = body.querySelector('[data-shape-clear]');
+    if (clear) clear.onclick = () => { state.shapeBoard = []; state.shapeSelected = null; renderTool(); };
   } else {
     const p = PATTERNS[state.pattern.index] || PATTERNS[0];
-    const seqHtml = p.seq.map((s) => `<div class="pattern-box">${s}</div>`).join('') + '<div class="pattern-box q">?</div>';
+    const seqHtml = p.seq.map((s) => `<div class="pattern-box">${s}</div>`).join('') + '<div class="pattern-box q" data-drop="pattern-next" aria-label="다음에 올 모양을 놓는 곳">?</div>';
     const choices = p.choices.map((c) => {
       const cls = state.pattern.chosen === c ? (state.pattern.solved ? ' good' : ' bad') : '';
       return `<button type="button" class="choice-btn${cls}" data-choice="${c}">${c}</button>`;
     }).join('');
-    setToolHead('🔁 반복 규칙 찾기', '다음에 올 모양을 골라 보세요');
-    $('toolBody').innerHTML = `${tabs}
-      <div class="guide" style="text-align:center">규칙을 보고 <b>? </b>에 들어갈 모양을 골라 보세요.</div>
+    setToolHead('🔁 반복 규칙 찾기', '다음에 올 모양을 골라 ? 자리로 끌어다 놓아요');
+    body.innerHTML = `${tabs}
+      <div class="guide" style="text-align:center">규칙을 보고 <b>?</b>에 들어갈 모양을 골라 보세요. 모양을 <b>끌어다 놓아도</b> 돼요.</div>
       <div class="pattern-row">${seqHtml}</div>
+      <div class="drag-tray" style="justify-content:center">
+        ${p.choices.map((c) => `<div class="drag-token violet" data-pattern-drag="${c}" role="button" tabindex="0"><span class="big">${c}</span><span class="tiny">끌어서 놓기</span></div>`).join('')}
+      </div>
       <div class="pattern-choices">${choices}</div>
       <div class="feedback ${state.pattern.chosen ? (state.pattern.solved ? 'good' : 'bad') : ''}" style="color:${state.pattern.chosen ? (state.pattern.solved ? '#16a34a' : '#e11d48') : '#64748b'}">
         ${state.pattern.chosen ? (state.pattern.solved ? '정답이에요! ' + p.rule : '다시 한 번 규칙을 살펴보세요.') : '차례대로 어떤 모양이 반복되는지 보세요.'}
@@ -3389,16 +5041,23 @@ function renderShape() {
       <div class="row-flex" style="justify-content:center">
         <button type="button" class="btn violet" data-next-pattern>다음 문제 →</button>
       </div>`;
-    $('toolBody').querySelectorAll('[data-stab]').forEach((b) => { b.onclick = () => { state.shapeTab = b.dataset.stab; renderTool(); }; });
-    $('toolBody').querySelectorAll('[data-choice]').forEach((b) => {
-      b.onclick = () => {
-        state.pattern.chosen = b.dataset.choice;
-        state.pattern.solved = state.pattern.chosen === p.answer;
-        renderTool();
-        speak(state.pattern.solved ? '정답이에요' : '다시 살펴보세요');
-      };
+    const choose = (choice) => {
+      state.pattern.chosen = choice;
+      state.pattern.solved = choice === p.answer;
+      recordTrial(state.pattern.solved ? (state.promptLevel ? 'prompted' : 'independent') : 'error', state.promptLevel, `규칙 ${choice}`);
+      if (state.pattern.solved) awardToken('규칙을 찾았어요!');
+      else speak('다시 한 번 규칙을 살펴보세요.');
+      renderTool();
+    };
+    body.querySelectorAll('[data-choice]').forEach((b) => { b.onclick = () => choose(b.dataset.choice); });
+    body.querySelectorAll('[data-pattern-drag]').forEach((t) => { t.onclick = () => choose(t.dataset.patternDrag); });
+    bindDrag(body, '[data-pattern-drag]', (el) => ({ choice: el.dataset.patternDrag }), (p, zone) => {
+      if (zone && zone.dataset.drop === 'pattern-next') choose(p.choice);
+    }, {
+      onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="pattern-next"]', body); },
+      onActivate: (p) => choose(p.choice),
     });
-    const next = $('toolBody').querySelector('[data-next-pattern]');
+    const next = body.querySelector('[data-next-pattern]');
     if (next) next.onclick = () => {
       state.pattern.index = (state.pattern.index + 1) % PATTERNS.length;
       state.pattern.chosen = null;
@@ -3406,7 +5065,7 @@ function renderShape() {
       renderTool();
     };
   }
-  $('toolBody').querySelectorAll('[data-stab]').forEach((b) => {
+  body.querySelectorAll('[data-stab]').forEach((b) => {
     b.onclick = () => { state.shapeTab = b.dataset.stab; renderTool(); };
   });
 }
@@ -3414,6 +5073,7 @@ function renderShape() {
 /* ---------- 12단계: 자료 ---------- */
 function renderData() {
   const d = state.data;
+  const body = $('toolBody');
   if (d.wordSolved === undefined) d.wordSolved = false;
   const kinds = [
     { id: 'apple', label: '🍎 사과', color: '#2563eb' },
@@ -3425,13 +5085,23 @@ function renderData() {
   const winners = kinds.filter((k) => d[k.id] === maxCount);
   const rows = kinds.map((k) => `<div class="data-row">
       <span class="data-label">${k.label}</span>
-      <div class="data-track"><div class="data-fill" style="width:${(d[k.id] / max) * 100}%;background:${k.color}">${d[k.id]}</div></div>
+      <div class="data-track" data-drop="data:${k.id}" aria-label="${k.label} 그래프에 놓기"><div class="data-fill" style="width:${(d[k.id] / max) * 100}%;background:${k.color}">${d[k.id]}</div></div>
       <div class="data-stepper"><button type="button" class="step-btn" data-data="${k.id}:-1" aria-label="${k.label} 줄이기">－</button><button type="button" class="step-btn" data-data="${k.id}:1" aria-label="${k.label} 늘리기">＋</button></div>
     </div>`).join('');
   const choices = kinds.map((k) => `<button type="button" class="btn soft" data-answer="${k.id}" style="${d.answer === k.id ? `background:${d.solved ? '#dcfce7' : '#ffe4e6'}` : ''}">${k.label} ${d[k.id]}개</button>`).join('');
-  setToolHead('📊 자료와 문제해결', '그래프를 보고 가장 많은 것을 찾아보세요');
-  $('toolBody').innerHTML = `
+  const tray = kinds.map((k) => `<div class="drag-token ${k.id === 'banana' ? 'amber' : k.id === 'grape' ? 'violet' : ''}" data-data-token="${k.id}" role="button" tabindex="0"><span class="big">${k.label.split(' ')[0]}</span><span class="tiny">${k.label.split(' ')[1]} +1</span></div>`).join('');
+  setToolHead('📊 자료와 문제해결', '과일을 그래프로 끌어다 놓고 가장 많은 것을 찾아요');
+  body.innerHTML = `
+    <div class="guide">과일을 <b>손가락으로 끌어</b> 그래프 위에 놓아 보세요. 막대가 길어지는 것을 볼 수 있어요.</div>
+    <div class="drag-tray"><span class="tray-label">과일을 끌어서 그래프에 놓기</span>${tray}</div>
     <div class="data-chart">${rows}</div>
+    ${bundleSummaryHTML(d.apple, { extra: `<span class="bundle-item">🍎 사과 ${d.apple}개</span>` })}
+    ${bundleSummaryHTML(d.banana, { extra: `<span class="bundle-item">🍌 바나나 ${d.banana}개</span>` })}
+    ${bundleSummaryHTML(d.grape, { extra: `<span class="bundle-item">🍇 포도 ${d.grape}개</span>` })}
+    <div class="row-flex" style="margin-top:0">
+      <button type="button" class="bundle-big-btn blue" data-data-bundle="ten">10개 묶기</button>
+      <button type="button" class="bundle-big-btn" data-data-bundle="hundred">100개 묶기</button>
+    </div>
     <div class="data-question">
       <div class="guide">가장 많은 과일은 무엇일까요? 그래프의 길이를 비교해 보세요.</div>
       <div class="data-choices">${choices}</div>
@@ -3439,39 +5109,107 @@ function renderData() {
     </div>
     <div class="word-problem">
       <div class="q">🍎 사과 3개와 🍊 귤 5개가 있어요. 모두 몇 개일까요?</div>
+      <div class="drag-tray" style="margin-top:8px">
+        <div class="drag-token" data-story-token="apple" role="button" tabindex="0"><span class="big">🍎</span><span class="tiny">사과</span></div>
+        <div class="drag-token amber" data-story-token="orange" role="button" tabindex="0"><span class="big">🍊</span><span class="tiny">귤</span></div>
+        <div class="drop-plate" data-drop="story" style="min-height:52px;padding:7px 10px;flex:1">
+          <div class="plate-title" style="margin:0"><span>🧺 바구니 · 사과 ${state.story.apple}개, 귤 ${state.story.orange}개</span></div>
+        </div>
+      </div>
       <div class="row-flex" style="margin-top:8px">
         <button type="button" class="btn primary" data-word>계산기에 3 + 5 넣기</button>
         <button type="button" class="btn soft" data-word-answer>정답 확인</button>
       </div>
       ${d.wordSolved ? '<div class="a">3 + 5 = 8 · 모두 8개예요!</div>' : ''}
     </div>`;
-  $('toolBody').querySelectorAll('[data-data]').forEach((b) => {
+
+  const setCount = (kind, value, msg) => {
+    d[kind] = clamp(Math.trunc(value), 0, 100);
+    d.answer = null;
+    d.solved = false;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${kind} ${d[kind]}개`);
+    renderTool();
+    if (msg) speak(msg);
+  };
+  body.querySelectorAll('[data-data]').forEach((b) => {
     b.onclick = () => {
       const [kind, delta] = b.dataset.data.split(':');
-      d[kind] = clamp(d[kind] + Number(delta), 0, 10);
-      d.answer = null;
-      d.solved = false;
-      renderTool();
-      speak(`${d[kind]}개`);
+      setCount(kind, d[kind] + Number(delta), `${d[kind] + Number(delta)}개`);
     };
   });
-  $('toolBody').querySelectorAll('[data-answer]').forEach((b) => {
+  body.querySelectorAll('[data-data-token]').forEach((t) => { t.onclick = () => setCount(t.dataset.dataToken, d[t.dataset.dataToken] + 1, `${d[t.dataset.dataToken] + 1}개`); });
+  bindDrag(body, '[data-data-token]', (el) => ({ kind: el.dataset.dataToken }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop.startsWith('data:')) {
+      const kind = drop.split(':')[1];
+      setCount(kind, d[kind] + 1, `${d[kind] + 1}개`);
+    }
+  }, {
+    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="data:${p.kind}"]`, body); },
+    onActivate: (p) => setCount(p.kind, d[p.kind] + 1, `${d[p.kind] + 1}개`),
+  });
+  body.querySelectorAll('[data-data-bundle]').forEach((b) => {
+    b.onclick = () => {
+      if (b.dataset.dataBundle === 'ten') {
+        if (maxCount < 10) { speak('10개가 모이면 십 묶음 하나로 묶을 수 있어요.'); return; }
+        awardToken('10개를 십 묶음 하나로 묶었어요!');
+        speak(`가장 많은 과일은 ${maxCount}개예요. 십 묶음이 ${Math.floor(maxCount / 10)}개 있어요.`);
+      } else {
+        speak('100개는 십 묶음 10개예요. 10개씩 먼저 묶어 보세요.');
+      }
+    };
+  });
+  body.querySelectorAll('[data-answer]').forEach((b) => {
     b.onclick = () => {
       d.answer = b.dataset.answer;
       d.solved = winners.some((k) => k.id === d.answer);
+      recordTrial(d.solved ? (state.promptLevel ? 'prompted' : 'independent') : 'error', state.promptLevel, `가장 많은 과일 ${b.dataset.answer}`);
+      if (d.solved) awardToken('가장 많은 과일을 찾았어요!');
       renderTool();
       speak(d.solved ? '정답이에요' : '다시 세어 보세요');
     };
   });
-  const word = $('toolBody').querySelector('[data-word]');
+  const addStory = (kind) => {
+    state.story[kind] += 1;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `이야기 ${kind}`);
+    if (state.story.apple + state.story.orange === 8) awardToken('모두 8개를 모았어요!');
+    else speak(`${kind === 'apple' ? '사과' : '귤'} ${state.story[kind]}개`);
+    renderTool();
+  };
+  body.querySelectorAll('[data-story-token]').forEach((t) => { t.onclick = () => addStory(t.dataset.storyToken); });
+  bindDrag(body, '[data-story-token]', (el) => ({ kind: el.dataset.storyToken }), (p, zone) => {
+    if (zone && zone.dataset.drop === 'story') addStory(p.kind);
+  }, { onActivate: (p) => addStory(p.kind) });
+  const word = body.querySelector('[data-word]');
   if (word) word.onclick = () => loadExpression(3, '+', 5);
-  const wordAnswer = $('toolBody').querySelector('[data-word-answer]');
+  const wordAnswer = body.querySelector('[data-word-answer]');
   if (wordAnswer) wordAnswer.onclick = () => { d.wordSolved = true; renderTool(); speak('사과 3개와 귤 5개를 모으면 8개예요'); };
 }
 
 /* ============================================================
    8. 도구 디스패처 · 초기화
    ============================================================ */
+function resetStageActivity() {
+  const stage = currentStage();
+  switch (stage.tool) {
+    case 'sort': newSortRound(); break;
+    case 'count': setFirstNumber(0); return;
+    case 'compare': state.compare = { a: 6, b: 4 }; break;
+    case 'compose': state.composeRemoved = 0; state.composeBaseA = null; loadExpression(3, '+', 5, { quiet: true }); return;
+    case 'maketen': loadExpression(7, '+', 5, { quiet: true }); return;
+    case 'strategy': state.nlMarker = null; state.nlBase = null; break;
+    case 'place': state.parts = { hundreds: 0, tens: 0, units: 0 }; break;
+    case 'multiply': state.mulGroups = []; state.mulKey = ''; state.divPlates = []; state.divRem = 0; state.divKey = ''; break;
+    case 'fraction': state.fractions = { a: { n: 1, d: 4 }, b: { n: 2, d: 4 } }; break;
+    case 'measure': state.measure = { tab: 'length', length: 12, volume: 6, weight: 450, minutes: 570, coins: { 10: 0, 50: 0, 100: 0, 500: 0 } }; break;
+    case 'shape': state.shapeBoard = []; state.shapeSelected = null; state.shapeTab = 'shape'; state.pattern = { index: 0, chosen: null, solved: false }; break;
+    case 'data': state.data = { apple: 5, banana: 3, grape: 4, answer: null, solved: false, wordSolved: false }; state.story = { apple: 0, orange: 0 }; break;
+    default: break;
+  }
+  renderTool();
+  announce('활동을 처음부터 다시 시작해요.');
+}
 function renderTool() {
   const stage = currentStage();
   switch (stage.tool) {
@@ -3493,15 +5231,333 @@ function renderTool() {
   }
 }
 
+/* ============================================================
+   9. 특수교육 지원 도구 — 묶음 · 힌트 · 보상 · 쉬는 시간 · 말판
+   ============================================================ */
+function openDialog(id) {
+  const dlg = $(id);
+  if (!dlg) return;
+  if (typeof dlg.showModal === 'function') dlg.showModal();
+  else dlg.setAttribute('open', '');
+}
+function closeDialog(id) {
+  const dlg = $(id);
+  if (!dlg) return;
+  if (typeof dlg.close === 'function') dlg.close();
+  else dlg.removeAttribute('open');
+}
+
+function renderBundle() {
+  const b = state.bundle;
+  const total = b.hundreds * 100 + b.tens * 10 + b.ones;
+  const cells = Array.from({ length: 100 }, (_, i) => `<div class="one-cell${i < b.ones ? ' filled' : ''}" aria-label="${i + 1}번째 칸">${i < b.ones ? '●' : ''}</div>`).join('');
+  const rods = Array.from({ length: b.tens }, () => `<span class="rod" title="십 1개">${'<span></span>'.repeat(10)}</span>`).join('');
+  const flats = Array.from({ length: b.hundreds }, () => `<span class="flat" title="백 1개">${'<span></span>'.repeat(100)}</span>`).join('');
+  $('bundleBoard').innerHTML = `
+    <div class="bundle-board">
+      <div>
+        <div class="guide">점을 <b>손가락으로 끌어</b> 10칸 판에 놓아요. 10개가 되면 <b>10개 묶기</b>를 눌러요.</div>
+        <div class="drag-tray">
+          <span class="tray-label">끌어서 놓기</span>
+          <div class="drag-token" data-bundle-add="1" role="button" tabindex="0"><span class="big">●</span><span class="tiny">1개</span></div>
+          <div class="drag-token green" data-bundle-add="10" role="button" tabindex="0"><span class="big">▥</span><span class="tiny">10개</span></div>
+          <div class="drag-token amber" data-bundle-add="100" role="button" tabindex="0"><span class="big">▦</span><span class="tiny">100개</span></div>
+        </div>
+        <div data-drop="bundle-ones" aria-label="10칸 판에 점 놓기">
+          <div class="ones-frame" style="grid-template-columns:repeat(10,1fr);max-width:440px">${cells}</div>
+        </div>
+        <div class="bundle-help">일 ${b.ones}개 · 십 ${b.tens}개 · 백 ${b.hundreds}개</div>
+      </div>
+      <div class="bundle-summary">
+        <div class="bundle-row"><span class="br-label">일 (1)</span><div style="display:flex;flex-wrap:wrap;gap:2px">${Array.from({ length: Math.min(b.ones, 40) }, () => '<span style="width:10px;height:10px;border-radius:50%;background:#2563eb;display:block"></span>').join('') || '<span class="bundle-help">없음</span>'}</div></div>
+        <div class="bundle-row"><span class="br-label">십 (10)</span><div style="display:flex;flex-wrap:wrap;gap:4px">${rods || '<span class="bundle-help">없음</span>'}</div></div>
+        <div class="bundle-row"><span class="br-label">백 (100)</span><div style="display:flex;flex-wrap:wrap;gap:4px">${flats || '<span class="bundle-help">없음</span>'}</div></div>
+        <div class="bundle-row" style="justify-content:center"><span class="bundle-count">${total}</span><span class="bundle-help">${countWord(total)}</span></div>
+        <div class="bundle-help">10개를 묶으면 십 1개, 십 10개를 묶으면 백 1개가 돼요.</div>
+      </div>
+    </div>`;
+  const addOnes = (n) => {
+    state.bundle.ones = clamp(state.bundle.ones + n, 0, 100);
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `묶음 ${n}개`);
+    haptic(12);
+    renderBundle();
+    const totalNow = state.bundle.hundreds * 100 + state.bundle.tens * 10 + state.bundle.ones;
+    speak(`${n}개를 놓았어요. 모두 ${totalNow}개예요. 10개가 되면 10개 묶기를 눌러 보세요.`);
+  };
+  $('bundleBoard').querySelectorAll('[data-bundle-add]').forEach((t) => { t.onclick = () => addOnes(Number(t.dataset.bundleAdd)); });
+  bindDrag($('bundleBoard'), '[data-bundle-add]', (el) => ({ n: Number(el.dataset.bundleAdd) }), (p, zone) => {
+    if (zone && zone.dataset.drop === 'bundle-ones') addOnes(p.n);
+  }, { onActivate: (p) => addOnes(p.n) });
+}
+function openBundle() {
+  renderBundle();
+  openDialog('bundleDialog');
+  announce('10개 묶기와 100개 묶기 놀이를 열었어요.');
+}
+function bundleTen() {
+  if (state.bundle.ones < 10) { speak('일이 10개 모이면 묶을 수 있어요. 점을 더 놓아 보세요.'); return; }
+  state.bundle.ones -= 10;
+  state.bundle.tens += 1;
+  awardToken('10개를 십 묶음 하나로 묶었어요!');
+  renderBundle();
+}
+function bundleHundred() {
+  if (state.bundle.tens >= 10) {
+    state.bundle.tens -= 10;
+    state.bundle.hundreds += 1;
+    awardToken('십 10개를 백 묶음 하나로 묶었어요!');
+  } else if (state.bundle.ones >= 100) {
+    state.bundle.ones -= 100;
+    state.bundle.hundreds += 1;
+    awardToken('일 100개를 백 묶음 하나로 묶었어요!');
+  } else {
+    speak('십 10개가 모이면 백 묶음 하나로 묶을 수 있어요.');
+    return;
+  }
+  renderBundle();
+}
+function openReward() {
+  const wrap = $('rewardChoices');
+  if (wrap) {
+    wrap.innerHTML = REWARD_CHOICES.map((r) => `<button type="button" class="aac-btn" data-reward="${r.label}"><span class="aac-emoji">${r.emoji}</span><span>${r.label}</span></button>`).join('');
+    wrap.querySelectorAll('[data-reward]').forEach((b) => {
+      b.onclick = () => {
+        announce(`${b.dataset.reward}을 골랐어요.`);
+        state.tokens = 0;
+        updateTokenBoard();
+        closeDialog('rewardDialog');
+        renderLessonPath();
+      };
+    });
+  }
+  openDialog('rewardDialog');
+}
+const HINTS = {
+  1: { text: '같은 과일끼리 모아요. 사과는 사과 바구니에 넣어요.', target: '[data-drop="basket:apple"]' },
+  2: { text: '점을 칸 위로 끌어다 놓아요. 왼쪽 위부터 하나씩 채워요.', target: '[data-drop="count-add"]' },
+  3: { text: '점을 양쪽 접시에 나누어 놓고, 더 많은 쪽을 찾아요.', target: '[data-drop="cmp:a"]' },
+  4: { text: '점을 끌어 옆 칸으로 옮기면 두 수가 나뉘어요.', target: '[data-cell-fill]' },
+  5: { text: '오른쪽 점을 왼쪽 빈칸으로 끌어 10을 만들어요.', target: '[data-drop="mtLeft:0"]' },
+  6: { text: '보라색 개구리를 끌어 목표 자리에 놓아요.', target: '[data-nl-marker]' },
+  7: { text: '일 모형 10개를 10개 묶기 자리로 끌어요.', target: '[data-drop="place-bundle10"]' },
+  8: { text: '묶음 카드를 빈 자리로 끌어다 놓아요.', target: '[data-drop="mul:0"]' },
+  9: { text: '분수 조각을 막대로 끌어다 놓아요.', target: '[data-drop="frac:a"]' },
+  10: { text: '연필이나 시계바늘을 손가락으로 끌어요.', target: '.ruler-object, .clock-grab' },
+  11: { text: '도형을 보드로 끌어다 놓아요. 두 번 누르면 돌아가요.', target: '[data-drop="shape-board"]' },
+  12: { text: '과일을 그래프 위로 끌어다 놓아요.', target: '[data-drop="data:apple"]' },
+};
+function giveHint(auto) {
+  if (auto && state.promptLevel > 0) { scheduleAutoHint(); return; }
+  const stage = currentStage();
+  const hint = HINTS[stage.id] || { text: MICRO_LESSONS[stage.id]?.guided || '천천히 다시 해 보세요.', target: '#toolBody' };
+  if (!auto) {
+    state.promptLevel = Math.min(4, state.promptLevel + 1);
+    renderPromptMeter();
+  } else if (state.promptLevel === 0) {
+    state.promptLevel = 1;
+    renderPromptMeter();
+  }
+  if (state.promptLevel >= 3) modelStep(stage.id);
+  else {
+    showHintTarget(hint.target, $('toolBody'));
+    announce(hint.text);
+  }
+  recordTrial('prompted', state.promptLevel, auto ? '자동 힌트' : '도움 요청');
+  noteInteraction();
+}
+function modelStep(stageId) {
+  const body = $('toolBody');
+  if (!body) return;
+  const click = (sel) => { const el = body.querySelector(sel); if (el) el.click(); };
+  switch (stageId) {
+    case 1: click('[data-sort-item]'); break;
+    case 2: click('[data-count="p1"]'); break;
+    case 3: click('[data-cmp="a:1"]'); break;
+    case 4: click('[data-compose="b:1"]'); break;
+    case 5: click('[data-mt="7,5"]'); break;
+    case 6: click('[data-st]'); break;
+    case 7: click('[data-pa="add1"]'); break;
+    case 8: click('[data-mul-bundle]'); break;
+    case 9: click('[data-frac-piece="a"]'); break;
+    case 10: click('[data-mtab="length"]'); break;
+    case 11: click('[data-shape-source]'); break;
+    case 12: click('[data-data-token]'); break;
+    default: speak('같이 한 단계 해 볼게요.');
+  }
+  announce('같이 한 단계 해 보았어요. 이제 학생 차례예요.');
+}
+function openAac() {
+  const grid = $('aacGrid');
+  if (grid) {
+    grid.innerHTML = AAC_ITEMS.map((a) => `<button type="button" class="aac-btn" data-aac="${a.label}" data-say="${a.say}"><span class="aac-emoji">${a.emoji}</span><span>${a.label}</span></button>`).join('');
+    grid.querySelectorAll('[data-aac]').forEach((b) => {
+      b.onclick = () => {
+        state.aacSentence.push({ label: b.dataset.aac, say: b.dataset.say });
+        renderAacSentence();
+        speak(b.dataset.say);
+      };
+    });
+  }
+  renderAacSentence();
+  openDialog('aacDialog');
+}
+function renderAacSentence() {
+  const strip = $('aacSentence');
+  if (!strip) return;
+  strip.innerHTML = state.aacSentence.length
+    ? state.aacSentence.map((w) => `<span class="bundle-item">${w.label}</span>`).join('')
+    : '<span class="muted">그림을 눌러 문장을 만들어 보세요.</span>';
+}
+function openBreak() {
+  breakRemaining = 60;
+  breakPaused = false;
+  renderBreakTimer();
+  openDialog('breakDialog');
+  startBreakTimer();
+  announce('쉬는 시간이에요. 천천히 숨을 쉬어요.');
+}
+function renderBreakTimer() {
+  const el = $('breakTimer');
+  if (!el) return;
+  const m = Math.floor(breakRemaining / 60);
+  const s = breakRemaining % 60;
+  el.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+function startBreakTimer() {
+  if (breakTimer) clearInterval(breakTimer);
+  breakTimer = setInterval(() => {
+    if (breakPaused) return;
+    breakRemaining -= 1;
+    renderBreakTimer();
+    if (breakRemaining <= 0) {
+      clearInterval(breakTimer);
+      breakTimer = null;
+      announce('쉬는 시간이 끝났어요. 준비되면 활동으로 돌아가요.');
+    }
+  }, 1000);
+}
+
 function init() {
+  loadSupportSettings();
   validateState();
   if (!state.sort.items.length) newSortRound();
   state.history = readHistory();
+  state.view = 'activity';
+  if ($('app')) $('app').dataset.view = state.view;
+  setView('activity');
+  applySettings();
+  updateTokenBoard();
+  renderPromptMeter();
 
   document.querySelectorAll('[data-course]').forEach((button) => {
     button.addEventListener('click', () => chooseCourse(button.dataset.course));
   });
+  $('allActivitiesBtn').onclick = () => {
+    state.course = null;
+    state.courseComplete = false;
+    state.lessonStep = 0;
+    $('courseGate').hidden = true;
+    $('app').hidden = false;
+    setView('activity');
+    selectStage(1);
+    noteInteraction();
+  };
+  $('gateSettingsBtn').onclick = () => { applySettings(); openDialog('settingsDialog'); };
   $('courseBtn').onclick = showCourseGate;
+  $('viewActivityBtn').onclick = () => { setView('activity'); render(); };
+  $('viewCalcBtn').onclick = () => { setView('calc'); render(); };
+  $('bundleBtn').onclick = openBundle;
+  $('aacBtn').onclick = openAac;
+  $('breakBtn').onclick = openBreak;
+  $('teacherBtn').onclick = () => { renderTeacher(); openDialog('teacherDialog'); };
+  $('settingsBtn').onclick = () => { applySettings(); openDialog('settingsDialog'); };
+  $('retryBtn').onclick = resetStageActivity;
+  $('hintBtn').onclick = () => giveHint(false);
+  $('independentBtn').onclick = () => {
+    state.promptLevel = 0;
+    recordTrial('independent', 0, '스스로 했다고 표시');
+    awardToken('스스로 했어요! 아주 좋아요.');
+    renderPromptMeter();
+  };
+  $('helpedBtn').onclick = () => {
+    recordTrial('prompted', Math.max(1, state.promptLevel), '도움을 받고 해냄');
+    announce('도움을 받았어요. 다음에는 혼자 해 볼까요?');
+  };
+  $('nextTaskBtn').onclick = advanceLesson;
+  $('closeBundleBtn').onclick = () => closeDialog('bundleDialog');
+  $('bundleTenBtn').onclick = bundleTen;
+  $('bundleHundredBtn').onclick = bundleHundred;
+  $('unbundleTenBtn').onclick = () => {
+    if (state.bundle.tens <= 0) { speak('풀 십 묶음이 없어요.'); return; }
+    state.bundle.tens -= 1;
+    state.bundle.ones += 10;
+    renderBundle();
+  };
+  $('bundleClearBtn').onclick = () => { state.bundle = { ones: 0, tens: 0, hundreds: 0 }; renderBundle(); };
+  $('closeSettingsBtn').onclick = () => closeDialog('settingsDialog');
+  $('closeRewardBtn').onclick = () => {
+    state.tokens = 0;
+    updateTokenBoard();
+    renderLessonPath();
+    closeDialog('rewardDialog');
+  };
+  $('closeBreakBtn').onclick = () => { if (breakTimer) { clearInterval(breakTimer); breakTimer = null; } closeDialog('breakDialog'); };
+  $('closeTeacherBtn').onclick = () => closeDialog('teacherDialog');
+  $('closeAacBtn').onclick = () => closeDialog('aacDialog');
+  $('exportCsvBtn').onclick = downloadCSV;
+  $('clearSessionBtn').onclick = () => {
+    state.session = { trials: 0, independent: 0, prompted: 0, errors: 0, started: Date.now(), log: [] };
+    saveSession();
+    renderTeacher();
+    renderPromptMeter();
+    announce('오늘 기록을 지웠어요.');
+  };
+  $('aacSpeakBtn').onclick = () => {
+    if (!state.aacSentence.length) { speak('먼저 그림을 눌러 문장을 만들어요.'); return; }
+    speak(state.aacSentence.map((w) => w.say).join(', '));
+  };
+  $('aacClearBtn').onclick = () => { state.aacSentence = []; renderAacSentence(); };
+  document.querySelectorAll('[data-break-min]').forEach((b) => {
+    b.onclick = () => {
+      breakRemaining = Number(b.dataset.breakMin) * 60;
+      breakPaused = false;
+      renderBreakTimer();
+      startBreakTimer();
+      announce(`${b.dataset.breakMin}분 쉬는 시간을 시작해요.`);
+    };
+  });
+  $('breakPauseBtn').onclick = () => {
+    breakPaused = !breakPaused;
+    $('breakPauseBtn').textContent = breakPaused ? '계속' : '멈춤';
+    if (!breakTimer) startBreakTimer();
+  };
+  const bindSetting = (id, key, transform) => {
+    const el = $(id);
+    if (!el) return;
+    el.onchange = () => {
+      state.settings[key] = transform ? transform(el) : (el.type === 'checkbox' ? el.checked : el.value);
+      if (key === 'tokenMax') {
+        state.settings.tokenMax = clamp(Number(state.settings.tokenMax) || 5, 3, 10);
+        state.tokens = Math.min(state.tokens, state.settings.tokenMax);
+      }
+      saveSupportSettings();
+      applySettings();
+      render();
+      announce('설정을 바꾸었어요.');
+    };
+  };
+  bindSetting('setTextSize', 'textSize');
+  bindSetting('setTouch', 'touch');
+  bindSetting('setWait', 'wait', (el) => Number(el.value));
+  bindSetting('setTokens', 'tokenMax', (el) => Number(el.value));
+  bindSetting('setMotion', 'motion');
+  bindSetting('setContrast', 'contrast');
+  bindSetting('setEasy', 'easy');
+  bindSetting('setErrorless', 'errorless');
+  bindSetting('setHaptic', 'haptic');
+  document.addEventListener('pointerdown', noteInteraction, { passive: true });
+  document.addEventListener('keydown', noteInteraction, { passive: true });
+  scheduleAutoHint();
   $('goToolBtn').onclick = () => $('toolCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
   $('lessonPrevBtn').onclick = () => {
     if (state.lessonStep > 0) {
@@ -3556,9 +5612,10 @@ function init() {
 
   window.addEventListener('keydown', (e) => {
     if ($('app').hidden) return;
-    if ($('helpDialog').open) return;
+    if (document.querySelector('dialog[open]')) return;
     const tag = (document.activeElement && document.activeElement.tagName) || '';
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+    if (document.activeElement && (document.activeElement.getAttribute('role') === 'button' || document.activeElement.isContentEditable)) return;
     if (e.key >= '0' && e.key <= '9') pressDigit(e.key);
     else if (e.key === '+') pressOperator('+');
     else if (e.key === '-') pressOperator('-');
