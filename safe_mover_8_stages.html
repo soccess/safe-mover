@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>허리 지킴이의 배송 대작전 - 8단계 롱코스</title>
+<title>허리 지킴이의 배송 대작전 - 12단계 모험 코스</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body { width:100%; height:100%; overflow:hidden; background:#0b1620; font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; }
@@ -63,7 +63,7 @@
   <div id="banner">📦 1단계 출발! 화면 좌/우를 터치해 장애물을 피하세요!</div>
   <div id="progs">
     <div id="stageProgWrap"><span id="stageLabel">1단계 📦 출발</span><div class="barOuter"><div class="barInner" id="stageBar"></div></div><span id="stageStat">회피 0회</span></div>
-    <div id="totalProgWrap"><span>🗺️ 전체 코스</span><div class="barOuter"><div class="barInner" id="totalBar"></div></div><span id="totalLabel">1 / 8</span></div>
+    <div id="totalProgWrap"><span>🗺️ 전체 코스</span><div class="barOuter"><div class="barInner" id="totalBar"></div></div><span id="totalLabel">1 / 12</span></div>
   </div>
   <div id="cvWrap">
     <canvas id="cv"></canvas>
@@ -77,10 +77,10 @@
 <script>
 "use strict";
 /* ============================================================
-   허리 지킴이의 배송 대작전 — 8단계 롱코스 단일 HTML
-   - 달리기(운반) 8스테이지만
-   - 각 스테이지 65~78초 (전부 1분 초과 롱코스)
-   - 스테이지별 기믹: 빗길·낙엽·빙판·강풍·야간협로·파도·축제
+   허리 지킴이의 배송 대작전 — 12단계 모험 코스 단일 HTML
+   - 달리기(운반) 12스테이지
+   - 장애물에 부딪혀도 게임오버 없이 계속 플레이
+   - 스테이지별 기믹: 빗길·낙엽·빙판·강풍·야간협로·파도·축제·숲·구름다리·바닷속·우주
    ============================================================ */
 const STAGES = [
   { name:"새싹 마을 아침 산책길", icon:"🌱", dur:65, speed:1.0, spawn:1.6,
@@ -124,21 +124,45 @@ const STAGES = [
     obs:[["🦀","옆걸음게"],["🍉","수박껍질"],["🕳️","모래구덩이"],["⛱️","파라솔"]],
     msg:"파도가 밀려와요! 게들은 옆으로 걸어다녀요!",
     mid:["파도 주의보! 물이 차오르면 길이 미끄러워요!","게들이 좌우로 성큼성큼! 움직임을 읽으세요!","해변 끝! 축제 불빛이 보여요!"] },
-  { name:"무지개 축제 피날레 마라톤", icon:"🌈", dur:78, speed:1.55, spawn:1.12,
+  { name:"무지개 축제 퍼레이드", icon:"🌈", dur:78, speed:1.55, spawn:1.12,
     sky:["#CE93D8","#FFF9C4"], ground:["#C8E6C9","#BBDEFB"], road:["#7E57C2","#4527A0"],
     deco:"🎈🎉🌈", confettiBg:true, sway:0.4, double:0.35,
     obs:[["🎈","풍선"],["🎁","선물상자"],["🎆","폭죽"],["🍌","바나나"]],
-    msg:"마지막 마라톤! 모든 장애물이 총출동! 끝까지!",
-    mid:["축제 전반전 돌파! 페이스를 유지해요!","후반전! 선물상자 러시! 눈 크게 뜨고!","결승선 10초 전! 마지막 힘을 다해!"] },
+    msg:"신나는 축제 퍼레이드! 풍선과 선물 사이를 달려요!",
+    mid:["축제 퍼레이드 절반을 지났어요!","선물상자 러시! 눈 크게 뜨고 살펴요!","다음은 반딧불 숲길! 조금만 더!"] },
+  { name:"반짝반짝 반딧불 숲길", icon:"🪲", dur:62, speed:1.34, spawn:1.36,
+    sky:["#1B5E20","#A5D6A7"], ground:["#81C784","#33691E"], road:["#607D55","#26382A"],
+    deco:"🌲🪲🍄", fireflies:true, sway:0.25,
+    obs:[["🍄","버섯 무리"],["🪵","나뭇가지"],["🦔","고슴도치"],["🪨","숲속 바위"]],
+    msg:"반딧불 숲길이에요! 반짝이는 별도 찾아보세요!",
+    mid:["반딧불이 길을 밝혀줘요!","고슴도치가 지나가요! 천천히 살펴요!","숲 출구까지 얼마 안 남았어요!"] },
+  { name:"구름 위 무지개 다리", icon:"☁️", dur:62, speed:1.4, spawn:1.3,
+    sky:["#64B5F6","#E3F2FD"], ground:["#B3E5FC","#81D4FA"], road:["#90A4AE","#546E7A"],
+    deco:"☁️🌈🕊️", clouds:true, narrow:0.9, double:0.18,
+    obs:[["☁️","솜구름"],["🪁","연"],["⭐","별 조각"],["🪽","깃털 소용돌이"]],
+    msg:"구름 다리를 건너요! 살랑이는 바람에 주의하세요!",
+    mid:["구름이 폭신폭신해요! 길을 잘 살펴요!","연이 바람을 타고 날아와요!","무지개 끝이 보여요! 조금만 더!"] },
+  { name:"산호빛 바닷속 터널", icon:"🐠", dur:64, speed:1.46, spawn:1.24,
+    sky:["#006064","#4DD0E1"], ground:["#80DEEA","#00838F"], road:["#546E7A","#263238"],
+    deco:"🐠🪸🫧", bubbles:true, wave:true, sway:0.3,
+    obs:[["🐙","문어 다리"],["🪸","산호초"],["🐡","복어"],["🫧","큰 기포"]],
+    msg:"바닷속 터널이에요! 물고기 사이로 안전하게 지나가요!",
+    mid:["물고기 떼가 지나가요!","산호초를 피해 길 가운데를 살펴요!","수면 빛이 보여요! 바닷속 탈출 직전!"] },
+  { name:"달빛 우주 배송 피날레", icon:"🚀", dur:66, speed:1.58, spawn:1.12,
+    sky:["#101044","#512DA8"], ground:["#263238","#111827"], road:["#455A64","#101820"],
+    deco:"🌙🪐🚀", night:true, stars:true, narrow:0.88, double:0.32,
+    obs:[["🪐","작은 행성"],["☄️","혜성"],["🛰️","인공위성"],["🌑","달 운석"]],
+    msg:"마지막 우주 코스! 별을 모으며 결승까지 달려요!",
+    mid:["우주 정거장을 지났어요!","혜성이 지나가요! 좌우를 살펴요!","지구가 보여요! 최종 배송 완료까지 힘내요!"] },
 ];
 
 // ---------- 상태 ----------
 let stageIdx = 0, stageTime = 0, roadScroll = 0, lane = 0, lanePos = 0;
 let obstacles = [], spawnT = 1.0, stepT = 0, stepN = 0, stumble = 0;
-let dodged = 0, hit = 0, totalDodged = 0, totalHit = 0, finished = false;
+let dodged = 0, hit = 0, totalDodged = 0, totalHit = 0, stars = 0, totalStars = 0, finished = false;
 let floats = [], confetti = [], parts = [];
 let soundOn = true, animT = 0, lastTs = 0;
-let windT = 0, midIdx = 0;
+let windT = 0, midIdx = 0, laneFlash = 0, stageTransition = null;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const banner = document.getElementById('banner');
 const floatMsg = document.getElementById('floatMsg');
@@ -183,8 +207,9 @@ function showFloat(t,color){ floatMsg.textContent=t; floatMsg.style.color=color|
 function setBanner(t,warn){ banner.textContent='🗣️ "'+t+'"'; banner.classList.toggle('warn',!!warn); }
 
 // ---------- 씬 제어 ----------
-function startStage(i,announce){ stageIdx=i; stageTime=0; obstacles=[]; lane=0; lanePos=0;
-  spawnT=1.0; stumble=0; floats=[]; finished=false; windT=4; midIdx=0;
+function startStage(i,announce){ clearTimeout(stageTransition); stageTransition=null;
+  stageIdx=i; stageTime=0; obstacles=[]; lane=0; lanePos=0;
+  spawnT=1.0; stumble=0; floats=[]; finished=false; windT=4; midIdx=0; dodged=0; hit=0; stars=0;
   document.getElementById('overlay').style.display='none';
   buildChips();
   const s=STAGES[i];
@@ -193,18 +218,18 @@ function startStage(i,announce){ stageIdx=i; stageTime=0; obstacles=[]; lane=0; 
   updateLabels();
 }
 function jump(i){ sfx.tap(); totalDodged+=0; startStage(i); }
-function restart(){ sfx.tap(); dodged=0;hit=0;totalDodged=0;totalHit=0;confetti=[]; startStage(0); }
+function restart(){ sfx.tap(); dodged=0;hit=0;totalDodged=0;totalHit=0;stars=0;totalStars=0;confetti=[]; startStage(0); }
 document.getElementById('btnRestart').onclick=restart;
 document.getElementById('btnSound').onclick=(e)=>{ soundOn=!soundOn;
   e.target.textContent=soundOn?'🔊 효과음 ON':'🔇 효과음 OFF'; if(soundOn)sfx.tap(); if(!soundOn)try{speechSynthesis.cancel();}catch(_){} };
 function updateLabels(){
-  document.getElementById('totalLabel').textContent=(stageIdx+1)+' / 8';
+  document.getElementById('totalLabel').textContent=(stageIdx+1)+' / '+STAGES.length;
   document.getElementById('stageLabel').textContent=(stageIdx+1)+'단계 '+STAGES[stageIdx].icon+' 출발';
 }
 
 // ---------- 입력 ----------
-function goLeft(){ if(finished)return; if(lane>-1){lane--; sfx.lane();} }
-function goRight(){ if(finished)return; if(lane<1){lane++; sfx.lane();} }
+function goLeft(){ if(finished)return; if(lane>-1){lane--; laneFlash=.24; sfx.lane();} }
+function goRight(){ if(finished)return; if(lane<1){lane++; laneFlash=.24; sfx.lane();} }
 document.getElementById('padL').addEventListener('pointerdown',e=>{e.preventDefault();goLeft();});
 document.getElementById('padR').addEventListener('pointerdown',e=>{e.preventDefault();goRight();});
 cv.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect();
@@ -232,9 +257,10 @@ function update(dt){
     return;
   }
   const S=STAGES[stageIdx];
+  laneFlash=Math.max(0,laneFlash-dt);
   const sf = stumble>0? .48 : 1;
   if(stumble>0){ stumble-=dt; if(stumble<=0){ setBanner('전방 주시! 좌/우 터치로 피해요!',false);} }
-  stageTime+=dt*sf; roadScroll=(roadScroll+dt*2.4*sf)%1;
+  stageTime+=dt*sf; roadScroll=(roadScroll+dt*2.4*sf*S.speed)%1;
   // 빙판은 미끄럽게(반응 느리게), 그 외는 민첩하게
   const lerpK = S.slippery ? 5.5 : 10;
   lanePos+=(lane-lanePos)*Math.min(1,dt*lerpK);
@@ -264,41 +290,43 @@ function update(dt){
     if(S.sway){ o.ph+=dt*(1.2+S.speed*.5); o.off=Math.sin(o.ph)*(S.sway||.35); }
     const oLane=o.lane+(o.off||0);
     if(!o.hit&&!o.passed&&o.z>=.80&&o.z<=.91){
-      if(Math.abs(lanePos-oLane)<.52){ o.hit=true; hit++; totalHit++; stumble=1.25;
-        sfx.hit(); setBanner('조심조심! 앞을 잘 살펴요!',true); speak('조심조심! 앞을 잘 살펴요!');
-        showFloat('💫 뒤뚱! 조심조심!','#FF5252'); } }
-    if(!o.hit&&!o.passed&&o.z>.92){ o.passed=true; dodged++; totalDodged++;
-      sfx.pass(); showFloat('✨ 안전 회피 성공!','#00E676'); }
+       if(Math.abs(lanePos-oLane)<.52){ o.hit=true;
+         if(o.bonus){ stars++; totalStars++; sfx.pass(); spawnParts(W*.5,H*.72,18,['#FFD600','#FFF59D','#FFFFFF']);
+           showFloat('🌟 별 획득! +1','#FFD600'); }
+         else { hit++; totalHit++; stumble=1.25;
+           sfx.hit(); setBanner('조심조심! 앞을 잘 살펴요!',true); speak('조심조심! 앞을 잘 살펴요!');
+           showFloat('💫 뒤뚱! 괜찮아요, 계속 가요!','#FF5252'); } } }
+    if(!o.hit&&!o.passed&&o.z>.92){ o.passed=true;
+      if(!o.bonus){ dodged++; totalDodged++; sfx.pass(); showFloat('✨ 안전 회피 성공!','#00E676'); } }
     if(o.z>1.22)obstacles.splice(i,1);
   }
   // 파티클
   updateParticles(dt,S);
   // 스테이지 클리어?
-  if(stageTime>=S.dur){
-    if(stageIdx>=7){ enterResult(); }
+  if(stageTime>=S.dur&&!stageTransition){
+    if(stageIdx>=STAGES.length-1){ enterResult(); }
     else { sfx.clear(); speak('참 잘했어요! 다음 코스로 갑니다!');
       showFloat('🎉 '+(stageIdx+1)+'단계 클리어!','#FFD600');
-      setTimeout(()=>{ if(!finished) startStage(stageIdx+1); },1400);
-      stageTime=-100; // 전환 대기(중복 방지)
+      stageTransition=setTimeout(()=>{ if(!finished) startStage(stageIdx+1); },1400);
     }
   }
   // 진행바
   const p=Math.min(1,Math.max(0,stageTime/S.dur));
   document.getElementById('stageBar').style.width=(p*100)+'%';
   let done=stageIdx+p;
-  document.getElementById('totalBar').style.width=(done/8*100)+'%';
+  document.getElementById('totalBar').style.width=(done/STAGES.length*100)+'%';
   const left=Math.max(0,Math.ceil(S.dur-stageTime));
-  document.getElementById('stageStat').textContent='회피 '+dodged+'회 · '+left+'초 남음';
+  document.getElementById('stageStat').textContent='회피 '+dodged+'회 · ⭐ '+stars+'개 · '+left+'초';
 }
 function spawnObstacle(S){
   const lanes=[-1,0,1]; let ch;
   if(obstacles.length%2===0) ch=lane; else ch=lanes[Math.floor(Math.random()*3)];
-  const t=Math.floor(Math.random()*S.obs.length);
-  const mk=(ln)=>({type:Math.floor(Math.random()*S.obs.length),lane:ln,z:.02,hit:false,passed:false,
+  const mk=(ln,bonus=false)=>({type:Math.floor(Math.random()*S.obs.length),lane:ln,z:.02,hit:false,passed:false,bonus,
     ph:Math.random()*6.28, off:0});
-  obstacles.push(mk(ch));
+  // 반짝별은 장애물 대신 등장하며, 놓쳐도 패널티는 없습니다.
+  obstacles.push(mk(ch,Math.random()<.16));
   // 야간/축제 스테이지는 2개 동시 출현(다른 레인)으로 난이도+다양성 업
-  if(S.double&&Math.random()<S.double){
+  if(!obstacles[obstacles.length-1].bonus&&S.double&&Math.random()<S.double){
     const rest=lanes.filter(l=>l!==ch);
     obstacles.push(mk(rest[Math.floor(Math.random()*rest.length)]));
   }
@@ -327,9 +355,10 @@ function enterResult(){
     '<div style="font-size:52px">🏆</div>'+
     '<div style="background:#D32F2F;color:#fff;display:inline-block;border-radius:8px;padding:3px 10px;font-weight:900;font-size:13px">💮 허리 지킴이 마스터 스탬프 획득!</div>'+
     '<h1>안전 배송 대작전 성공!</h1>'+
-    '<div style="font-weight:800;color:#0D47A1;margin:6px 0">8개 테마 코스 완주! 들 때도 무릎 먼저!</div>'+
+    '<div style="font-weight:800;color:#0D47A1;margin:6px 0">'+STAGES.length+'개 테마 코스 완주! 들 때도 무릎 먼저!</div>'+
     rows+
     '<div class="row"><span>✨ 총 안전 회피</span><span>'+totalDodged+'회</span></div>'+
+    '<div class="row"><span>🌟 모은 반짝별</span><span>'+totalStars+'개</span></div>'+
     '<div class="row"><span>💫 부딪힘</span><span>'+totalHit+'회</span></div>'+
     '<button id="bigBtn">↻ 처음부터 다시 놀기</button>';
   document.getElementById('overlay').style.display='flex';
@@ -344,7 +373,7 @@ function txt(s,x,y,size,color,stroke){ ctx.font='900 '+size+'px "Malgun Gothic",
   ctx.fillStyle=color; ctx.fillText(s,x,y); }
 function render(){
   ctx.clearRect(0,0,W,H);
-  if(finished){ drawStageBG(STAGES[7]); drawRoad(STAGES[7]); drawPlayer(STAGES[7]); drawConfetti(); drawParts(); return; }
+  if(finished){ const S=STAGES[STAGES.length-1]; drawStageBG(S); drawRoad(S); drawPlayer(S); drawConfetti(); drawParts(); return; }
   const S=STAGES[stageIdx];
   drawStageBG(S); drawRoad(S); drawObstacles(S); drawPlayer(S); drawParts(); drawConfetti();
   if(S.fog){ ctx.fillStyle='rgba(176,190,197,'+S.fog+')'; ctx.fillRect(0,0,W,H); }
@@ -354,11 +383,18 @@ function drawStageBG(S){
   let g=ctx.createLinearGradient(0,0,0,hy); g.addColorStop(0,S.sky[0]); g.addColorStop(1,S.sky[1]);
   ctx.fillStyle=g; ctx.fillRect(0,0,W,hy);
   // 해/달/구름
-  if(S.night){ ctx.fillStyle='#FFF9C4'; ctx.beginPath(); ctx.arc(W*.85,hy*.3,26,0,7); ctx.fill();
-    // 네온 간판 점멸
-    ctx.fillStyle='rgba(255,255,255,.9)';
-    for(let i=0;i<12;i++){ const x=(i*197+animT*8)%W, y=20+(i*53)%(hy-40); ctx.fillRect(x,y,3,3); }
-    txt('🏙️ ✨야간 개장✨ 🏙️', W*.5, hy*.55, 15, '#FFEB3B', 'rgba(0,0,0,.6)');
+  if(S.night){ ctx.fillStyle=S.stars?'#D1C4E9':'#FFF9C4'; ctx.beginPath(); ctx.arc(W*.85,hy*.3,S.stars?20:26,0,7); ctx.fill();
+     // 네온 간판 점멸
+     ctx.fillStyle='rgba(255,255,255,.9)';
+     for(let i=0;i<(S.stars?34:12);i++){ const x=(i*197+animT*(S.stars?2:8))%W, y=12+(i*53)%(hy-24);
+       const twinkle=.45+.55*Math.abs(Math.sin(animT*2+i)); ctx.globalAlpha=twinkle; ctx.fillRect(x,y,S.stars?2:3,S.stars?2:3); }
+     ctx.globalAlpha=1;
+     if(S.stars){
+       const pulse=1+Math.sin(animT*2)*.08;
+       ctx.fillStyle='rgba(126,87,194,.35)'; ctx.beginPath(); ctx.arc(W*.2,hy*.56,38*pulse,0,7); ctx.fill();
+       txt('🪐',W*.2,hy*.56,40*pulse,'#fff','rgba(0,0,0,.3)');
+       txt('🚀 우주 배송 중 🚀',W*.53,hy*.56,15,'#E1BEE7','rgba(0,0,0,.6)');
+     } else txt('🏙️ ✨야간 개장✨ 🏙️', W*.5, hy*.55, 15, '#FFEB3B', 'rgba(0,0,0,.6)');
   }
   else { ctx.fillStyle=S.sand?'#FFB300':'#FFEB3B'; ctx.beginPath(); ctx.arc(W*.85,hy*.35,28,0,7); ctx.fill();
     ctx.fillStyle='rgba(255,255,255,.85)';
@@ -381,7 +417,22 @@ function drawStageBG(S){
   // 지상
   g=ctx.createLinearGradient(0,hy,0,H); g.addColorStop(0,S.ground[0]); g.addColorStop(1,S.ground[1]);
   ctx.fillStyle=g; ctx.fillRect(0,hy,W,H-hy);
-  // 해변 파도
+  // 반딧불이와 구름, 물속 기포가 각 테마에서 천천히 움직입니다.
+  if(S.fireflies){ for(let i=0;i<16;i++){ const x=(i*83+Math.sin(animT*1.5+i)*24+W)%W;
+    const y=hy+30+(i*47)%(H-hy-45), glow=.3+.7*Math.abs(Math.sin(animT*3+i));
+    ctx.globalAlpha=glow; ctx.fillStyle=i%2?'#FFF59D':'#B2FF59'; ctx.shadowColor=ctx.fillStyle; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(x,y,2.5,0,7); ctx.fill(); }
+    ctx.globalAlpha=1; ctx.shadowBlur=0;
+  }
+  if(S.clouds){ for(let i=0;i<5;i++){ const x=((i*W/4+animT*(12+i*3))%(W+120))-60;
+    const y=hy+18+(i%3)*23; ctx.fillStyle='rgba(255,255,255,.38)';
+    ctx.beginPath(); ctx.ellipse(x,y,38,11,0,0,7); ctx.ellipse(x-18,y+2,20,9,0,0,7); ctx.ellipse(x+17,y+1,23,10,0,0,7); ctx.fill(); }
+  }
+  if(S.bubbles){ for(let i=0;i<18;i++){ const x=(i*71+Math.sin(animT+i)*18)%W;
+    const y=hy+((H-hy+30-(animT*(24+i%4*7)+i*47)%(H-hy+30)));
+    ctx.strokeStyle='rgba(224,247,250,.65)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,3+i%4,0,7); ctx.stroke(); }
+  }
+  // 해변/바닷속 파도
   if(S.wave){ ctx.fillStyle='rgba(2,136,209,.55)';
     for(let i=0;i<3;i++){ const wy=hy+18+i*20+Math.sin(animT*2+i)*6;
       ctx.beginPath(); ctx.ellipse(W*.5,wy,W*.6,10,0,0,7); ctx.fill(); }
@@ -412,9 +463,9 @@ function drawRoad(S){
     const pz=Math.pow(gz,1.8), gy=hy+(H*.82-hy)*pz, hw=topW+(botW-topW)*pz;
     const lx=cx-hw*.85, rx=cx+hw*.85, ah=140*(.25+.85*pz);
     ctx.fillStyle='#FFB300'; ctx.fillRect(lx-9,gy-ah,18,ah); ctx.fillRect(rx-9,gy-ah,18,ah);
-    ctx.fillStyle=stageIdx===7?'#6A1B9A':'#2E7D32';
+    ctx.fillStyle=stageIdx===STAGES.length-1?'#6A1B9A':'#2E7D32';
     rr(lx-10,gy-ah-30*(.25+.85*pz),rx-lx+20,36*(.25+.85*pz),8); ctx.fill();
-    txt(stageIdx===7?'🏁 최종 도착지!':'🏁 '+(stageIdx+1)+'단계 도착!',cx,gy-ah-12,Math.max(10,18*(.25+.85*pz)),'#fff'); }
+    txt(stageIdx===STAGES.length-1?'🏁 최종 도착지!':'🏁 '+(stageIdx+1)+'단계 도착!',cx,gy-ah-12,Math.max(10,18*(.25+.85*pz)),'#fff'); }
 }
 function drawObstacles(S){
   const hy=H*.36, cx=W*.5, nw=(S.narrow||1), topW=W*.09*nw, botW=W*.43*nw;
@@ -426,7 +477,9 @@ function drawObstacles(S){
     const x=cx+oLane*(hw*.62), sc=Math.min(1.35,Math.max(.15,.18+.92*pz));
     ctx.save(); ctx.translate(x,y); ctx.scale(sc,sc);
     if(o.hit)ctx.rotate(Math.sin(animT*30)*.4);
-    const [em,label]=S.obs[o.type%S.obs.length];
+    const [em,label]=o.bonus?['🌟','반짝별']:S.obs[o.type%S.obs.length];
+    if(o.bonus){ const pulse=1+Math.sin(animT*8+o.ph)*.14;
+      ctx.fillStyle='rgba(255,214,0,.22)'; ctx.beginPath(); ctx.arc(0,-24,36*pulse,0,7); ctx.fill(); }
     ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,6,52,12,0,0,7); ctx.fill();
     txt(em,0,-22,44,'#fff');
     txt(label,0,-52,14,'#fff','rgba(0,0,0,.8)');
@@ -438,13 +491,19 @@ function drawPlayer(S){
   const hy=H*.36, cx=W*.5, nw=(S.narrow||1), topW=W*.09*nw, botW=W*.43*nw;
   const hw=topW+(botW-topW)*.86, x=cx+lanePos*(hw*.62), y=H*.84;
   ctx.save(); ctx.translate(x,y);
-  const bounce=Math.sin(animT*14), tilt=stumble>0?Math.sin(animT*28)*.32:bounce*.08;
+  const bounce=Math.sin(animT*14*S.speed), tilt=stumble>0?Math.sin(animT*28)*.32:bounce*.08;
+  if(laneFlash>0){ ctx.globalAlpha=laneFlash/.24*.45; ctx.strokeStyle='#B3E5FC'; ctx.lineWidth=5;
+    for(let i=0;i<3;i++){ const x=-62+i*62; ctx.beginPath(); ctx.moveTo(x,-42); ctx.lineTo(x-16,-42); ctx.stroke(); }
+    ctx.globalAlpha=1;
+  }
   ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(0,12,48,12,0,0,7); ctx.fill();
   ctx.translate(0,Math.abs(bounce)*-10); ctx.rotate(tilt);
   // 상자
+  ctx.save(); ctx.translate(0,Math.sin(animT*14*S.speed)*2.5);
   ctx.fillStyle='#D7CCC8'; rr(-54,-100,108,64,8); ctx.fill();
   ctx.strokeStyle='#5D4037'; ctx.lineWidth=3; rr(-54,-100,108,64,8); ctx.stroke();
   txt('📦',0,-68,30,'#fff');
+  ctx.restore();
   // 다리
   ctx.fillStyle='#1565C0';
   rr(-28,-32+(bounce>0?-6:2),20,32,8); ctx.fill(); rr(8,-32+(bounce<0?-6:2),20,32,8); ctx.fill();
@@ -455,7 +514,9 @@ function drawPlayer(S){
   ctx.fillStyle='#FF8F00'; rr(-32,-88,64,64,18); ctx.fill();
   ctx.fillStyle='#EEFF41'; ctx.fillRect(-29,-62,58,10); ctx.fillRect(-6,-84,12,56);
   // 팔
-  ctx.fillStyle='#FFB300'; rr(-52,-80,20,36,10); ctx.fill(); rr(32,-80,20,36,10); ctx.fill();
+  ctx.fillStyle='#FFB300';
+  ctx.save(); ctx.translate(-42,-78); ctx.rotate(bounce*.35); rr(-10,0,20,36,10); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(42,-78); ctx.rotate(-bounce*.35); rr(-10,0,20,36,10); ctx.fill(); ctx.restore();
   // 머리+헬멧
   ctx.fillStyle='#FFD600'; ctx.beginPath(); ctx.arc(0,-105,26,0,7); ctx.fill();
   ctx.fillStyle='#F57F17'; ctx.beginPath(); ctx.arc(0,-105,26,Math.PI,0); ctx.fill();
