@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마음카페 - 3D 바리스타 연습실</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- 상단 바: 음료 선택 + 모드/감각 설정 -->
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg class="cafe-brand-svg" viewBox="0 0 48 48" width="40" height="40">
+            <path d="M17 13c-2-3 2-6 0-9" fill="none" stroke="#a88b73" stroke-width="2.2" stroke-linecap="round" class="cf-steam"/>
+            <path d="M24 12c-2-3.5 2-6.5 0-10" fill="none" stroke="#8d6e63" stroke-width="2.2" stroke-linecap="round" class="cf-steam-2"/>
+            <path d="M31 13c-2-3 2-6 0-9" fill="none" stroke="#a88b73" stroke-width="2.2" stroke-linecap="round" class="cf-steam"/>
+            <ellipse cx="24" cy="40" rx="16" ry="3.5" fill="#d6c5b3"/>
+            <path d="M35 21h4c3 0 5 2 5 5s-2 5-5 5h-4" fill="none" stroke="#487555" stroke-width="3" stroke-linecap="round"/>
+            <path d="M12 18h24v12c0 6-4 9-12 9s-12-3-12-9z" fill="#fff" stroke="#487555" stroke-width="2.4" stroke-linejoin="round"/>
+            <ellipse cx="24" cy="18" rx="12" ry="3.5" fill="#6f4228" stroke="#487555" stroke-width="1.8"/>
+            <path d="M24 17c-1-1.2-2.6-.5-2.6.8 0 1.2 2.6 2.5 2.6 2.5s2.6-1.3 2.6-2.5c0-1.3-1.6-2-2.6-.8z" fill="#fff7ed"/>
+          </svg>
+        </span>
+        <div>
+          <h1>마음카페 연습실</h1>
+          <span class="score-badge" id="scoreBadge">★ 만든 음료: 0잔</span>
+        </div>
+      </div>
+
+      <nav class="recipe-tabs" aria-label="만들 음료 선택">
+        <button class="recipe-btn active" data-recipe="hot_americano">☕ 따뜻한 아메리카노</button>
+        <button class="recipe-btn" data-recipe="iced_americano">🧊 아이스 아메리카노</button>
+        <button class="recipe-btn" data-recipe="iced_latte">🥛 아이스 카페라떼</button>
+        <button class="recipe-btn" data-recipe="strawberry_smoothie">🍓 딸기 스무디</button>
+        <button class="recipe-btn" data-recipe="iced_lemonade">🍋 아이스 레몬에이드</button>
+        <button class="recipe-btn" data-recipe="hot_choco">🍫 따뜻한 핫초코</button>
+        <button class="recipe-btn" data-recipe="hot_tea">🍵 따뜻한 녹차</button>
+        <button class="recipe-btn" data-recipe="strawberry_latte">🍓 딸기 라떼</button>
+      </nav>
+
+      <div class="controls-group">
+        <button id="modeBtn" class="pill-btn active" title="안내 모드 전환">🧭 안내 모드: 켜짐</button>
+        <button id="voiceBtn" class="pill-btn" title="음성 안내 켜기/끄기">🔊 음성 안내: 꺼짐</button>
+        <button id="soundBtn" class="pill-btn active" title="부드러운 효과음 켜기/끄기">🔔 효과음: 켜짐</button>
+        <button id="resetCamBtn" class="pill-btn" title="화면 위치 초기화">🎥 정면 보기</button>
+        <a class="pill-btn home-pill-link" href="../index.html" title="학습 게임 목록으로 이동">🏠 목록</a>
+      </div>
+    </header>
+
+    <!-- 시각적 과제 분석표 (Visual Schedule Strip) -->
+    <section class="schedule-strip" id="scheduleStrip" aria-label="만드는 순서"></section>
+
+    <!-- 3D 시뮬레이션 캔버스 영역 -->
+    <main class="stage-wrap">
+      <div id="canvasContainer" class="canvas-container"></div>
+
+      <!-- 현재 단계 안내 배너 (오류 없이 부드러운 안내) -->
+      <div class="guidance-banner" id="guidanceBanner" role="status" aria-live="polite">
+        <span class="guidance-emoji" id="guidanceEmoji">☕</span>
+        <span class="guidance-text" id="guidanceText">3D 카페를 불러오고 있어요...</span>
+      </div>
+
+      <!-- 3D 호버 툴팁 -->
+      <div id="hoverLabel" class="hover-label hidden"></div>
+
+      <!-- 완성 축하 오버레이 (과도한 자극 없는 차분한 칭찬) -->
+      <div id="completeModal" class="complete-modal hidden" role="dialog" aria-modal="true">
+        <div class="complete-card">
+          <div class="complete-svg-wrap" aria-hidden="true">
+            <svg class="complete-svg" viewBox="0 0 96 96" width="84" height="84">
+              <circle cx="48" cy="48" r="40" fill="#e7f1ea" class="cf-pulse"/>
+              <path d="M35 28c-3-5 3-9 0-14" fill="none" stroke="#a88b73" stroke-width="2.8" stroke-linecap="round" class="cf-steam"/>
+              <path d="M48 25c-3-6 3-10 0-15" fill="none" stroke="#8d6e63" stroke-width="2.8" stroke-linecap="round" class="cf-steam-2"/>
+              <path d="M61 28c-3-5 3-9 0-14" fill="none" stroke="#a88b73" stroke-width="2.8" stroke-linecap="round" class="cf-steam"/>
+              <path d="M66 42h6c4 0 7 3 7 7s-3 7-7 7h-6" fill="none" stroke="#487555" stroke-width="4" stroke-linecap="round"/>
+              <path d="M28 36h40v20c0 10-7 15-20 15s-20-5-20-15z" fill="#fff" stroke="#487555" stroke-width="3" stroke-linejoin="round"/>
+              <ellipse cx="48" cy="36" rx="20" ry="5.5" fill="#6f4228" stroke="#487555" stroke-width="2.2"/>
+              <path d="M20 24l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fbbf24" class="cf-twinkle"/>
+              <path d="M77 20l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#fbbf24" class="cf-twinkle-2"/>
+            </svg>
+          </div>
+          <div class="complete-emoji" id="completeEmoji">🎉</div>
+          <h2 id="completeTitle">음료가 완성되었어요!</h2>
+          <p id="completeDesc">차분하게 순서대로 정말 잘 만들었어요.</p>
+          <div class="complete-actions">
+            <button id="nextDrinkBtn" class="primary-action-btn">✨ 한 잔 더 만들기</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 하단 큰 동작 버튼 (소근육 조절이 어려운 학생도 쉽게 클릭 가능) -->
+    <footer class="action-bar" id="actionBar" aria-label="동작 버튼"></footer>
+  </div>
+
+  <script src="../assets/d1_client.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

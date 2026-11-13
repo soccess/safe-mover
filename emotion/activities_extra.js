@@ -17,24 +17,36 @@ Object.assign(TABLET_ACT, {
     html: `
       <div class="ta-garden">
         <div class="ta-pots">
-          <button class="ta-pot" type="button" data-pot="0"><span class="plant">🕳️</span><small>1번 화분</small></button>
-          <button class="ta-pot" type="button" data-pot="1"><span class="plant">🕳️</span><small>2번 화분</small></button>
-          <button class="ta-pot" type="button" data-pot="2"><span class="plant">🕳️</span><small>3번 화분</small></button>
-          <button class="ta-pot" type="button" data-pot="3"><span class="plant">🕳️</span><small>4번 화분</small></button>
+          <button class="ta-pot" type="button" data-pot="0"><span class="plant"></span><small>1번 화분</small></button>
+          <button class="ta-pot" type="button" data-pot="1"><span class="plant"></span><small>2번 화분</small></button>
+          <button class="ta-pot" type="button" data-pot="2"><span class="plant"></span><small>3번 화분</small></button>
+          <button class="ta-pot" type="button" data-pot="3"><span class="plant"></span><small>4번 화분</small></button>
         </div>
         <p class="ta-status" aria-live="polite">화분을 눌러 씨앗 → 새싹 → 꽃으로 키워보세요! (0 / 4)</p>
       </div>`,
     init(stage) {
-      const stages = ["🕳️", "🌱", "🌷", "🌻", "🌸"];
-      const blooms = ["🌸", "🌻", "🌷", "🌺"];
+      const potColors = ["#f472b6", "#fbbf24", "#fb7185", "#a78bfa"];
+      const potSvg = (lv, idx) => {
+        const col = potColors[idx % potColors.length];
+        if (lv === 0) {
+          return `<svg viewBox="0 0 64 64" width="52" height="52"><ellipse cx="32" cy="52" rx="18" ry="5" fill="#d6c5b3"/><path d="M18 38h28l-4 15H22z" fill="#e5987e" stroke="#b96d54" stroke-width="2" stroke-linejoin="round"/><rect x="16" y="34" width="32" height="6" rx="2" fill="#f0ab93" stroke="#b96d54" stroke-width="2"/><ellipse cx="32" cy="34" rx="5" ry="3" fill="#8d6e63"/></svg>`;
+        }
+        if (lv === 1) {
+          return `<svg class="svg-anim" viewBox="0 0 64 64" width="52" height="52"><ellipse cx="32" cy="52" rx="18" ry="5" fill="#d6c5b3"/><g class="sway"><path d="M32 35V22" stroke="#4ade80" stroke-width="3" stroke-linecap="round"/><path d="M32 25c-7-7-12-2-7 4c3 3 7 1 7-4z" fill="#86efac" stroke="#16a34a" stroke-width="1.3"/><path d="M32 23c7-7 12-2 7 4c-3 3-7 1-7-4z" fill="#4ade80" stroke="#16a34a" stroke-width="1.3"/></g><path d="M18 38h28l-4 15H22z" fill="#e5987e" stroke="#b96d54" stroke-width="2" stroke-linejoin="round"/><rect x="16" y="34" width="32" height="6" rx="2" fill="#f0ab93" stroke="#b96d54" stroke-width="2"/></svg>`;
+        }
+        if (lv === 2) {
+          return `<svg class="svg-anim" viewBox="0 0 64 64" width="52" height="52"><ellipse cx="32" cy="52" rx="18" ry="5" fill="#d6c5b3"/><g class="sway"><path d="M32 35V16" stroke="#22c55e" stroke-width="3.2" stroke-linecap="round"/><path d="M32 26c-8-6-13-1-8 5c4 3 8 0 8-5z" fill="#4ade80" stroke="#16a34a" stroke-width="1.3"/><circle cx="32" cy="14" r="6" fill="${col}" stroke="#fff" stroke-width="1.5"/></g><path d="M18 38h28l-4 15H22z" fill="#e5987e" stroke="#b96d54" stroke-width="2" stroke-linejoin="round"/><rect x="16" y="34" width="32" height="6" rx="2" fill="#f0ab93" stroke="#b96d54" stroke-width="2"/></svg>`;
+        }
+        return `<svg class="svg-anim" viewBox="0 0 64 64" width="52" height="52"><ellipse cx="32" cy="52" rx="18" ry="5" fill="#d6c5b3"/><g class="sway"><path d="M32 35V16" stroke="#16a34a" stroke-width="3.2" stroke-linecap="round"/><path d="M32 27c-9-6-14-1-8 5c4 3 8 0 8-5z" fill="#4ade80" stroke="#15803d" stroke-width="1.2"/><path d="M32 25c9-6 14-1 8 5c-4 3-8 0-8-5z" fill="#86efac" stroke="#15803d" stroke-width="1.2"/><g transform="translate(32 14)"><circle cx="0" cy="-7" r="5" fill="${col}"/><circle cx="6.6" cy="-2.2" r="5" fill="${col}"/><circle cx="4.1" cy="5.7" r="5" fill="${col}"/><circle cx="-4.1" cy="5.7" r="5" fill="${col}"/><circle cx="-6.6" cy="-2.2" r="5" fill="${col}"/><circle r="4" fill="#fde047"/></g></g><path d="M18 38h28l-4 15H22z" fill="#e5987e" stroke="#b96d54" stroke-width="2" stroke-linejoin="round"/><rect x="16" y="34" width="32" height="6" rx="2" fill="#f0ab93" stroke="#b96d54" stroke-width="2"/></svg>`;
+      };
       const pots = [...stage.querySelectorAll(".ta-pot")];
       const levels = [0, 0, 0, 0];
       pots.forEach((btn, idx) => {
+        btn.querySelector(".plant").innerHTML = potSvg(0, idx);
         btn.addEventListener("click", () => {
           if (levels[idx] < 3) {
             levels[idx]++;
-            const icon = levels[idx] === 3 ? blooms[idx] : stages[levels[idx]];
-            btn.querySelector(".plant").textContent = icon;
+            btn.querySelector(".plant").innerHTML = potSvg(levels[idx], idx);
             btn.classList.toggle("bloom", levels[idx] === 3);
             btn.classList.add("pop");
             setTimeout(() => btn.classList.remove("pop"), 260);
@@ -144,7 +156,16 @@ Object.assign(TABLET_ACT, {
     hint: "시원한 바람 버튼을 눌러 불꽃을 식혀요",
     html: `
       <div class="ta-ice-wrap">
-        <div class="ta-flame" aria-live="polite">🔥</div>
+        <div class="ta-flame" aria-live="polite">
+          <svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88" role="img" aria-label="마음 불꽃">
+            <circle cx="55" cy="54" r="36" fill="#ffedd5" class="pulse"/>
+            <g class="flameFlicker" transform="translate(55 62)">
+              <path d="M0-36c16 16 22 30 0 46c-22-16-16-30 0-46z" fill="#fb923c"/>
+              <path d="M0-22c10 10 13 20 0 30c-13-10-10-20 0-30z" fill="#fde047"/>
+              <circle cx="0" cy="-2" r="5" fill="#fffbeb"/>
+            </g>
+          </svg>
+        </div>
         <div class="ta-row" style="justify-content:center">
           <button class="ta-btn" type="button" data-cool>🌬️ 후~ 바람 불기</button>
         </div>
@@ -154,12 +175,19 @@ Object.assign(TABLET_ACT, {
       const flame = stage.querySelector(".ta-flame");
       const cool = stage.querySelector("[data-cool]");
       let count = 0;
-      const icons = ["🔥", "🟠", "🟡", "💧", "❄️", "🌿"];
+      const svgs = [
+        `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="36" fill="#ffedd5" class="pulse"/><g class="flameFlicker" transform="translate(55 62)"><path d="M0-36c16 16 22 30 0 46c-22-16-16-30 0-46z" fill="#fb923c"/><path d="M0-22c10 10 13 20 0 30c-13-10-10-20 0-30z" fill="#fde047"/></g></svg>`,
+        `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="34" fill="#fef3c7" class="pulse"/><g class="flameFlicker" transform="translate(55 62) scale(.85)"><path d="M0-36c16 16 22 30 0 46c-22-16-16-30 0-46z" fill="#f59e0b"/><path d="M0-20c9 9 12 18 0 27c-12-9-9-18 0-27z" fill="#fef08a"/></g></svg>`,
+        `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="34" fill="#fef9c3" class="pulse"/><g class="flameFlicker" transform="translate(55 64) scale(.68)"><path d="M0-34c14 14 20 26 0 40c-20-14-14-26 0-40z" fill="#facc15"/><path d="M0-18c8 8 10 15 0 22c-10-7-8-14 0-22z" fill="#fff"/></g></svg>`,
+        `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="34" fill="#e0f2fe" class="pulse"/><path class="bob" d="M55 24c-14 20-20 32-20 42a20 20 0 0 0 40 0c0-10-6-22-20-42z" fill="#7dd3fc" stroke="#0284c7" stroke-width="2"/><path d="M46 62a6 10 0 0 0 4 10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="34" fill="#e0f7fa" class="pulse"/><g class="spinSlow" transform="translate(55 54)" stroke="#38bdf8" stroke-width="3.2" stroke-linecap="round"><path d="M0-24v48M-24 0h48M-17-17l34 34M17-17l-34 34"/><circle r="6" fill="#bae6fd" stroke="none"/></g></svg>`,
+        `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="36" fill="#dcfce7" class="pulse"/><g class="sway" transform="translate(55 68)"><path d="M0 10V-18" stroke="#16a34a" stroke-width="3.5" stroke-linecap="round"/><path d="M0-10c-14-12-24-4-16 8c6 7 16 2 16-8z" fill="#4ade80" stroke="#15803d" stroke-width="1.6"/><path d="M0-16c14-12 24-4 16 8c-6 7-16 2-16-8z" fill="#86efac" stroke="#15803d" stroke-width="1.6"/></g></svg>`
+      ];
       cool.addEventListener("click", () => {
         if (count >= 5) return;
         count++;
-        flame.textContent = icons[count] || "🌿";
-        flame.style.transform = "scale(" + (1.15 - count * 0.06) + ")";
+        flame.innerHTML = svgs[count] || svgs[5];
+        flame.style.transform = "scale(" + (1.08 - count * 0.02) + ")";
         taTone(620 - count * 40, 0.25, "sine", 0.04);
         taStatus(stage, "시원한 바람이 불어요! (" + count + " / 5)");
         if (count >= 5) {

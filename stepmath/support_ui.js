@@ -22,13 +22,13 @@ function loadSupportSettings() {
 }
 function saveSupportSettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch (e) { /* 무시 */ }
-  if (window.TursoBridge) window.TursoBridge.setKV(SETTINGS_KEY, state.settings);
+  if (window.D1Bridge) window.D1Bridge.setKV(SETTINGS_KEY, state.settings);
 }
 function saveSession() {
   try {
     const slim = { ...state.session, log: state.session.log.slice(0, 120) };
     localStorage.setItem(SESSION_KEY, JSON.stringify(slim));
-    if (window.TursoBridge) window.TursoBridge.setKV(SESSION_KEY, slim);
+    if (window.D1Bridge) window.D1Bridge.setKV(SESSION_KEY, slim);
   } catch (e) { /* 무시 */ }
 }
 function applySettings() {
@@ -98,9 +98,9 @@ function recordTrial(outcome, promptLevel, detail) {
   });
   state.session.log = state.session.log.slice(0, 120);
   saveSession();
-  if (window.TursoBridge) {
+  if (window.D1Bridge) {
     const stageLabel = currentStage() ? `${currentStage().id}단계 ${currentStage().short}` : '';
-    window.TursoBridge.saveRecord({
+    window.D1Bridge.saveRecord({
       game: 'stepmath',
       stage: stageLabel,
       score: state.session.independent,
@@ -309,7 +309,7 @@ function writeHistory() {
   try {
     const sliced = state.history.slice(0, 12);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(sliced));
-    if (window.TursoBridge) window.TursoBridge.setKV(HISTORY_KEY, sliced);
+    if (window.D1Bridge) window.D1Bridge.setKV(HISTORY_KEY, sliced);
   } catch (e) { /* 저장 불가 환경 무시 */ }
 }
 function pushHistory(first, op, second, result, rawFirst, rawSecond, displayResult) {

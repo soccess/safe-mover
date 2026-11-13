@@ -122,10 +122,10 @@ function markDone() {
   document.getElementById("donePanel").classList.add("show");
   document.getElementById("p3").className = "dot done";
   taConfetti();
-  if (window.TursoBridge && currentMood) {
+  if (window.D1Bridge && currentMood) {
     const m = moods[currentMood] || { label: currentMood };
     const title = currentActivity ? currentActivity.title : "마음 돌보기";
-    window.TursoBridge.saveRecord({
+    window.D1Bridge.saveRecord({
       game: "emotion",
       stage: m.label + " 마음",
       score: 1,

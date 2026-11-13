@@ -520,10 +520,18 @@ function placeSummaryHTML(n) {
 
 function groupIconSVG(size, index) {
   const color = index % 2 ? '#16a34a' : '#2563eb';
+  const light = index % 2 ? '#dcfce7' : '#dbeafe';
+  const bg = size === 10 ? (index % 2 ? '#f0fdf4' : '#eff6ff') : '#fffbeb';
+  const gid = `grp-${size}-${index}`;
   const parts = size === 10
-    ? Array.from({ length: 10 }, (_, i) => `<circle cx="${13 + (i % 5) * 8}" cy="${16 + Math.floor(i / 5) * 13}" r="3" fill="${color}"/>`).join('')
-    : Array.from({ length: 100 }, (_, i) => `<rect x="${8 + (i % 10) * 4.2}" y="${8 + Math.floor(i / 10) * 4.2}" width="3.5" height="3.5" rx=".5" fill="${color}"/>`).join('');
-  return `<svg viewBox="0 0 56 56" role="img" aria-label="${size}개 묶음" class="group-unit" style="--d:${Math.min(index * 70, 420)}ms"><rect x="2" y="2" width="52" height="52" rx="10" fill="${size === 10 ? '#eff6ff' : '#fffbeb'}" stroke="${color}" stroke-width="2"/>${parts}</svg>`;
+    ? Array.from({ length: 10 }, (_, i) => `<circle cx="${13 + (i % 5) * 7.5}" cy="${18 + Math.floor(i / 5) * 18}" r="3.2" fill="${color}" stroke="#fff" stroke-width="0.8"/>`).join('')
+    : Array.from({ length: 100 }, (_, i) => `<rect x="${7 + (i % 10) * 4.2}" y="${7 + Math.floor(i / 10) * 4.2}" width="3.4" height="3.4" rx="0.8" fill="${color}" opacity="0.9"/>`).join('');
+  return `<svg viewBox="0 0 56 56" role="img" aria-label="${size}개 묶음" class="group-unit" style="--d:${Math.min(index * 70, 420)}ms">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="${bg}"/></linearGradient></defs>
+    <rect x="2" y="2" width="52" height="52" rx="11" fill="url(#${gid})" stroke="${color}" stroke-width="2.4"/>
+    <rect x="4" y="4" width="48" height="12" rx="8" fill="${light}" opacity="0.45"/>
+    ${parts}
+  </svg>`;
 }
 
 function renderGrouping() {
@@ -555,15 +563,22 @@ function renderGrouping() {
 function fractionPieSVG(n, d, color) {
   const pieces = Math.min(Math.max(d, 1), 12);
   const filled = Math.round(Math.min(Math.max(n / d, 0), 1) * pieces);
+  const fid = `fpie-${n}-${d}-${color.replace('#', '')}`;
   const slices = Array.from({ length: pieces }, (_, i) => {
     const start = (i / pieces) * Math.PI * 2 - Math.PI / 2;
     const end = ((i + 1) / pieces) * Math.PI * 2 - Math.PI / 2;
-    const x1 = 50 + 43 * Math.cos(start), y1 = 50 + 43 * Math.sin(start);
-    const x2 = 50 + 43 * Math.cos(end), y2 = 50 + 43 * Math.sin(end);
-    const path = pieces === 1 ? 'M50 50 m-43 0 a43 43 0 1 0 86 0 a43 43 0 1 0 -86 0' : `M50 50 L${x1} ${y1} A43 43 0 0 1 ${x2} ${y2} Z`;
-    return `<path d="${path}" fill="${i < filled ? color : '#eff6ff'}" class="fraction-slice" style="animation-delay:${i * 25}ms"/>`;
+    const x1 = 50 + 42 * Math.cos(start), y1 = 50 + 42 * Math.sin(start);
+    const x2 = 50 + 42 * Math.cos(end), y2 = 50 + 42 * Math.sin(end);
+    const path = pieces === 1 ? 'M50 50 m-42 0 a42 42 0 1 0 84 0 a42 42 0 1 0 -84 0' : `M50 50 L${x1} ${y1} A42 42 0 0 1 ${x2} ${y2} Z`;
+    return `<path d="${path}" fill="${i < filled ? `url(#${fid})` : '#f1f5f9'}" class="fraction-slice" style="animation-delay:${i * 35}ms"/>`;
   }).join('');
-  return `<svg class="fraction-visual" viewBox="0 0 100 100" role="img" aria-label="${n}/${d}만큼 색칠한 원">${slices}<circle cx="50" cy="50" r="43" fill="none" stroke="#94a3b8" stroke-width="2"/></svg>`;
+  return `<svg class="fraction-visual" viewBox="0 0 100 100" role="img" aria-label="${n}/${d}만큼 색칠한 원">
+    <defs><radialGradient id="${fid}" cx="35%" cy="30%" r="75%"><stop offset="0%" stop-color="#fff" stop-opacity="0.35"/><stop offset="35%" stop-color="${color}"/><stop offset="100%" stop-color="${color}"/></radialGradient></defs>
+    <circle cx="50" cy="52" r="43" fill="#e2e8f0" opacity="0.6"/>
+    ${slices}
+    <circle cx="50" cy="50" r="42" fill="none" stroke="#64748b" stroke-width="2.4"/>
+    <circle cx="50" cy="50" r="5" fill="#fff" stroke="#64748b" stroke-width="2"/>
+  </svg>`;
 }
 
 function fractionModelHTML(raw, value, color) {

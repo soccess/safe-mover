@@ -1,4 +1,5 @@
-.env.turso
+.wrangler/
+.dev.vars
 local_fallback.db
 local_fallback.db-*
 __pycache__/

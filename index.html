@@ -7,95 +7,294 @@
   <link rel="stylesheet" href="./assets/portal.css">
 </head>
 <body>
+  <!-- 배경 SVG 장식 -->
+  <svg class="portal-bg-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="pGlow1" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="pGlow2" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#a855f7" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="pGlow3" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="180" cy="140" r="240" fill="url(#pGlow1)" class="svg-pulse"/>
+    <circle cx="1020" cy="200" r="260" fill="url(#pGlow2)" class="svg-pulse"/>
+    <circle cx="600" cy="700" r="260" fill="url(#pGlow3)" class="svg-pulse"/>
+    <g fill="#fff">
+      <path d="M130 110l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" class="svg-twinkle" opacity="0.65"/>
+      <path d="M1070 120l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" class="svg-twinkle-2" opacity="0.6"/>
+      <path d="M210 640l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" class="svg-twinkle-2" opacity="0.55"/>
+      <path d="M980 620l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" class="svg-twinkle" opacity="0.6"/>
+      <circle cx="420" cy="95" r="2.2" class="svg-twinkle"/>
+      <circle cx="780" cy="75" r="2.6" class="svg-twinkle-2"/>
+      <circle cx="88" cy="400" r="2" class="svg-twinkle"/>
+      <circle cx="1120" cy="440" r="2.4" class="svg-twinkle-2"/>
+    </g>
+  </svg>
+
   <div class="wrap">
-    <h1>🎮 학습 게임 모음</h1>
-    <p class="sub">원하는 게임을 선택하세요 (총 3개)</p>
+    <header class="portal-hero">
+      <svg class="portal-emblem svg-bob" viewBox="0 0 96 96" role="img" aria-label="학습 게임 모음 아이콘">
+        <defs>
+          <linearGradient id="emGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="55%" stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#a855f7"/>
+          </linearGradient>
+          <linearGradient id="emShine" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fff" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <rect x="10" y="14" width="76" height="68" rx="22" fill="url(#emGrad)" stroke="#bae6fd" stroke-width="2.5"/>
+        <rect x="14" y="18" width="68" height="28" rx="16" fill="url(#emShine)"/>
+        <!-- 십자 패드 -->
+        <rect x="24" y="42" width="18" height="6" rx="3" fill="#fff"/>
+        <rect x="30" y="36" width="6" height="18" rx="3" fill="#fff"/>
+        <!-- 버튼 -->
+        <circle cx="62" cy="39" r="4.2" fill="#fde047"/>
+        <circle cx="70" cy="47" r="4.2" fill="#4ade80"/>
+        <circle cx="62" cy="55" r="4.2" fill="#f472b6"/>
+        <circle cx="54" cy="47" r="4.2" fill="#93c5fd"/>
+        <!-- 반짝별 -->
+        <path d="M80 12l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#fde047" class="svg-twinkle"/>
+      </svg>
+      <h1>학습 게임 모음</h1>
+      <p class="sub">원하는 활동을 선택하세요 · 총 4개 활동 (Cloudflare D1 DB 자동 저장)</p>
+    </header>
+
     <div class="grid">
+      <!-- 1. 맞춤법 수호대 -->
       <a class="card" href="./safe_mover_8_stages.html">
-        <div class="icon">🛡️📝</div>
+        <svg class="icon-svg" viewBox="0 0 120 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="smShield" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
+            <linearGradient id="smGold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fef08a"/>
+              <stop offset="100%" stop-color="#f59e0b"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="52" r="40" fill="#e0f2fe" class="svg-pulse"/>
+          <g class="svg-bob">
+            <path d="M60 14L90 25v24c0 20-13 33-30 39-17-6-30-19-30-39V25z" fill="url(#smShield)" stroke="#0369a1" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M60 21L83 30v18c0 15-10 25-23 30-13-5-23-15-23-30V30z" fill="none" stroke="#bae6fd" stroke-width="2" opacity="0.8"/>
+            <path d="M48 51l8 8 16-18" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <g class="svg-bob-slow">
+            <rect x="70" y="56" width="38" height="22" rx="7" fill="#fff" stroke="#16a34a" stroke-width="2.5"/>
+            <text x="89" y="71" text-anchor="middle" font-size="11" font-weight="900" fill="#15803d">가나다</text>
+          </g>
+          <path d="M22 22l2.2 5.2 5.2 2.2-5.2 2.2L22 36.8l-2.2-5.2-5.2-2.2 5.2-2.2z" fill="url(#smGold)" class="svg-twinkle"/>
+          <circle cx="96" cy="24" r="3.5" fill="#fde047" class="svg-twinkle-2"/>
+        </svg>
         <h2>맞춤법 수호대 모험<br>12단계 단어 수집 게임</h2>
         <p>맞춤법에 맞는 단어는 터치해서 모으고,<br>틀린 단어를 든 적은 피하는 12스테이지 게임</p>
         <span class="go">▶ 게임 시작</span>
       </a>
+
+      <!-- 2. 수학 공책 -->
       <a class="card math" href="./stepmath.html">
-        <div class="icon">📐✏️</div>
+        <svg class="icon-svg" viewBox="0 0 120 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="mtBoard" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ede9fe"/>
+              <stop offset="100%" stop-color="#ddd6fe"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="52" r="40" fill="#f3e8ff" class="svg-pulse"/>
+          <g class="svg-bob">
+            <!-- 10칸 판 -->
+            <rect x="18" y="22" width="66" height="40" rx="9" fill="#fff" stroke="#7c3aed" stroke-width="3"/>
+            <g>
+              <circle cx="29" cy="34" r="4.5" fill="#2563eb"/>
+              <circle cx="42" cy="34" r="4.5" fill="#2563eb"/>
+              <circle cx="55" cy="34" r="4.5" fill="#2563eb"/>
+              <circle cx="68" cy="34" r="4.5" fill="#16a34a"/>
+              <circle cx="29" cy="50" r="4.5" fill="#16a34a"/>
+              <circle cx="42" cy="50" r="4.5" fill="#16a34a"/>
+              <circle cx="55" cy="50" r="4.5" fill="#e2e8f0"/>
+              <circle cx="68" cy="50" r="4.5" fill="#e2e8f0"/>
+            </g>
+          </g>
+          <!-- 삼각자 -->
+          <g class="svg-sway">
+            <polygon points="62,84 104,84 104,44" fill="#fef3c7" stroke="#d97706" stroke-width="2.6" stroke-linejoin="round"/>
+            <polygon points="80,76 96,76 96,60" fill="#fff"/>
+          </g>
+          <!-- 반짝 기호 -->
+          <text x="20" y="84" font-size="18" font-weight="900" fill="#7c3aed" class="svg-twinkle">＋</text>
+          <text x="94" y="28" font-size="16" font-weight="900" fill="#2563eb" class="svg-twinkle-2">＝</text>
+        </svg>
         <h2>수학 공책 18단계<br>터치 구체물 활동</h2>
         <p>18단계로 세분화된 커리큘럼과 90개 문제 ·<br>10·100 묶기 · 분수·소수 · 측정 · 도형</p>
         <span class="go">▶ 학습 시작</span>
       </a>
+
+      <!-- 3. 마음 날씨 연구소 -->
       <a class="card emotion" href="./emotion.html">
-        <div class="icon">🌤️💛</div>
+        <svg class="icon-svg" viewBox="0 0 120 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="emSun" cx="40%" cy="35%" r="70%">
+              <stop offset="0%" stop-color="#fffbe6"/>
+              <stop offset="60%" stop-color="#ffe066"/>
+              <stop offset="100%" stop-color="#f59e0b"/>
+            </radialGradient>
+            <linearGradient id="emHeart" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fda4af"/>
+              <stop offset="100%" stop-color="#e11d48"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="52" r="40" fill="#f5f3ff" class="svg-pulse"/>
+          <!-- 무지개 -->
+          <path d="M22 70a38 38 0 0 1 76 0" fill="none" stroke="#fda4af" stroke-width="5" stroke-linecap="round" opacity="0.65"/>
+          <path d="M29 70a31 31 0 0 1 62 0" fill="none" stroke="#fde047" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+          <path d="M36 70a24 24 0 0 1 48 0" fill="none" stroke="#93c5fd" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+          <!-- 웃는 태양 -->
+          <g transform="translate(46 42)">
+            <g class="svg-spin-slow" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round">
+              <path d="M0-22v-5m0 49v-5M-22 0h-5m49 0h-5M-15-15l-4-4m38 38 4 4m0-38-4 4M-19 19l-4 4"/>
+            </g>
+            <circle r="15" fill="url(#emSun)"/>
+            <path d="M-6-2q2.5-3 5 0M2-2q2.5-3 5 0M-5 4q5 5 10 0" fill="none" stroke="#78350f" stroke-width="1.8" stroke-linecap="round"/>
+          </g>
+          <!-- 구름 -->
+          <g class="svg-bob" transform="translate(76 62)">
+            <path d="M-16 6q0-9 9-9t9 9q7 0 7 6t-7 6h-18q-7 0-7-6t7-6" fill="#fff" stroke="#a5b4fc" stroke-width="2"/>
+          </g>
+          <!-- 하트 -->
+          <path d="M88 30c-3-4-9-2-9 3 0 5 9 10 9 10s9-5 9-10c0-5-6-7-9-3z" fill="url(#emHeart)" class="svg-bob-slow"/>
+          <path d="M22 24l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#c4b5fd" class="svg-twinkle"/>
+        </svg>
         <h2>마음 날씨 연구소<br>감정표현하기</h2>
         <p>기쁨·슬픔·화남·놀람 감정을 고르고<br>감정별 8가지 태블릿 마음 돌보기 활동하기</p>
         <span class="go">▶ 마음 살펴보기</span>
       </a>
+
+      <!-- 4. 마음카페 3D 바리스타 연습실 -->
+      <a class="card cafe" href="./cafe/index.html">
+        <svg class="icon-svg" viewBox="0 0 120 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="cfCup" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#e7dccd"/>
+            </linearGradient>
+            <linearGradient id="cfCoffee" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7c4a2d"/>
+              <stop offset="100%" stop-color="#4a2816"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="54" r="40" fill="#e8f3ec" class="svg-pulse"/>
+          <!-- 김 애니메이션 -->
+          <path d="M46 34c-4-6 4-11 0-17" fill="none" stroke="#a88b73" stroke-width="3" stroke-linecap="round" class="svg-steam"/>
+          <path d="M60 32c-4-7 4-12 0-19" fill="none" stroke="#8d6e63" stroke-width="3" stroke-linecap="round" class="svg-steam-2"/>
+          <path d="M74 34c-4-6 4-11 0-17" fill="none" stroke="#a88b73" stroke-width="3" stroke-linecap="round" class="svg-steam"/>
+          <!-- 받침 접시 & 머그컵 -->
+          <g class="svg-bob">
+            <ellipse cx="60" cy="82" rx="34" ry="7" fill="#d6c5b3" stroke="#8d6e63" stroke-width="2"/>
+            <path d="M84 48h8c6 0 10 4 10 10s-4 11-10 11h-8" fill="none" stroke="#487555" stroke-width="5" stroke-linecap="round"/>
+            <path d="M34 42h52v24c0 11-9 17-26 17s-26-6-26-17z" fill="url(#cfCup)" stroke="#487555" stroke-width="3" stroke-linejoin="round"/>
+            <ellipse cx="60" cy="42" rx="26" ry="7" fill="url(#cfCoffee)" stroke="#487555" stroke-width="2.5"/>
+            <!-- 라떼아트 하트 -->
+            <path d="M60 40c-2-2.5-5.5-1-5.5 1.8 0 2.6 5.5 5.4 5.5 5.4s5.5-2.8 5.5-5.4c0-2.8-3.5-4.3-5.5-1.8z" fill="#fff7ed" opacity="0.92"/>
+            <!-- 컵 배지 -->
+            <circle cx="60" cy="63" r="8" fill="#487555"/>
+            <path d="M56.5 63l2.5 2.5 5-5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <path d="M22 34l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#d9822b" class="svg-twinkle"/>
+          <circle cx="98" cy="30" r="3" fill="#487555" class="svg-twinkle-2"/>
+        </svg>
+        <h2>마음카페 연습실<br>3D 바리스타 체험</h2>
+        <p>8가지 카페 음료를 순서대로 차분하게<br>만들어 보는 3D 감각 친화 바리스타 연습실</p>
+        <span class="go">▶ 카페 열기</span>
+      </a>
     </div>
 
-    <section class="turso-bar" aria-label="Turso 데이터베이스 연결 상태">
-      <div class="turso-status">
-        <span class="turso-dot" id="tursoDot"></span>
-        <span id="tursoStatusText">Turso DB 연결 상태 확인 중...</span>
+    <section class="d1-bar" aria-label="Cloudflare D1 데이터베이스 연결 상태">
+      <div class="d1-status">
+        <svg class="d1-badge-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.5 17H6a4 4 0 0 1-.4-7.98A5.5 5.5 0 0 1 16.3 7.3 4.5 4.5 0 0 1 18.5 17z" fill="#fb923c" stroke="#fed7aa" stroke-width="1.4"/>
+        </svg>
+        <span class="d1-dot" id="d1Dot"></span>
+        <span id="d1StatusText">Cloudflare D1 DB 연결 상태 확인 중...</span>
       </div>
-      <div class="turso-controls">
+      <div class="d1-controls">
         <label for="studentNameInput" style="font-size:12.5px;color:#CBD5E1;">학생 이름</label>
-        <input id="studentNameInput" class="turso-input" type="text" placeholder="기본 학생" maxlength="30">
-        <button type="button" class="turso-btn" id="btnToggleRecords">📋 DB 학습 기록</button>
-        <button type="button" class="turso-btn" id="btnRefreshTurso">↻ 상태 확인</button>
+        <input id="studentNameInput" class="d1-input" type="text" placeholder="기본 학생" maxlength="30">
+        <button type="button" class="d1-btn" id="btnToggleRecords">📋 D1 학습 기록</button>
+        <button type="button" class="d1-btn" id="btnRefreshD1">↻ 상태 확인</button>
       </div>
     </section>
-    <section class="turso-records" id="tursoRecordsPanel">
-      <h3>최근 저장된 학습 기록</h3>
-      <div class="turso-list" id="tursoRecordsList">불러오는 중...</div>
+    <section class="d1-records" id="d1RecordsPanel">
+      <h3>최근 저장된 Cloudflare D1 학습 기록</h3>
+      <div class="d1-list" id="d1RecordsList">불러오는 중...</div>
     </section>
   </div>
 
-  <script src="./assets/turso_client.js"></script>
+  <script src="./assets/d1_client.js"></script>
   <script>
     (function () {
-      const dot = document.getElementById("tursoDot");
-      const statusText = document.getElementById("tursoStatusText");
+      const dot = document.getElementById("d1Dot");
+      const statusText = document.getElementById("d1StatusText");
       const nameInput = document.getElementById("studentNameInput");
-      const panel = document.getElementById("tursoRecordsPanel");
-      const listEl = document.getElementById("tursoRecordsList");
-      const gameNames = { safe_mover: "맞춤법 수호대", stepmath: "수학 공책", emotion: "마음 날씨 연구소" };
+      const panel = document.getElementById("d1RecordsPanel");
+      const listEl = document.getElementById("d1RecordsList");
+      const gameNames = {
+        safe_mover: "맞춤법 수호대",
+        stepmath: "수학 공책",
+        emotion: "마음 날씨 연구소",
+        cafe: "마음카페 3D"
+      };
 
-      if (window.TursoBridge) {
-        nameInput.value = window.TursoBridge.getStudentName();
+      function esc(s) {
+        return String(s || "").replace(/[&<>"']/g, (ch) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+        }[ch]));
+      }
+
+      if (window.D1Bridge) {
+        nameInput.value = window.D1Bridge.getStudentName();
         nameInput.addEventListener("change", () => {
-          nameInput.value = window.TursoBridge.setStudentName(nameInput.value);
+          nameInput.value = window.D1Bridge.setStudentName(nameInput.value);
         });
       }
 
       async function refreshStatus() {
-        if (!window.TursoBridge) return;
-        const h = await window.TursoBridge.checkHealth(true);
-        dot.className = "turso-dot " + (h.ok ? (h.mode === "turso" ? "ok" : "fallback") : "off");
-        if (h.ok && h.mode === "turso") {
-          statusText.textContent = "Turso DB 연결됨 · " + (h.db_url || "");
-        } else if (h.ok && h.mode === "local-fallback") {
-          statusText.textContent = "로컬 SQLite 임시 모드 (.env.turso 설정 시 Turso DB 연동)";
+        if (!window.D1Bridge) return;
+        const h = await window.D1Bridge.checkHealth(true);
+        dot.className = "d1-dot " + (h.ok ? "ok" : "off");
+        if (h.ok) {
+          statusText.textContent = "Cloudflare D1 DB 연결됨 (" + (h.db_name || "safe-mover-db") + ")";
         } else {
-          statusText.textContent = h.message || h.error || "DB 미연결 (connect_turso.bat 으로 실행하세요)";
+          statusText.textContent = h.message || h.error || "Cloudflare D1 DB 미연결";
         }
       }
 
       async function loadRecords() {
-        if (!window.TursoBridge) return;
-        listEl.innerHTML = '<div class="turso-item">불러오는 중...</div>';
-        const rows = await window.TursoBridge.getRecords("", 20);
+        if (!window.D1Bridge) return;
+        listEl.innerHTML = '<div class="d1-item">불러오는 중...</div>';
+        const rows = await window.D1Bridge.getRecords("", 20);
         if (!rows.length) {
-          listEl.innerHTML = '<div class="turso-item">저장된 학습 기록이 아직 없습니다. 게임을 플레이하면 자동 저장됩니다.</div>';
+          listEl.innerHTML = '<div class="d1-item">저장된 학습 기록이 아직 없습니다. 각 활동을 진행하면 Cloudflare D1 DB에 자동 저장됩니다.</div>';
           return;
         }
         listEl.innerHTML = rows.map((r) => {
           const g = gameNames[r.game] || r.game;
-          return '<div class="turso-item"><span><b>[' + g + ']</b> ' +
-            (r.student_name || "기본 학생") + ' · ' + (r.stage || "") + ' — ' + (r.summary || "") +
-            '</span><span>' + (r.created_at || "") + '</span></div>';
+          return '<div class="d1-item"><span><b>[' + esc(g) + ']</b> ' +
+            esc(r.student_name || "기본 학생") + ' · ' + esc(r.stage || "") + ' — ' + esc(r.summary || "") +
+            '</span><span>' + esc(r.created_at || "") + '</span></div>';
         }).join("");
       }
 
-      document.getElementById("btnRefreshTurso").addEventListener("click", () => {
+      document.getElementById("btnRefreshD1").addEventListener("click", () => {
         refreshStatus();
         if (panel.classList.contains("open")) loadRecords();
       });

@@ -276,25 +276,32 @@ function numberLineSVG(config) {
       ticks += `<text x="${xx}" y="${y + 31}" text-anchor="middle" font-size="13" font-weight="800" fill="#475569">${i}</text>`;
     }
   }
-  const arcHtml = arcs.map((a) => {
+  const arcHtml = arcs.map((a, idx) => {
     const x1 = x(a.from), x2 = x(a.to), mx = (x1 + x2) / 2;
     const color = a.color || '#7c3aed';
     const up = a.up !== false;
-    const path = `M ${x1} ${y - 6} Q ${mx} ${up ? 18 : 158} ${x2} ${y - 6}`;
-    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round" marker-end="url(#nlArrow)"/>
-      <text x="${mx}" y="${up ? 15 : 174}" text-anchor="middle" font-size="15" font-weight="900" fill="${color}">${a.label || ''}</text>`;
+    const path = `M ${x1} ${y - 6} Q ${mx} ${up ? 16 : 158} ${x2} ${y - 6}`;
+    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="3.8" stroke-linecap="round" class="nl-arc" style="animation-delay:${idx * 140}ms" marker-end="url(#nlArrow)"/>
+      <rect x="${mx - 20}" y="${up ? 3 : 158}" width="40" height="20" rx="10" fill="#fff" stroke="${color}" stroke-width="1.8"/>
+      <text x="${mx}" y="${up ? 17 : 172}" text-anchor="middle" font-size="13" font-weight="900" fill="${color}">${a.label || ''}</text>`;
   }).join('');
-  const markHtml = marks.map((m) => {
+  const markHtml = marks.map((m, idx) => {
     const xx = x(m.value);
     const color = m.color || '#2563eb';
-    return `<circle cx="${xx}" cy="${y}" r="8" fill="${color}" stroke="#fff" stroke-width="2"/>
-      <text x="${xx}" y="${y - 15}" text-anchor="middle" font-size="14" font-weight="900" fill="${color}">${m.label ?? m.value}</text>`;
+    return `<g class="nl-mark" style="animation-delay:${idx * 80}ms">
+      <circle cx="${xx}" cy="${y}" r="12" fill="${color}" opacity="0.22" class="nl-mark-ring"/>
+      <circle cx="${xx}" cy="${y}" r="8" fill="${color}" stroke="#fff" stroke-width="2.4"/>
+      <text x="${xx}" y="${y - 16}" text-anchor="middle" font-size="14" font-weight="900" fill="${color}">${m.label ?? m.value}</text>
+    </g>`;
   }).join('');
   return `<div class="numline-wrap"><svg class="numline" viewBox="0 0 ${W} ${H}" role="img" aria-label="0부터 ${max}까지의 수직선">
-    <defs><marker id="nlArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#7c3aed"/></marker></defs>
-    <line x1="${x(0)}" y1="${y}" x2="${x(max)}" y2="${y}" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
-    <text x="${x(0)}" y="${y + 52}" text-anchor="start" font-size="12" font-weight="900" fill="#64748b">작은 수</text>
-    <text x="${x(max)}" y="${y + 52}" text-anchor="end" font-size="12" font-weight="900" fill="#64748b">큰 수</text>
+    <defs>
+      <linearGradient id="nlTrack" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#60a5fa"/><stop offset="50%" stop-color="#334155"/><stop offset="100%" stop-color="#16a34a"/></linearGradient>
+      <marker id="nlArrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#7c3aed"/></marker>
+    </defs>
+    <line x1="${x(0)}" y1="${y}" x2="${x(max)}" y2="${y}" stroke="url(#nlTrack)" stroke-width="5" stroke-linecap="round"/>
+    <text x="${x(0)}" y="${y + 52}" text-anchor="start" font-size="12" font-weight="900" fill="#2563eb">◀ 작은 수</text>
+    <text x="${x(max)}" y="${y + 52}" text-anchor="end" font-size="12" font-weight="900" fill="#16a34a">큰 수 ▶</text>
     ${ticks}${arcHtml}${markHtml}</svg></div>`;
 }
 

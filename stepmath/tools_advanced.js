@@ -523,16 +523,23 @@ function clockSVG(minutes) {
     numbers += `<text x="${100 + 72 * Math.cos(rad)}" y="${100 + 72 * Math.sin(rad) + 4}" text-anchor="middle" class="clock-num">${i}</text>`;
   }
   let ticks = '';
-  for (let i = 0; i < 12; i++) {
-    const rad = (i * 30 - 90) * Math.PI / 180;
-    ticks += `<line x1="${100 + 86 * Math.cos(rad)}" y1="${100 + 86 * Math.sin(rad)}" x2="${100 + 92 * Math.cos(rad)}" y2="${100 + 92 * Math.sin(rad)}" class="clock-tick major"/>`;
+  for (let i = 0; i < 60; i++) {
+    const rad = (i * 6 - 90) * Math.PI / 180;
+    const major = i % 5 === 0;
+    const r1 = major ? 84 : 88;
+    ticks += `<line x1="${100 + r1 * Math.cos(rad)}" y1="${100 + r1 * Math.sin(rad)}" x2="${100 + 92 * Math.cos(rad)}" y2="${100 + 92 * Math.sin(rad)}" class="clock-tick${major ? ' major' : ''}"/>`;
   }
   return `<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="시계" data-drop="clock">
-    <circle cx="100" cy="100" r="94" class="clock-face"/>
+    <defs>
+      <radialGradient id="clkFace" cx="40%" cy="35%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f1f5f9"/></radialGradient>
+      <linearGradient id="clkRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#334155"/><stop offset="100%" stop-color="#0f172a"/></linearGradient>
+    </defs>
+    <circle cx="100" cy="100" r="95" fill="url(#clkFace)" stroke="url(#clkRim)" stroke-width="6"/>
+    <circle cx="100" cy="100" r="52" fill="none" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="3 4"/>
     ${ticks}${numbers}
     <line x1="100" y1="100" x2="${hx}" y2="${hy}" class="clock-hand hour" data-hand="hour"/>
     <line x1="100" y1="100" x2="${mx}" y2="${my}" class="clock-hand minute" data-hand="minute"/>
-    <circle cx="100" cy="100" r="6" class="clock-center"/>
+    <circle cx="100" cy="100" r="7" class="clock-center" stroke="#fff" stroke-width="2"/>
     <circle cx="${hx}" cy="${hy}" r="13" class="clock-grab" data-clock-hand="hour" aria-label="시침 끌기"/>
     <circle cx="${mx}" cy="${my}" r="13" class="clock-grab" data-clock-hand="minute" aria-label="분침 끌기"/>
   </svg>`;
@@ -855,12 +862,12 @@ function renderMeasure() {
 
 /* ---------- 11단계: 도형과 규칙성 ---------- */
 const SHAPES = [
-  { id: 'triangle', name: '삼각형', sides: 3, corners: 3, svg: '<polygon points="50,8 94,88 6,88" fill="#dbeafe" stroke="#2563eb" stroke-width="5" stroke-linejoin="round"/>', fact: '뾰족한 꼭짓점이 3개예요.' },
-  { id: 'square', name: '정사각형', sides: 4, corners: 4, svg: '<rect x="12" y="12" width="76" height="76" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="5"/>', fact: '네 변의 길이가 모두 같아요.' },
-  { id: 'rect', name: '직사각형', sides: 4, corners: 4, svg: '<rect x="6" y="24" width="88" height="52" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="5"/>', fact: '마주 보는 변의 길이가 같아요.' },
-  { id: 'circle', name: '원', sides: 0, corners: 0, svg: '<circle cx="50" cy="50" r="42" fill="#ede9fe" stroke="#7c3aed" stroke-width="5"/>', fact: '둥글어서 굴러가요. 꼭짓점이 없어요.' },
-  { id: 'pentagon', name: '오각형', sides: 5, corners: 5, svg: '<polygon points="50,6 92,37 76,87 24,87 8,37" fill="#ffe4e6" stroke="#e11d48" stroke-width="5" stroke-linejoin="round"/>', fact: '변과 꼭짓점이 5개씩 있어요.' },
-  { id: 'hexagon', name: '육각형', sides: 6, corners: 6, svg: '<polygon points="50,6 88,28 88,72 50,94 12,72 12,28" fill="#cffafe" stroke="#0891b2" stroke-width="5" stroke-linejoin="round"/>', fact: '벌집 모양처럼 변이 6개예요.' },
+  { id: 'triangle', name: '삼각형', sides: 3, corners: 3, svg: '<polygon points="50,10 92,86 8,86" fill="#dbeafe" stroke="#2563eb" stroke-width="5" stroke-linejoin="round"/><polygon points="50,24 76,78 24,78" fill="#fff" opacity="0.35"/><circle cx="50" cy="10" r="4.5" fill="#2563eb" class="shape-vertex"/><circle cx="92" cy="86" r="4.5" fill="#2563eb" class="shape-vertex"/><circle cx="8" cy="86" r="4.5" fill="#2563eb" class="shape-vertex"/>', fact: '뾰족한 꼭짓점이 3개예요.' },
+  { id: 'square', name: '정사각형', sides: 4, corners: 4, svg: '<rect x="14" y="14" width="72" height="72" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="5"/><rect x="22" y="22" width="56" height="22" rx="3" fill="#fff" opacity="0.4"/><circle cx="14" cy="14" r="4.5" fill="#16a34a" class="shape-vertex"/><circle cx="86" cy="14" r="4.5" fill="#16a34a" class="shape-vertex"/><circle cx="86" cy="86" r="4.5" fill="#16a34a" class="shape-vertex"/><circle cx="14" cy="86" r="4.5" fill="#16a34a" class="shape-vertex"/>', fact: '네 변의 길이가 모두 같아요.' },
+  { id: 'rect', name: '직사각형', sides: 4, corners: 4, svg: '<rect x="8" y="24" width="84" height="52" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="5"/><rect x="14" y="30" width="72" height="16" rx="3" fill="#fff" opacity="0.45"/><circle cx="8" cy="24" r="4.5" fill="#d97706" class="shape-vertex"/><circle cx="92" cy="24" r="4.5" fill="#d97706" class="shape-vertex"/><circle cx="92" cy="76" r="4.5" fill="#d97706" class="shape-vertex"/><circle cx="8" cy="76" r="4.5" fill="#d97706" class="shape-vertex"/>', fact: '마주 보는 변의 길이가 같아요.' },
+  { id: 'circle', name: '원', sides: 0, corners: 0, svg: '<circle cx="50" cy="50" r="40" fill="#ede9fe" stroke="#7c3aed" stroke-width="5"/><path d="M26 34a26 26 0 0 1 36-8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.7"/>', fact: '둥글어서 굴러가요. 꼭짓점이 없어요.' },
+  { id: 'pentagon', name: '오각형', sides: 5, corners: 5, svg: '<polygon points="50,8 90,37 75,86 25,86 10,37" fill="#ffe4e6" stroke="#e11d48" stroke-width="5" stroke-linejoin="round"/><polygon points="50,20 75,40 66,76 34,76 25,40" fill="#fff" opacity="0.35"/><circle cx="50" cy="8" r="4.2" fill="#e11d48" class="shape-vertex"/><circle cx="90" cy="37" r="4.2" fill="#e11d48" class="shape-vertex"/><circle cx="75" cy="86" r="4.2" fill="#e11d48" class="shape-vertex"/><circle cx="25" cy="86" r="4.2" fill="#e11d48" class="shape-vertex"/><circle cx="10" cy="37" r="4.2" fill="#e11d48" class="shape-vertex"/>', fact: '변과 꼭짓점이 5개씩 있어요.' },
+  { id: 'hexagon', name: '육각형', sides: 6, corners: 6, svg: '<polygon points="50,8 86,29 86,71 50,92 14,71 14,29" fill="#cffafe" stroke="#0891b2" stroke-width="5" stroke-linejoin="round"/><polygon points="50,20 74,34 74,66 50,80 26,66 26,34" fill="#fff" opacity="0.35"/><circle cx="50" cy="8" r="4" fill="#0891b2" class="shape-vertex"/><circle cx="86" cy="29" r="4" fill="#0891b2" class="shape-vertex"/><circle cx="86" cy="71" r="4" fill="#0891b2" class="shape-vertex"/><circle cx="50" cy="92" r="4" fill="#0891b2" class="shape-vertex"/><circle cx="14" cy="71" r="4" fill="#0891b2" class="shape-vertex"/><circle cx="14" cy="29" r="4" fill="#0891b2" class="shape-vertex"/>', fact: '벌집 모양처럼 변이 6개예요.' },
 ];
 const PATTERNS = [
   { seq: ['🔴', '🔵', '🔴', '🔵', '🔴'], answer: '🔵', choices: ['🔴', '🔵', '🟢'], rule: '빨강과 파랑이 번갈아 나와요.' },

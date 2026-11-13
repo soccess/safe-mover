@@ -627,6 +627,16 @@ dialog.modal::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
 @keyframes targetPulse{0%,100%{scale:1}50%{scale:1.14}}
 @keyframes shapePop{0%{opacity:0;scale:.72;rotate:-8deg}75%{opacity:1;scale:1.08;rotate:2deg}100%{scale:1;rotate:0}}
 @keyframes barGrow{from{transform:scaleX(.12);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
+@keyframes arcDraw{from{stroke-dashoffset:240;opacity:0}to{stroke-dashoffset:0;opacity:1}}
+@keyframes ringPulse{0%,100%{transform:scale(.88);opacity:.2}50%{transform:scale(1.22);opacity:.45}}
+@keyframes vertexGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.26)}}
+.nl-arc{stroke-dasharray:240;animation:arcDraw .7s ease both}
+.nl-mark-ring{transform-box:fill-box;transform-origin:center;animation:ringPulse 2.2s ease-in-out infinite}
+.shape-vertex{transform-box:fill-box;transform-origin:center;animation:vertexGlow 2.4s ease-in-out infinite}
+.clock-grab{fill:rgba(37,99,235,.16);stroke:rgba(37,99,235,.45);stroke-width:2;cursor:grab;transition:fill .15s,transform .15s}
+.clock-grab:hover{fill:rgba(37,99,235,.3)}
+.fraction-visual:hover .fraction-slice{filter:brightness(1.06)}
+.group-unit:hover{transform:scale(1.08);transition:transform .18s ease}
 #toolBody.activity-enter>*{animation-duration:.38s;animation-timing-function:cubic-bezier(.2,.75,.25,1);animation-fill-mode:both;animation-delay:calc(min(var(--activity-order,0),6)*38ms)}
 #toolBody[data-stage="1"].activity-enter>*{animation-name:sortIn}
 #toolBody[data-stage="2"].activity-enter>*{animation-name:countIn}

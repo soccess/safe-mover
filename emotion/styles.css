@@ -15,15 +15,37 @@
 .svg-anim .rise{animation:svgRise 4.6s ease-out infinite}
 .svg-anim .pulse{transform-box:fill-box;transform-origin:center;animation:svgPulse 4.6s ease-in-out infinite}
 .svg-anim .blink{animation:svgBlink 3.6s ease-in-out infinite}
-@keyframes svgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes svgDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
-@keyframes svgTwinkle{0%,100%{opacity:.25;transform:scale(.82)}50%{opacity:1;transform:scale(1.06)}}
-@keyframes svgSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.svg-anim .breathe{transform-box:fill-box;transform-origin:50% 80%;animation:svgBreathe 4.2s ease-in-out infinite}
+.svg-anim .eyeBlink{transform-box:fill-box;transform-origin:center;animation:svgEyeBlink 4.8s ease-in-out infinite}
+.svg-anim .wingFlap{transform-box:fill-box;transform-origin:center;animation:svgWing .9s ease-in-out infinite}
+.svg-anim .flameFlicker{transform-box:fill-box;transform-origin:50% 90%;animation:svgFlame 1.3s ease-in-out infinite}
+.svg-anim .waveFlow{animation:svgWave 3.2s ease-in-out infinite}
+.svg-anim .radarSweep{transform-box:fill-box;transform-origin:center;animation:svgSpin 4.5s linear infinite}
+.svg-anim .noteFloat{animation:svgNoteFloat 2.8s ease-in-out infinite}
+.svg-anim .noteFloat2{animation:svgNoteFloat 3.4s ease-in-out -1.4s infinite}
+.svg-anim .dotPulse1{animation:svgDot 1.6s ease-in-out infinite}
+.svg-anim .dotPulse2{animation:svgDot 1.6s ease-in-out .28s infinite}
+.svg-anim .dotPulse3{animation:svgDot 1.6s ease-in-out .56s infinite}
+.svg-anim .tearDrop{animation:svgTear 2.6s ease-in infinite}
+.svg-anim .dashFlow{stroke-dasharray:6 6;animation:svgDash 2.2s linear infinite}
+@keyframes svgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3.5px)}}
+@keyframes svgDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+@keyframes svgTwinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes svgSway{0%,100%{transform:rotate(-4.5deg)}50%{transform:rotate(4.5deg)}}
 @keyframes svgSpin{to{transform:rotate(360deg)}}
 @keyframes svgRain{0%{transform:translateY(-6px);opacity:0}18%{opacity:1}100%{transform:translateY(16px);opacity:0}}
-@keyframes svgRise{0%{transform:translateY(8px);opacity:0}25%{opacity:.9}100%{transform:translateY(-22px);opacity:0}}
-@keyframes svgPulse{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.06);opacity:1}}
+@keyframes svgRise{0%{transform:translateY(8px);opacity:0}25%{opacity:.92}100%{transform:translateY(-24px);opacity:0}}
+@keyframes svgPulse{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.07);opacity:1}}
 @keyframes svgBlink{0%,92%,100%{opacity:1}95%{opacity:.25}}
+@keyframes svgBreathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.025,.985)}}
+@keyframes svgEyeBlink{0%,90%,96%,100%{transform:scaleY(1)}93%{transform:scaleY(.12)}}
+@keyframes svgWing{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.62)}}
+@keyframes svgFlame{0%,100%{transform:scale(1,1) rotate(-2deg)}50%{transform:scale(1.07,.94) rotate(3deg)}}
+@keyframes svgWave{0%,100%{transform:translateX(-2px)}50%{transform:translateX(2px)}}
+@keyframes svgNoteFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(5deg)}}
+@keyframes svgDot{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-2.5px)}}
+@keyframes svgTear{0%{transform:translateY(-1px);opacity:.95}80%{transform:translateY(6px);opacity:.75}100%{transform:translateY(9px);opacity:0}}
+@keyframes svgDash{to{stroke-dashoffset:-24}}
 @media (prefers-reduced-motion:reduce){.svg-anim *{animation:none!important}}
 .mood-picture svg{transition:transform .35s ease}
 .mood-card:hover .mood-picture svg{transform:scale(1.06) rotate(-2deg)}

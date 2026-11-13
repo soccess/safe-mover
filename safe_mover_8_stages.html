@@ -10,7 +10,13 @@
   <div id="wrap">
     <div id="topbar">
       <a id="homeLink" href="./index.html">🏠 목록</a>
-      <div id="title">🛡️ 맞춤법 수호대 모험</div>
+      <div id="title">
+        <svg class="title-svg" viewBox="0 0 28 28" width="22" height="22" aria-hidden="true">
+          <path d="M14 2L24 6v7c0 6.5-4.2 11-10 13C8.2 24 4 19.5 4 13V6z" fill="#38bdf8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M9.5 13.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>맞춤법 수호대 모험</span>
+      </div>
       <div id="chips"></div>
       <button class="btn" id="btnSound">🔊 효과음 ON</button>
       <button class="btn" id="btnRestart">↻ 처음부터</button>
@@ -38,7 +44,7 @@
     </div>
   </div>
 
-  <script src="./assets/turso_client.js"></script>
+  <script src="./assets/d1_client.js"></script>
   <script src="./safe_mover/words.js"></script>
   <script src="./safe_mover/stages.js"></script>
   <script src="./safe_mover/audio.js"></script>

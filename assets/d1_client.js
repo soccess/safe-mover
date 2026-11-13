@@ -1,13 +1,42 @@
 "use strict";
 
 /* ============================================================
-   Turso DB 브라우저 브리지 (turso_server.py 프록시 연동)
-   - file:// 또는 정적 호스팅 환경에서는 오류 없이 조용히 건너뜁니다.
+   Cloudflare D1 DB 브라우저 브리지 (Workers + D1 API 연동)
+   - GitHub Pages(정적 호스팅), 로컬 서버, 파일 환경 모두 지원
    ============================================================ */
 (() => {
   const STUDENT_KEY = "safe_mover.student_name.v1";
-  const isHttp = location.protocol === "http:" || location.protocol === "https:";
+  const API_OVERRIDE_KEY = "safe_mover.d1_api.v1";
+  const DEFAULT_D1_API = "https://safe-mover-d1-api.school-guardian.workers.dev";
   let serverAvailable = null;
+
+  function getApiBase() {
+    try {
+      const qs = new URLSearchParams(location.search);
+      const fromQuery = (qs.get("d1_api") || "").trim();
+      if (fromQuery) {
+        const clean = fromQuery.replace(/\/+$/, "");
+        localStorage.setItem(API_OVERRIDE_KEY, clean);
+        return clean;
+      }
+      if (typeof window.D1_API_BASE === "string" && window.D1_API_BASE.trim()) {
+        return window.D1_API_BASE.trim().replace(/\/+$/, "");
+      }
+      const saved = (localStorage.getItem(API_OVERRIDE_KEY) || "").trim();
+      if (saved) return saved.replace(/\/+$/, "");
+    } catch (e) { /* 무시 */ }
+    return DEFAULT_D1_API;
+  }
+
+  function setApiBase(url) {
+    const clean = String(url || "").trim().replace(/\/+$/, "");
+    try {
+      if (clean) localStorage.setItem(API_OVERRIDE_KEY, clean);
+      else localStorage.removeItem(API_OVERRIDE_KEY);
+    } catch (e) { /* 무시 */ }
+    serverAvailable = null;
+    return getApiBase();
+  }
 
   function getStudentName() {
     try {
@@ -26,10 +55,10 @@
     return clean;
   }
 
-  async function apiFetch(url, options) {
-    if (!isHttp) return null;
+  async function apiFetch(path, options) {
+    const base = getApiBase();
     try {
-      const res = await fetch(url, {
+      const res = await fetch(`${base}${path}`, {
         headers: { "Content-Type": "application/json" },
         ...options,
       });
@@ -41,24 +70,19 @@
   }
 
   async function checkHealth(force) {
-    if (!isHttp) {
-      serverAvailable = false;
-      return { ok: false, mode: "static-file", message: "정적 파일 모드 (connect_turso.bat 실행 시 DB 연동)" };
-    }
     if (!force && serverAvailable === false) {
-      return { ok: false, mode: "static-only", message: "DB 서버 미연결 (connect_turso.bat 실행 필요)" };
+      return { ok: false, mode: "offline", message: "Cloudflare D1 API 연결 대기 중" };
     }
     const data = await apiFetch("/api/health", { method: "GET" });
-    if (!data) {
+    if (!data || !data.ok) {
       serverAvailable = false;
-      return { ok: false, mode: "static-only", message: "DB API 응답 없음 (connect_turso.bat 으로 실행하세요)" };
+      return { ok: false, mode: "offline", message: "Cloudflare D1 API 응답 없음 (네트워크 확인)" };
     }
     serverAvailable = true;
-    return data;
+    return { ...data, api_base: getApiBase() };
   }
 
   async function saveRecord(record) {
-    if (!isHttp) return null;
     const payload = {
       game: record.game || "unknown",
       student_name: record.student_name || getStudentName(),
@@ -74,7 +98,6 @@
   }
 
   async function getRecords(game, limit) {
-    if (!isHttp) return [];
     const qs = new URLSearchParams();
     if (game) qs.set("game", game);
     if (limit) qs.set("limit", String(limit));
@@ -83,7 +106,6 @@
   }
 
   async function setKV(key, value) {
-    if (!isHttp) return null;
     return await apiFetch("/api/kv", {
       method: "POST",
       body: JSON.stringify({ key, value }),
@@ -91,7 +113,6 @@
   }
 
   async function getKV(key) {
-    if (!isHttp) return null;
     const data = await apiFetch(`/api/kv?key=${encodeURIComponent(key)}`, { method: "GET" });
     if (!data || !data.ok || !data.found || !data.item) return null;
     try {
@@ -101,7 +122,9 @@
     }
   }
 
-  window.TursoBridge = {
+  window.D1Bridge = {
+    getApiBase,
+    setApiBase,
     getStudentName,
     setStudentName,
     checkHealth,

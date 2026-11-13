@@ -239,21 +239,31 @@ window.SafeMoverRenderer = (() => {
   function drawCorrectWordCard(ctx, entity, sc, animT) {
     const pulse = 1 + Math.sin(animT * 7 + entity.ph) * 0.06;
     const floatY = Math.sin(animT * 5 + entity.ph) * 8;
+    const wingAngle = Math.sin(animT * 14 + entity.ph) * 0.32;
     ctx.save();
     ctx.translate(0, -34 + floatY);
     ctx.scale(pulse, pulse);
 
     // 반짝이는 후광
-    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 68);
-    aura.addColorStop(0, "rgba(74, 222, 128, 0.55)");
+    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 72);
+    aura.addColorStop(0, "rgba(74, 222, 128, 0.62)");
     aura.addColorStop(1, "rgba(74, 222, 128, 0)");
     ctx.fillStyle = aura;
-    ctx.beginPath(); ctx.arc(0, 0, 68, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 72, 0, Math.PI * 2); ctx.fill();
 
-    // 귀여운 날개
+    // 펄럭이는 귀여운 날개
     ctx.fillStyle = "#FEF08A";
-    ctx.beginPath(); ctx.ellipse(-62, -4, 16, 9, -0.35, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(62, -4, 16, 9, 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-62, -4, 17, 9, -0.35 + wingAngle, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(62, -4, 17, 9, 0.35 - wingAngle, 0, Math.PI * 2); ctx.fill();
+
+    // 공전 반짝이 별
+    for (let i = 0; i < 2; i++) {
+      const a = animT * 3.5 + entity.ph + i * Math.PI;
+      const sx = Math.cos(a) * 68;
+      const sy = Math.sin(a) * 24 - 6;
+      ctx.fillStyle = "#FDE047";
+      ctx.beginPath(); ctx.arc(sx, sy, 3.2, 0, Math.PI * 2); ctx.fill();
+    }
 
     // 단어 카드 본체
     const cardW = Math.max(116, entity.word.length * 24 + 34);

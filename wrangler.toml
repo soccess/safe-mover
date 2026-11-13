@@ -1,0 +1,8 @@
+name = "safe-mover-d1-api"
+main = "worker/index.js"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "safe-mover-db"
+database_id = "6bcc1834-5411-40c3-8eef-745b46c680ad"

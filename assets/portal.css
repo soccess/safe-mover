@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
   background: radial-gradient(circle at 20% 20%, #1b3252 0%, #0b1620 65%, #070e15 100%);
   color: #fff;
   min-height: 100vh;
@@ -13,92 +13,149 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.portal-bg-svg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
 }
 
 .wrap {
-  max-width: 980px;
+  max-width: 1160px;
   width: 100%;
   text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.portal-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  animation: portalFadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.portal-emblem {
+  width: 84px;
+  height: 84px;
+  filter: drop-shadow(0 10px 22px rgba(56, 189, 248, 0.35));
 }
 
 h1 {
-  font-size: 30px;
-  margin-bottom: 8px;
+  font-size: 32px;
   letter-spacing: -0.5px;
+  background: linear-gradient(120deg, #ffffff 0%, #bae6fd 55%, #fde68a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 p.sub {
   color: #B0BEC5;
   font-size: 15px;
-  margin-bottom: 28px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
 
-@media (max-width: 860px) {
-  .grid { grid-template-columns: 1fr 1fr; }
+@media (max-width: 1020px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
   .grid { grid-template-columns: 1fr; }
 }
 
 .card {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   color: #222;
   border-radius: 22px;
-  padding: 26px 20px;
+  padding: 24px 18px 22px;
   text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: 4px solid transparent;
+  border: 3px solid transparent;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2), border-color 0.2s ease, box-shadow 0.24s ease;
+  animation: portalCardIn 0.55s cubic-bezier(0.2, 0.85, 0.3, 1.1) both;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.12s; }
+.card:nth-child(3) { animation-delay: 0.19s; }
+.card:nth-child(4) { animation-delay: 0.26s; }
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.7), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px) scale(1.015);
   border-color: #FFD600;
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.48), 0 0 24px rgba(255, 214, 0, 0.2);
 }
+.card:hover::before { opacity: 1; }
 
-.card .icon {
-  font-size: 54px;
-  margin-bottom: 4px;
-  transition: transform 0.2s ease;
+.card .icon-svg {
+  width: 108px;
+  height: 94px;
+  margin-bottom: 6px;
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.3);
 }
-.card:hover .icon {
-  transform: scale(1.1) rotate(-3deg);
+.card:hover .icon-svg {
+  transform: scale(1.08) translateY(-3px);
 }
 
 .card h2 {
-  font-size: 19px;
-  margin: 10px 0 8px;
+  font-size: 18px;
+  margin: 8px 0 8px;
   color: #1565C0;
   line-height: 1.35;
 }
 
 .card p {
-  font-size: 13.5px;
+  font-size: 13px;
   color: #546E7A;
   line-height: 1.55;
   flex: 1;
 }
 
 .card .go {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-top: 16px;
   background: linear-gradient(135deg, #00C853, #009624);
   color: #fff;
   font-weight: 900;
   border-radius: 12px;
-  padding: 11px 22px;
-  font-size: 14px;
+  padding: 10px 20px;
+  font-size: 13.5px;
   box-shadow: 0 4px 12px rgba(0, 200, 83, 0.35);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.card:hover .go {
+  transform: scale(1.04);
 }
 
 .card.math h2 { color: #7C3AED; }
@@ -113,7 +170,58 @@ p.sub {
   box-shadow: 0 4px 12px rgba(118, 101, 197, 0.35);
 }
 
-.turso-bar {
+.card.cafe h2 { color: #3D6B4B; }
+.card.cafe .go {
+  background: linear-gradient(135deg, #487555, #2E5239);
+  box-shadow: 0 4px 12px rgba(72, 117, 85, 0.35);
+}
+
+/* SVG Animations inside Portal */
+.svg-bob { animation: pBob 4.2s ease-in-out infinite; }
+.svg-bob-slow { animation: pBob 6s ease-in-out -1.5s infinite; }
+.svg-spin-slow { transform-box: fill-box; transform-origin: center; animation: pSpin 26s linear infinite; }
+.svg-twinkle { transform-box: fill-box; transform-origin: center; animation: pTwinkle 2.8s ease-in-out infinite; }
+.svg-twinkle-2 { transform-box: fill-box; transform-origin: center; animation: pTwinkle 3.8s ease-in-out -1.2s infinite; }
+.svg-steam { animation: pSteam 3.2s ease-out infinite; }
+.svg-steam-2 { animation: pSteam 3.2s ease-out -1.6s infinite; }
+.svg-pulse { transform-box: fill-box; transform-origin: center; animation: pPulse 3.2s ease-in-out infinite; }
+.svg-sway { transform-box: fill-box; transform-origin: 50% 90%; animation: pSway 4.6s ease-in-out infinite; }
+
+@keyframes portalFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes portalCardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes pSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pTwinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes pSteam {
+  0% { transform: translateY(4px) scale(0.85); opacity: 0; }
+  30% { opacity: 0.75; }
+  100% { transform: translateY(-10px) scale(1.15); opacity: 0; }
+}
+@keyframes pPulse {
+  0%, 100% { transform: scale(0.95); opacity: 0.82; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+@keyframes pSway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* Cloudflare D1 Status Bar */
+.d1-bar {
   margin-top: 24px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -126,9 +234,10 @@ p.sub {
   gap: 12px;
   text-align: left;
   backdrop-filter: blur(8px);
+  animation: portalFadeUp 0.65s ease 0.25s both;
 }
 
-.turso-status {
+.d1-status {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -136,25 +245,34 @@ p.sub {
   color: #E2E8F0;
 }
 
-.turso-dot {
+.d1-badge-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.d1-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: #94A3B8;
   flex-shrink: 0;
 }
-.turso-dot.ok { background: #22C55E; box-shadow: 0 0 8px rgba(34, 197, 94, 0.7); }
-.turso-dot.fallback { background: #F59E0B; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
-.turso-dot.off { background: #EF4444; }
+.d1-dot.ok {
+  background: #22C55E;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+  animation: pPulse 2.4s ease-in-out infinite;
+}
+.d1-dot.off { background: #EF4444; }
 
-.turso-controls {
+.d1-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.turso-input {
+.d1-input {
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.22);
   color: #fff;
@@ -164,38 +282,52 @@ p.sub {
   width: 130px;
 }
 
-.turso-btn {
-  background: rgba(56, 189, 248, 0.18);
-  border: 1px solid rgba(56, 189, 248, 0.45);
-  color: #E0F2FE;
+.d1-btn {
+  background: rgba(249, 115, 22, 0.2);
+  border: 1px solid rgba(251, 146, 60, 0.5);
+  color: #FFEDD5;
   border-radius: 10px;
   padding: 7px 12px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
 }
-.turso-btn:hover { background: rgba(56, 189, 248, 0.3); }
+.d1-btn:hover {
+  background: rgba(249, 115, 22, 0.36);
+  transform: translateY(-1px);
+}
 
-.turso-records {
+.d1-records {
   margin-top: 12px;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(15, 23, 42, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
   padding: 14px 16px;
   text-align: left;
   display: none;
 }
-.turso-records.open { display: block; }
-.turso-records h3 { font-size: 14px; color: #F8FAFC; margin-bottom: 10px; }
-.turso-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
-.turso-item {
+.d1-records.open {
+  display: block;
+  animation: portalFadeUp 0.28s ease both;
+}
+.d1-records h3 { font-size: 14px; color: #F8FAFC; margin-bottom: 10px; }
+.d1-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.d1-item {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   font-size: 12.5px;
   color: #CBD5E1;
   background: rgba(255, 255, 255, 0.05);
-  padding: 7px 10px;
+  padding: 8px 11px;
   border-radius: 8px;
 }
-.turso-item b { color: #7DD3FC; }
+.d1-item b { color: #FDBA74; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

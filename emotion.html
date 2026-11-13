@@ -11,7 +11,15 @@
   <main class="page">
     <header class="topbar">
       <button class="brand" onclick="goHome()" aria-label="처음으로">
-        <span class="brand-mark">☀</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 36 36" width="26" height="26">
+            <g stroke="#e09a2b" stroke-width="2.4" stroke-linecap="round" class="spinSlow" style="transform-origin:18px 18px;animation:svgSpin 24s linear infinite">
+              <path d="M18 3v4M18 29v4M3 18h4M29 18h4M7.5 7.5l3 3M25.5 25.5l3 3M28.5 7.5l-3 3M10.5 25.5l-3 3"/>
+            </g>
+            <circle cx="18" cy="18" r="8.5" fill="#ffcf4a" stroke="#d98c1f" stroke-width="1.6"/>
+            <path d="M14.5 17q1.5-2 3 0M18.5 17q1.5-2 3 0M15 20.5q3 3 6 0" fill="none" stroke="#6b4b16" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </span>
         <span>마음 날씨 연구소</span>
       </button>
       <div class="top-actions">
@@ -65,7 +73,7 @@
     <footer class="footer">마음을 표현하고 돌보는 연습은 매일 조금씩 자라나요. 🌼</footer>
   </main>
 
-  <script src="./assets/turso_client.js"></script>
+  <script src="./assets/d1_client.js"></script>
   <script src="./emotion/data.js"></script>
   <script src="./emotion/illustrations.js"></script>
   <script src="./emotion/activities.js"></script>

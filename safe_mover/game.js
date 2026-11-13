@@ -363,7 +363,15 @@
     ).join("") || '<div class="reviewItem">바른 단어를 터치해 맞춤법을 익혀 보세요!</div>';
 
     document.getElementById("card").innerHTML =
-      '<div style="font-size:52px">🏆</div>' +
+      '<div class="result-trophy-wrap">' +
+        '<svg class="result-trophy-svg" viewBox="0 0 96 96" width="84" height="84" aria-hidden="true">' +
+          '<circle cx="48" cy="48" r="42" fill="#fef9c3"/>' +
+          '<path d="M30 22h36v22c0 12-8 20-18 20s-18-8-18-20z" fill="#fbbf24" stroke="#b45309" stroke-width="3" stroke-linejoin="round"/>' +
+          '<path d="M30 28h-9c0 12 4 16 9 16m36-16h9c0 12-4 16-9 16" fill="none" stroke="#d97706" stroke-width="3.5" stroke-linecap="round"/>' +
+          '<path d="M48 64v12m-12 4h24" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>' +
+          '<path d="M48 31l3 7 7.5.8-5.5 5 1.6 7.4L48 47.4l-6.6 3.8 1.6-7.4-5.5-5 7.5-.8z" fill="#fffbeb"/>' +
+        '</svg>' +
+      '</div>' +
       '<div style="background:#16A34A;color:#fff;display:inline-block;border-radius:8px;padding:4px 12px;font-weight:900;font-size:13px">💮 맞춤법 수호대 마스터 스탬프!</div>' +
       "<h1>맞춤법 대작전 성공!</h1>" +
       '<div style="font-weight:800;color:#0D47A1;margin:6px 0">' + STAGES.length + "개 테마 코스 완주!</div>" +
@@ -376,8 +384,8 @@
     document.getElementById("overlay").style.display = "flex";
     document.getElementById("bigBtn").onclick = restart;
 
-    if (window.TursoBridge) {
-      window.TursoBridge.saveRecord({
+    if (window.D1Bridge) {
+      window.D1Bridge.saveRecord({
         game: "safe_mover",
         stage: STAGES.length + "단계 완주",
         score: state.totalCollected,
@@ -493,8 +501,8 @@
       if (state.stageIdx >= STAGES.length - 1) {
         enterResult();
       } else {
-        if (window.TursoBridge) {
-          window.TursoBridge.saveRecord({
+        if (window.D1Bridge) {
+          window.D1Bridge.saveRecord({
             game: "safe_mover",
             stage: (state.stageIdx + 1) + "단계 클리어",
             score: state.collected,
