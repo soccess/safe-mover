@@ -161,31 +161,187 @@ const state = {
 };
 
 // ============================================================================
-// 3. 감각 친화적 오디오 (부드러운 효과음 + 선택적 한국어 음성 안내)
+// 3. 감각 친화적 오디오 (풍부한 Web Audio 합성 효과음 + 선택적 한국어 음성 안내)
 // ============================================================================
 let audioCtx = null;
-function playSoftTone(freq = 523.25, duration = 0.14, type = 'sine') {
-  if (!state.soundEnabled) return;
+let noiseBuffer = null;
+
+function getAudioCtx() {
+  if (!state.soundEnabled) return null;
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    if (!noiseBuffer) {
+      const len = Math.floor(audioCtx.sampleRate * 1.2);
+      noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    }
+    return audioCtx;
+  } catch {
+    return null;
+  }
+}
+
+function playSoftTone(freq = 523.25, duration = 0.14, type = 'sine', vol = 0.06, delay = 0) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  try {
+    const t = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + duration + 0.02);
   } catch { /* 오디오 미지원 환경 무시 */ }
 }
 
+function playFilteredNoise(duration = 0.5, freqStart = 600, freqEnd = 1200, q = 2.0, vol = 0.05, delay = 0) {
+  const ctx = getAudioCtx();
+  if (!ctx || !noiseBuffer) return;
+  try {
+    const t = ctx.currentTime + delay;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer;
+    src.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(freqStart, t);
+    filter.frequency.exponentialRampToValueAtTime(Math.max(80, freqEnd), t + duration);
+    filter.Q.value = q;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.05);
+    gain.gain.setValueAtTime(vol * 0.9, t + Math.max(0.06, duration - 0.1));
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start(t);
+    src.stop(t + duration + 0.03);
+  } catch {}
+}
+
+function playGrindSound() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  playFilteredNoise(0.62, 420, 760, 1.4, 0.055);
+  try {
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(135, t);
+    osc.frequency.linearRampToValueAtTime(165, t + 0.3);
+    osc.frequency.linearRampToValueAtTime(125, t + 0.62);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.045, t + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.62);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.65);
+  } catch {}
+}
+
+function playTampSound() {
+  playSoftTone(180, 0.12, 'triangle', 0.075, 0.18);
+  playSoftTone(120, 0.16, 'sine', 0.08, 0.28);
+  playSoftTone(620, 0.06, 'sine', 0.03, 0.30);
+}
+
+function playMachineSound() {
+  playFilteredNoise(0.72, 900, 1450, 2.6, 0.04);
+  playSoftTone(150, 0.7, 'sine', 0.035);
+  [0.18, 0.34, 0.50].forEach((d, idx) => {
+    playSoftTone(740 + idx * 70, 0.07, 'sine', 0.025, d);
+  });
+}
+
+function playCupPlaceSound(cupType) {
+  if (cupType === 'glass') {
+    playSoftTone(1180, 0.12, 'sine', 0.045);
+    playSoftTone(1760, 0.09, 'sine', 0.025, 0.02);
+  } else {
+    playSoftTone(420, 0.09, 'triangle', 0.055);
+    playSoftTone(680, 0.08, 'sine', 0.03, 0.02);
+  }
+}
+
+function playIceSound() {
+  [0, 0.11, 0.22].forEach((d, i) => {
+    playSoftTone(1450 + i * 240, 0.11, 'sine', 0.045, d);
+    playSoftTone(2180 + i * 190, 0.08, 'triangle', 0.02, d + 0.015);
+  });
+}
+
+function playPourSound(duration = 0.68, pitchStart = 520, pitchEnd = 1050) {
+  playFilteredNoise(duration, pitchStart, pitchEnd, 2.4, 0.05);
+  playSoftTone(340, duration * 0.5, 'sine', 0.02, 0.08);
+  playSoftTone(440, duration * 0.45, 'sine', 0.02, duration * 0.45);
+}
+
+function playIngredientSound(kind) {
+  if (kind === 'tea') {
+    playSoftTone(520, 0.09, 'sine', 0.04);
+    playSoftTone(660, 0.11, 'sine', 0.035, 0.09);
+  } else {
+    playSoftTone(460, 0.08, 'sine', 0.045);
+    playSoftTone(780, 0.11, 'sine', 0.04, 0.07);
+    playSoftTone(980, 0.09, 'triangle', 0.025, 0.14);
+  }
+}
+
+function playBlenderSound() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  playFilteredNoise(0.76, 520, 1700, 1.8, 0.055);
+  try {
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 620;
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.exponentialRampToValueAtTime(340, t + 0.35);
+    osc.frequency.exponentialRampToValueAtTime(210, t + 0.76);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.04, t + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.76);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.78);
+  } catch {}
+}
+
+function playServeBell() {
+  playSoftTone(1046.5, 0.35, 'sine', 0.065);
+  playSoftTone(1567.98, 0.28, 'sine', 0.035, 0.02);
+}
+
 function playSuccessChime() {
-  playSoftTone(523.25, 0.16);
-  setTimeout(() => playSoftTone(659.25, 0.16), 110);
-  setTimeout(() => playSoftTone(783.99, 0.28), 220);
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+    playSoftTone(f, 0.28, 'sine', 0.06, i * 0.11);
+    playSoftTone(f * 1.5, 0.2, 'triangle', 0.02, i * 0.11 + 0.02);
+  });
+}
+
+function playGentleHintSound() {
+  playSoftTone(392, 0.12, 'sine', 0.045);
+  playSoftTone(329.63, 0.16, 'sine', 0.04, 0.09);
 }
 
 function speakKorean(text) {
@@ -363,6 +519,27 @@ let shotGlassGroup = null;
 let shotLiquidMesh = null;
 let blenderModel = null;
 let grinderModel = null;
+let serveBellMesh = null;
+
+// 믹서기 내부 스무디/재료 시각화 메쉬
+const blenderMixMesh = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.062, 0.048, 0.14, 20),
+  new THREE.MeshStandardMaterial({ color: 0xfaf6ee, roughness: 0.3, transparent: true, opacity: 0.92 })
+);
+blenderMixMesh.position.set(0.62, COUNTER_Y + 0.14, -0.08);
+blenderMixMesh.scale.y = 0.01;
+blenderMixMesh.visible = false;
+scene.add(blenderMixMesh);
+
+// 컵 내부 토핑/재료(레몬 슬라이스, 딸기, 초콜릿, 녹차 티백) 그룹
+const cupToppingGroup = new THREE.Group();
+cupToppingGroup.visible = false;
+drinkGroup.add(cupToppingGroup);
+
+// 공중 낙하 연출용 임시 아이템 그룹
+const fallingItemGroup = new THREE.Group();
+fallingItemGroup.visible = false;
+scene.add(fallingItemGroup);
 
 const liquidMesh = new THREE.Mesh(
   new THREE.CylinderGeometry(0.056, 0.048, 0.14, 24),
@@ -618,6 +795,7 @@ async function initCafeScene() {
     serveBell.position.set(0, COUNTER_Y + 0.02, 0.38);
     serveBell.castShadow = true;
     scene.add(serveBell);
+    serveBellMesh = serveBell;
     registerInteractive(serveBell, 'serve', '손님께 드리기', new THREE.Vector3(0, COUNTER_Y + 0.01, 0.38));
 
     // 쟁반 위 동적 컵 모델 준비 (drinkGroup 내부에 배치)
@@ -686,13 +864,131 @@ function handleAction(actionId) {
 
   if (actionId !== currentStep.target) {
     // 무오류 학습: 벌칙이나 불쾌한 소리 없이 차분하고 부드러운 안내만 제공
-    playSoftTone(330, 0.1);
+    playGentleHintSound();
     showGuidance(`괜찮아요! 지금은 "${currentStep.label}" 차례예요. ${currentStep.prompt}`, '💡', true);
     speakKorean(`지금은 ${currentStep.label} 차례예요.`);
     return;
   }
 
   executeStep(actionId);
+}
+
+function addCupTopping(kind) {
+  if (kind === 'lemon') {
+    const slice = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.036, 0.036, 0.01, 18),
+      new THREE.MeshStandardMaterial({ color: 0xf7dc6f, roughness: 0.35 })
+    );
+    slice.position.set(0.012, 0.085, 0.008);
+    slice.rotation.set(0.45, 0.2, 0.35);
+    cupToppingGroup.add(slice);
+  } else if (kind === 'strawberry') {
+    for (let i = 0; i < 3; i++) {
+      const berry = new THREE.Mesh(
+        new THREE.SphereGeometry(0.017, 12, 12),
+        new THREE.MeshStandardMaterial({ color: 0xd9385a, roughness: 0.4 })
+      );
+      berry.position.set((i - 1) * 0.022, 0.035 + (i % 2) * 0.014, (i % 2 === 0 ? 0.012 : -0.012));
+      cupToppingGroup.add(berry);
+    }
+  } else if (kind === 'choco') {
+    for (let i = 0; i < 3; i++) {
+      const chunk = new THREE.Mesh(
+        new THREE.BoxGeometry(0.024, 0.016, 0.024),
+        new THREE.MeshStandardMaterial({ color: 0x4a2511, roughness: 0.45 })
+      );
+      chunk.position.set((i - 1) * 0.018, 0.032, (i % 2 ? 0.012 : -0.012));
+      chunk.rotation.set(0.3 * i, 0.5 * i, 0.2);
+      cupToppingGroup.add(chunk);
+    }
+  } else if (kind === 'tea') {
+    const bag = new THREE.Mesh(
+      new THREE.BoxGeometry(0.032, 0.036, 0.01),
+      new THREE.MeshStandardMaterial({ color: 0x4d8b55, roughness: 0.7 })
+    );
+    bag.position.set(0.01, 0.055, 0);
+    bag.rotation.z = 0.22;
+    const string = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.002, 0.002, 0.09, 8),
+      new THREE.MeshStandardMaterial({ color: 0xf5f5f4 })
+    );
+    string.position.set(0.032, 0.095, 0.015);
+    string.rotation.z = -0.35;
+    cupToppingGroup.add(bag, string);
+  }
+  cupToppingGroup.visible = true;
+}
+
+function animateDropIntoTarget(kind, targetPos, onDone) {
+  while (fallingItemGroup.children.length > 0) {
+    fallingItemGroup.remove(fallingItemGroup.children[0]);
+  }
+  const colors = {
+    strawberry: 0xe11d48,
+    lemon: 0xfacc15,
+    choco: 0x4e2a14,
+    tea: 0x4d8b55,
+    ice: 0xdff6ff
+  };
+  const count = kind === 'tea' || kind === 'lemon' ? 1 : 3;
+  for (let i = 0; i < count; i++) {
+    let geo;
+    if (kind === 'lemon') geo = new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16);
+    else if (kind === 'strawberry') geo = new THREE.SphereGeometry(0.02, 12, 12);
+    else if (kind === 'tea') geo = new THREE.BoxGeometry(0.034, 0.038, 0.012);
+    else geo = new THREE.BoxGeometry(0.026, 0.022, 0.026);
+    const mat = new THREE.MeshStandardMaterial({
+      color: colors[kind] || 0xffffff,
+      roughness: kind === 'ice' ? 0.15 : 0.45,
+      transparent: kind === 'ice',
+      opacity: kind === 'ice' ? 0.8 : 1
+    });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set((i - (count - 1) / 2) * 0.028, i * 0.02, 0);
+    m.rotation.set(i * 0.4, i * 0.5, 0.3);
+    fallingItemGroup.add(m);
+  }
+  fallingItemGroup.visible = true;
+  const startPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.34, targetPos.z);
+  const endPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.04, targetPos.z);
+  const start = performance.now();
+  const dur = 460;
+  function tick(now) {
+    const t = Math.min((now - start) / dur, 1);
+    const ease = t * t;
+    fallingItemGroup.position.lerpVectors(startPos, endPos, ease);
+    fallingItemGroup.position.y += Math.sin(t * Math.PI) * 0.05;
+    fallingItemGroup.rotation.y = t * Math.PI;
+    if (t < 1) requestAnimationFrame(tick);
+    else {
+      fallingItemGroup.visible = false;
+      onDone();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function animateBlenderFill(hexColor, targetScaleY, onDone) {
+  const startY = blenderMixMesh.visible ? blenderMixMesh.scale.y : 0.01;
+  pourStream.material.color.setHex(hexColor);
+  pourStream.position.set(0.62, COUNTER_Y + 0.36, -0.08);
+  pourStream.visible = true;
+  blenderMixMesh.visible = true;
+  blenderMixMesh.material.color.setHex(hexColor);
+  const start = performance.now();
+  const dur = 520;
+  function tick(now) {
+    const t = Math.min((now - start) / dur, 1);
+    const cur = startY + (targetScaleY - startY) * t;
+    blenderMixMesh.scale.y = Math.max(cur, 0.01);
+    blenderMixMesh.position.y = COUNTER_Y + 0.14 + (0.14 * cur) / 2;
+    if (t < 1) requestAnimationFrame(tick);
+    else {
+      pourStream.visible = false;
+      onDone();
+    }
+  }
+  requestAnimationFrame(tick);
 }
 
 function executeStep(actionId) {
@@ -724,19 +1020,19 @@ function executeStep(actionId) {
       speakKorean(`${recipe.name}가 완성되었어요! 정말 잘했어요.`);
       showCompletionModal(recipe);
     } else {
-      playSoftTone(587.33, 0.12);
+      playSoftTone(659.25, 0.11, 'sine', 0.04);
     }
     renderUI();
   };
 
   if (actionId === 'grinder') {
-    playSoftTone(260, 0.25, 'triangle');
+    playGrindSound();
     const baseX = grinderModel.position.x;
     const start = performance.now();
     const animGrind = (now) => {
       const t = (now - start) / 650;
       if (t < 1) {
-        grinderModel.position.x = baseX + Math.sin(t * 40) * 0.006;
+        grinderModel.position.x = baseX + Math.sin(t * 44) * 0.007;
         requestAnimationFrame(animGrind);
       } else {
         grinderModel.position.x = baseX;
@@ -747,6 +1043,7 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animGrind);
   } else if (actionId === 'tamper') {
+    playTampSound();
     const start = performance.now();
     const animTamp = (now) => {
       const t = Math.min((now - start) / 650, 1);
@@ -766,6 +1063,7 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animTamp);
   } else if (actionId === 'machine') {
+    playMachineSound();
     portafilterCoffee.visible = false;
     shotLiquidMesh.visible = true;
     shotLiquidMesh.scale.y = 0.05;
@@ -785,20 +1083,50 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animExtract);
   } else if (actionId === 'shot') {
-    shotLiquidMesh.visible = false;
-    const nextColor = state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314;
-    animatePour(nextColor, 0.92, () => {
-      if (state.recipeKey === 'hot_americano') steamGroup.visible = true;
-      finishStep();
-    });
+    playPourSound(0.7, 500, 960);
+    const originPos = shotGlassGroup.position.clone();
+    const overCupPos = new THREE.Vector3(PREP_POS.x - 0.06, COUNTER_Y + 0.28, PREP_POS.z);
+    const startMove = performance.now();
+    const moveShot = (now) => {
+      const t = Math.min((now - startMove) / 220, 1);
+      shotGlassGroup.position.lerpVectors(originPos, overCupPos, t);
+      shotGlassGroup.rotation.z = -t * 0.65;
+      if (t < 1) {
+        requestAnimationFrame(moveShot);
+      } else {
+        shotLiquidMesh.visible = false;
+        const nextColor = state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314;
+        animatePour(nextColor, 0.92, () => {
+          const backStart = performance.now();
+          const returnShot = (n2) => {
+            const bt = Math.min((n2 - backStart) / 220, 1);
+            shotGlassGroup.position.lerpVectors(overCupPos, originPos, bt);
+            shotGlassGroup.rotation.z = -(1 - bt) * 0.65;
+            if (bt < 1) requestAnimationFrame(returnShot);
+            else {
+              shotGlassGroup.position.copy(originPos);
+              shotGlassGroup.rotation.z = 0;
+              if (state.recipeKey === 'hot_americano') steamGroup.visible = true;
+              finishStep();
+            }
+          };
+          requestAnimationFrame(returnShot);
+        }, true);
+      }
+    };
+    requestAnimationFrame(moveShot);
   } else if (actionId === 'cup') {
+    playCupPlaceSound(recipe.cupType);
     drinkGroup.visible = true;
+    drinkGroup.position.set(PREP_POS.x, COUNTER_Y + 0.02, PREP_POS.z);
     activeCupModels.mug.visible = recipe.cupType === 'mug';
     activeCupModels.glass.visible = recipe.cupType === 'glass';
     activeCupModels.tea.visible = recipe.cupType === 'tea';
     liquidMesh.visible = false;
     iceGroup.visible = false;
     steamGroup.visible = false;
+    cupToppingGroup.visible = false;
+    while (cupToppingGroup.children.length > 0) cupToppingGroup.remove(cupToppingGroup.children[0]);
     state.liquidLevel = 0;
     const baseY = COUNTER_Y + 0.02;
     const start = performance.now();
@@ -817,43 +1145,63 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animCup);
   } else if (actionId === 'ice') {
+    playIceSound();
     if (state.recipeKey === 'strawberry_smoothie') {
-      playSoftTone(680, 0.08);
-      setTimeout(finishStep, 400);
+      animateDropIntoTarget('ice', new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08), () => {
+        animateBlenderFill(0xf7b2c4, 0.85, finishStep);
+      });
     } else {
       iceGroup.visible = true;
       state.hasIce = true;
-      playSoftTone(680, 0.08);
       const start = performance.now();
       const animIce = (now) => {
         const t = Math.min((now - start) / 480, 1);
-        const drop = Math.pow(1 - t, 2) * 0.16;
+        const drop = Math.pow(1 - t, 2) * 0.18;
         iceGroup.position.y = drop;
+        iceGroup.rotation.y = (1 - t) * 0.5;
         if (t < 1) requestAnimationFrame(animIce);
         else {
           iceGroup.position.y = 0;
+          iceGroup.rotation.y = 0;
           finishStep();
         }
       };
       requestAnimationFrame(animIce);
     }
   } else if (actionId === 'strawberry') {
+    playIngredientSound('strawberry');
     if (state.recipeKey === 'strawberry_smoothie') {
-      playSoftTone(520, 0.1);
-      setTimeout(finishStep, 400);
+      animateDropIntoTarget('strawberry', new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08), () => {
+        animateBlenderFill(0xf48fb1, 0.65, finishStep);
+      });
     } else {
-      animatePour(0xd94862, 0.28, () => finishStep());
+      animateDropIntoTarget('strawberry', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
+        addCupTopping('strawberry');
+        animatePour(0xd94862, 0.28, () => finishStep(), true);
+      });
     }
   } else if (actionId === 'lemon') {
-    animatePour(0xf4d03f, 0.28, () => finishStep());
+    playIngredientSound('lemon');
+    animateDropIntoTarget('lemon', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
+      addCupTopping('lemon');
+      animatePour(0xf4d03f, 0.28, () => finishStep(), true);
+    });
   } else if (actionId === 'choco') {
-    animatePour(0x4e2a14, 0.3, () => finishStep());
+    playIngredientSound('choco');
+    animateDropIntoTarget('choco', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
+      addCupTopping('choco');
+      animatePour(0x4e2a14, 0.3, () => finishStep(), true);
+    });
   } else if (actionId === 'tea') {
-    animatePour(0x7fb069, 0.22, () => finishStep());
+    playIngredientSound('tea');
+    animateDropIntoTarget('tea', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
+      addCupTopping('tea');
+      animatePour(0x7fb069, 0.22, () => finishStep(), true);
+    });
   } else if (actionId === 'milk') {
+    playPourSound(0.66, 480, 920);
     if (state.recipeKey === 'strawberry_smoothie') {
-      playSoftTone(480, 0.1);
-      setTimeout(finishStep, 400);
+      animateBlenderFill(0xfaf6ee, 0.38, finishStep);
     } else {
       const milkMixColors = {
         strawberry_latte: 0xf4b6c2,
@@ -863,9 +1211,10 @@ function executeStep(actionId) {
       animatePour(nextColor, Math.min(state.liquidLevel + 0.55, 0.72), () => {
         if (state.recipeKey === 'hot_choco') steamGroup.visible = true;
         finishStep();
-      });
+      }, true);
     }
   } else if (actionId === 'water') {
+    playPourSound(0.7, 560, 1120);
     const waterColors = {
       iced_lemonade: 0xf7e98e,
       hot_tea: 0x98c379,
@@ -877,30 +1226,67 @@ function executeStep(actionId) {
     animatePour(nextColor, targetLvl, () => {
       if (state.recipeKey === 'hot_americano' || state.recipeKey === 'hot_tea') steamGroup.visible = true;
       finishStep();
-    });
+    }, true);
   } else if (actionId === 'blender') {
-    playSoftTone(300, 0.3, 'triangle');
+    playBlenderSound();
     const baseZ = blenderModel.position.z;
     const start = performance.now();
+    blenderMixMesh.material.color.setHex(0xf2849e);
     const animBlend = (now) => {
-      const t = (now - start) / 750;
+      const t = (now - start) / 780;
       if (t < 1) {
-        blenderModel.position.z = baseZ + Math.sin(t * 48) * 0.008;
+        blenderModel.position.z = baseZ + Math.sin(t * 52) * 0.008;
+        blenderMixMesh.rotation.y += 0.35;
+        blenderMixMesh.scale.x = 1 + Math.sin(t * 28) * 0.05;
+        blenderMixMesh.scale.z = 1 + Math.cos(t * 28) * 0.05;
         requestAnimationFrame(animBlend);
       } else {
         blenderModel.position.z = baseZ;
+        blenderMixMesh.scale.x = 1;
+        blenderMixMesh.scale.z = 1;
         finishStep();
       }
     };
     requestAnimationFrame(animBlend);
   } else if (actionId === 'pour_blender') {
-    animatePour(0xf2849e, 0.92, () => finishStep());
+    playPourSound(0.72, 420, 820);
+    const startBlenderScale = blenderMixMesh.scale.y || 0.85;
+    const startTime = performance.now();
+    const animEmpty = (now) => {
+      const t = Math.min((now - startTime) / 680, 1);
+      const cur = startBlenderScale * (1 - t);
+      blenderMixMesh.scale.y = Math.max(cur, 0.01);
+      blenderMixMesh.position.y = COUNTER_Y + 0.14 + (0.14 * cur) / 2;
+      if (t < 1) requestAnimationFrame(animEmpty);
+      else blenderMixMesh.visible = false;
+    };
+    requestAnimationFrame(animEmpty);
+    animatePour(0xf2849e, 0.92, () => finishStep(), true);
   } else if (actionId === 'serve') {
-    finishStep();
+    playServeBell();
+    const startPos = drinkGroup.position.clone();
+    const servePos = new THREE.Vector3(0, COUNTER_Y + 0.04, 0.32);
+    const start = performance.now();
+    const animServe = (now) => {
+      const t = Math.min((now - start) / 560, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      drinkGroup.position.lerpVectors(startPos, servePos, ease);
+      drinkGroup.position.y += Math.sin(t * Math.PI) * 0.06;
+      if (serveBellMesh) {
+        serveBellMesh.position.y = COUNTER_Y + 0.02 - Math.sin(Math.min(t * 3, 1) * Math.PI) * 0.012;
+      }
+      if (t < 1) requestAnimationFrame(animServe);
+      else {
+        if (serveBellMesh) serveBellMesh.position.y = COUNTER_Y + 0.02;
+        finishStep();
+      }
+    };
+    requestAnimationFrame(animServe);
   }
 }
 
-function animatePour(hexColor, targetLevel, onDone) {
+function animatePour(hexColor, targetLevel, onDone, skipAudio = false) {
+  if (!skipAudio) playPourSound(0.68, 520, 1020);
   pourStream.material.color.setHex(hexColor);
   pourStream.position.set(PREP_POS.x, COUNTER_Y + 0.28, PREP_POS.z);
   pourStream.visible = true;
@@ -1005,9 +1391,18 @@ function resetDrink() {
   state.liquidLevel = 0;
   state.hasIce = false;
   drinkGroup.visible = false;
+  drinkGroup.position.set(PREP_POS.x, COUNTER_Y + 0.02, PREP_POS.z);
+  drinkGroup.scale.set(1, 1, 1);
   liquidMesh.visible = false;
+  liquidMesh.scale.y = 0.01;
   iceGroup.visible = false;
   steamGroup.visible = false;
+  cupToppingGroup.visible = false;
+  while (cupToppingGroup.children.length > 0) cupToppingGroup.remove(cupToppingGroup.children[0]);
+  fallingItemGroup.visible = false;
+  blenderMixMesh.visible = false;
+  blenderMixMesh.scale.y = 0.01;
+  pourStream.visible = false;
   if (portafilterCoffee) portafilterCoffee.visible = false;
   if (shotLiquidMesh) shotLiquidMesh.visible = false;
   document.getElementById('completeModal').classList.add('hidden');

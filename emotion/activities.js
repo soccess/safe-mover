@@ -1,11 +1,11 @@
 "use strict";
 
 let taDispose=null,taAC=null;
-function taTone(freq,dur=.45,kind='sine',vol=.055){
+function taTone(freq,dur=.45,kind='sine',vol=.055,delay=0){
  try{
   taAC=taAC||new (window.AudioContext||window.webkitAudioContext)();
   if(taAC.state==='suspended')taAC.resume();
-  const o=taAC.createOscillator(),g=taAC.createGain(),t=taAC.currentTime;
+  const o=taAC.createOscillator(),g=taAC.createGain(),t=taAC.currentTime+delay;
   o.type=kind;o.frequency.value=freq;
   g.gain.setValueAtTime(.0001,t);
   g.gain.linearRampToValueAtTime(vol,t+.02);
@@ -13,6 +13,12 @@ function taTone(freq,dur=.45,kind='sine',vol=.055){
   o.connect(g);g.connect(taAC.destination);
   o.start(t);o.stop(t+dur+.03);
  }catch(e){}
+}
+function taCelebrate(){
+ [523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+  taTone(f,.36,'sine',.045,i*.095);
+  taTone(f*1.5,.24,'triangle',.015,i*.095+.02);
+ });
 }
 function taSpeak(text){
  try{
@@ -45,7 +51,7 @@ function taDone(stage,msg,party=true){
  d.innerHTML='<span>🌷</span><span>'+msg+'</span>';
  stage.append(d);
  const dot=document.getElementById('p3');if(dot)dot.className='dot done';
- if(party)taConfetti();
+ if(party){taConfetti();taCelebrate();}
  stage.classList.add('ta-flash');setTimeout(()=>stage.classList.remove('ta-flash'),600);
 }
 const TABLET_ACT={

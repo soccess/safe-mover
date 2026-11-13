@@ -84,6 +84,11 @@ function awardToken(message) {
   }
 }
 function recordTrial(outcome, promptLevel, detail) {
+  if (typeof playMathSfx === 'function') {
+    if (outcome === 'independent') playMathSfx('correct');
+    else if (outcome === 'prompted') playMathSfx('guided');
+    else if (outcome === 'error') playMathSfx('hint');
+  }
   const level = promptLevel === undefined ? state.promptLevel : promptLevel;
   state.session.trials += 1;
   if (outcome === 'independent') state.session.independent += 1;

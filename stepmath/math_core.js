@@ -216,7 +216,51 @@ function calcSpeech(first, op, second, result) {
   return `${countWord(first)} ${opWord(op)} ${countWord(second)}${topicParticle(second)} ${countWord(result)}`;
 }
 
-/* ---------- 음성 ---------- */
+/* ---------- 음성 & 합성 효과음 ---------- */
+let mathAC = null;
+function playMathTone(freq, dur = 0.14, type = 'sine', vol = 0.045, delay = 0) {
+  try {
+    mathAC = mathAC || new (window.AudioContext || window.webkitAudioContext)();
+    if (mathAC.state === 'suspended') mathAC.resume();
+    const t = mathAC.currentTime + delay;
+    const o = mathAC.createOscillator();
+    const g = mathAC.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(mathAC.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  } catch (e) { /* 오디오 미지원 환경 무시 */ }
+}
+
+function playMathSfx(kind) {
+  if (state && state.settings && state.settings.lowStim) {
+    if (kind === 'correct') playMathTone(523.25, 0.16, 'sine', 0.028);
+    return;
+  }
+  if (kind === 'tap') {
+    playMathTone(540, 0.07, 'sine', 0.032);
+  } else if (kind === 'place') {
+    playMathTone(440, 0.08, 'triangle', 0.04);
+    playMathTone(660, 0.09, 'sine', 0.028, 0.04);
+  } else if (kind === 'correct') {
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      playMathTone(f, 0.22, 'sine', 0.05, i * 0.085);
+      playMathTone(f * 1.5, 0.15, 'triangle', 0.018, i * 0.085 + 0.015);
+    });
+  } else if (kind === 'guided') {
+    playMathTone(523.25, 0.14, 'sine', 0.042);
+    playMathTone(659.25, 0.18, 'sine', 0.04, 0.09);
+  } else if (kind === 'hint') {
+    playMathTone(392, 0.12, 'sine', 0.036);
+    playMathTone(329.63, 0.16, 'sine', 0.032, 0.08);
+  }
+}
+
 function speak(text) {
   if (!state.voice || !text) return;
   try {
