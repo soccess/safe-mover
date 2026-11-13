@@ -619,6 +619,39 @@ dialog.modal::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.7)}50%{box-shadow:0 0 0 7px rgba(250,204,21,0)}}
 @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sliceIn{from{opacity:.3;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
+@keyframes sortIn{from{opacity:0;transform:translateY(-12px) rotate(-1deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes countIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes compareIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes composeIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes makeTenIn{from{opacity:0;clip-path:inset(0 0 100% 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+@keyframes strategyIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes placeIn{from{opacity:0;transform:scale(.92) rotate(-1deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes groupsIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes fractionIn{from{opacity:0;transform:scale(.9) rotate(-2deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes measureIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shapeIn{from{opacity:0;transform:scale(.88) rotate(-3deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes dataIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes targetPulse{0%,100%{scale:1}50%{scale:1.14}}
+@keyframes shapePop{0%{opacity:0;scale:.72;rotate:-8deg}75%{opacity:1;scale:1.08;rotate:2deg}100%{scale:1;rotate:0}}
+@keyframes barGrow{from{transform:scaleX(.12);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
+#toolBody.activity-enter>*{animation-duration:.38s;animation-timing-function:cubic-bezier(.2,.75,.25,1);animation-fill-mode:both;animation-delay:calc(min(var(--activity-order,0),6)*38ms)}
+#toolBody[data-stage="1"].activity-enter>*{animation-name:sortIn}
+#toolBody[data-stage="2"].activity-enter>*{animation-name:countIn}
+#toolBody[data-stage="3"].activity-enter>*{animation-name:compareIn}
+#toolBody[data-stage="4"].activity-enter>*{animation-name:composeIn}
+#toolBody[data-stage="5"].activity-enter>*{animation-name:makeTenIn}
+#toolBody[data-stage="6"].activity-enter>*{animation-name:strategyIn}
+#toolBody[data-stage="7"].activity-enter>*{animation-name:placeIn}
+#toolBody[data-stage="8"].activity-enter>*{animation-name:groupsIn}
+#toolBody[data-stage="9"].activity-enter>*{animation-name:fractionIn}
+#toolBody[data-stage="10"].activity-enter>*{animation-name:measureIn}
+#toolBody[data-stage="11"].activity-enter>*{animation-name:shapeIn}
+#toolBody[data-stage="12"].activity-enter>*{animation-name:dataIn}
+#toolBody[data-stage="2"] .cell.filled{animation:pop .32s cubic-bezier(.2,.9,.3,1.3) both}
+#toolBody[data-stage="3"] .pair-col{animation:pop .3s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(var(--pair-order,0)*28ms)}
+#toolBody[data-stage="6"] .nl-target{animation:targetPulse 1.25s ease-in-out infinite}
+#toolBody[data-stage="11"] .shape-instance svg,#toolBody[data-stage="11"] .pattern-box{animation:shapePop .42s cubic-bezier(.2,.9,.3,1.3) both}
+#toolBody[data-stage="12"] .data-fill{animation:barGrow .48s cubic-bezier(.2,.75,.25,1) both}
 .stage-head,.card,.tool-card{animation:slideIn .35s ease both}
 .brand-mark,.gate-mark{animation:floaty 3s ease-in-out infinite}
 
@@ -3561,7 +3594,7 @@ function renderCompare() {
     const hasA = i < a;
     const hasB = i < b;
     const matched = hasA && hasB;
-    pairCols += `<div class="pair-col ${matched ? 'matched' : 'extra'}">
+    pairCols += `<div class="pair-col ${matched ? 'matched' : 'extra'}" style="--pair-order:${i}">
       <span class="pair-emoji">${hasA ? theme.a : '·'}</span>
       <span class="pair-state">${matched ? '짝' : hasA ? '남음' : '남음'}</span>
       <span class="pair-emoji">${hasB ? theme.b : '·'}</span>
@@ -5229,6 +5262,12 @@ function renderTool() {
       setToolHead('단계별 교구', '단계를 골라 주세요');
       $('toolBody').innerHTML = '<div class="guide">위에서 학습 단계를 골라 보세요.</div>';
   }
+  const body = $('toolBody');
+  body.dataset.stage = String(stage.id);
+  body.classList.remove('activity-enter');
+  Array.from(body.children).forEach((child, index) => child.style.setProperty('--activity-order', index));
+  void body.offsetWidth;
+  body.classList.add('activity-enter');
 }
 
 /* ============================================================
