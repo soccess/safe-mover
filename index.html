@@ -1,54 +1,112 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>학습 게임 모음</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; background:#0b1620; color:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
-  .wrap { max-width:960px; width:100%; text-align:center; }
-  h1 { font-size:26px; margin-bottom:8px; }
-  p.sub { color:#B0BEC5; font-size:14px; margin-bottom:24px; }
-  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  @media (max-width:860px){ .grid { grid-template-columns:1fr 1fr; } }
-  @media (max-width:560px){ .grid { grid-template-columns:1fr; } }
-  .card { background:#fff; color:#222; border-radius:18px; padding:24px 20px; text-decoration:none; display:block; border:4px solid transparent; transition:transform .15s, border-color .15s; }
-  .card:hover { transform:translateY(-4px); border-color:#FFD600; }
-  .card .icon { font-size:52px; }
-  .card h2 { font-size:18px; margin:10px 0 6px; color:#1565C0; }
-  .card p { font-size:13px; color:#546E7A; line-height:1.5; }
-  .card .go { display:inline-block; margin-top:12px; background:#00C853; color:#fff; font-weight:900; border-radius:10px; padding:10px 18px; font-size:14px; }
-  .card.math h2 { color:#7C3AED; }
-  .card.math .go { background:#7C3AED; }
-  .card.emotion h2 { color:#5D4DA9; }
-  .card.emotion .go { background:#7665C5; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학습 게임 모음</title>
+  <link rel="stylesheet" href="./assets/portal.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>🎮 학습 게임 모음</h1>
-  <p class="sub">원하는 게임을 선택하세요 (총 3개)</p>
-  <div class="grid">
-    <a class="card" href="./safe_mover_8_stages.html">
-      <div class="icon">🛡️📦</div>
-      <h2>허리 지킴이의 배송 대작전<br>12단계 모험 코스</h2>
-      <p>좌/우 터치로 장애물을 피하고 별을 모으는<br>12스테이지 달리기 게임 (게임오버 없음)</p>
-      <span class="go">▶ 게임 시작</span>
-    </a>
-    <a class="card math" href="./stepmath.html">
-      <div class="icon">📐✏️</div>
-      <h2>수학 공책<br>터치 구체물 활동</h2>
-      <p>손가락으로 끌어 보는 12개 활동 ·<br>10·100 묶기 · 도형 · 특수교육 지원</p>
-      <span class="go">▶ 학습 시작</span>
-    </a>
-    <a class="card emotion" href="./emotion.html">
-      <div class="icon">🌤️💛</div>
-      <h2>마음 날씨 연구소<br>감정표현하기</h2>
-      <p>기쁨·슬픔·화남·놀람 감정 고르고<br>마음 돌보는 방법 배우기</p>
-      <span class="go">▶ 마음 살펴보기</span>
-    </a>
+  <div class="wrap">
+    <h1>🎮 학습 게임 모음</h1>
+    <p class="sub">원하는 게임을 선택하세요 (총 3개)</p>
+    <div class="grid">
+      <a class="card" href="./safe_mover_8_stages.html">
+        <div class="icon">🛡️📝</div>
+        <h2>맞춤법 수호대 모험<br>12단계 단어 수집 게임</h2>
+        <p>맞춤법에 맞는 단어는 터치해서 모으고,<br>틀린 단어를 든 적은 피하는 12스테이지 게임</p>
+        <span class="go">▶ 게임 시작</span>
+      </a>
+      <a class="card math" href="./stepmath.html">
+        <div class="icon">📐✏️</div>
+        <h2>수학 공책 18단계<br>터치 구체물 활동</h2>
+        <p>18단계로 세분화된 커리큘럼과 90개 문제 ·<br>10·100 묶기 · 분수·소수 · 측정 · 도형</p>
+        <span class="go">▶ 학습 시작</span>
+      </a>
+      <a class="card emotion" href="./emotion.html">
+        <div class="icon">🌤️💛</div>
+        <h2>마음 날씨 연구소<br>감정표현하기</h2>
+        <p>기쁨·슬픔·화남·놀람 감정을 고르고<br>감정별 8가지 태블릿 마음 돌보기 활동하기</p>
+        <span class="go">▶ 마음 살펴보기</span>
+      </a>
+    </div>
+
+    <section class="turso-bar" aria-label="Turso 데이터베이스 연결 상태">
+      <div class="turso-status">
+        <span class="turso-dot" id="tursoDot"></span>
+        <span id="tursoStatusText">Turso DB 연결 상태 확인 중...</span>
+      </div>
+      <div class="turso-controls">
+        <label for="studentNameInput" style="font-size:12.5px;color:#CBD5E1;">학생 이름</label>
+        <input id="studentNameInput" class="turso-input" type="text" placeholder="기본 학생" maxlength="30">
+        <button type="button" class="turso-btn" id="btnToggleRecords">📋 DB 학습 기록</button>
+        <button type="button" class="turso-btn" id="btnRefreshTurso">↻ 상태 확인</button>
+      </div>
+    </section>
+    <section class="turso-records" id="tursoRecordsPanel">
+      <h3>최근 저장된 학습 기록</h3>
+      <div class="turso-list" id="tursoRecordsList">불러오는 중...</div>
+    </section>
   </div>
-</div>
+
+  <script src="./assets/turso_client.js"></script>
+  <script>
+    (function () {
+      const dot = document.getElementById("tursoDot");
+      const statusText = document.getElementById("tursoStatusText");
+      const nameInput = document.getElementById("studentNameInput");
+      const panel = document.getElementById("tursoRecordsPanel");
+      const listEl = document.getElementById("tursoRecordsList");
+      const gameNames = { safe_mover: "맞춤법 수호대", stepmath: "수학 공책", emotion: "마음 날씨 연구소" };
+
+      if (window.TursoBridge) {
+        nameInput.value = window.TursoBridge.getStudentName();
+        nameInput.addEventListener("change", () => {
+          nameInput.value = window.TursoBridge.setStudentName(nameInput.value);
+        });
+      }
+
+      async function refreshStatus() {
+        if (!window.TursoBridge) return;
+        const h = await window.TursoBridge.checkHealth(true);
+        dot.className = "turso-dot " + (h.ok ? (h.mode === "turso" ? "ok" : "fallback") : "off");
+        if (h.ok && h.mode === "turso") {
+          statusText.textContent = "Turso DB 연결됨 · " + (h.db_url || "");
+        } else if (h.ok && h.mode === "local-fallback") {
+          statusText.textContent = "로컬 SQLite 임시 모드 (.env.turso 설정 시 Turso DB 연동)";
+        } else {
+          statusText.textContent = h.message || h.error || "DB 미연결 (connect_turso.bat 으로 실행하세요)";
+        }
+      }
+
+      async function loadRecords() {
+        if (!window.TursoBridge) return;
+        listEl.innerHTML = '<div class="turso-item">불러오는 중...</div>';
+        const rows = await window.TursoBridge.getRecords("", 20);
+        if (!rows.length) {
+          listEl.innerHTML = '<div class="turso-item">저장된 학습 기록이 아직 없습니다. 게임을 플레이하면 자동 저장됩니다.</div>';
+          return;
+        }
+        listEl.innerHTML = rows.map((r) => {
+          const g = gameNames[r.game] || r.game;
+          return '<div class="turso-item"><span><b>[' + g + ']</b> ' +
+            (r.student_name || "기본 학생") + ' · ' + (r.stage || "") + ' — ' + (r.summary || "") +
+            '</span><span>' + (r.created_at || "") + '</span></div>';
+        }).join("");
+      }
+
+      document.getElementById("btnRefreshTurso").addEventListener("click", () => {
+        refreshStatus();
+        if (panel.classList.contains("open")) loadRecords();
+      });
+
+      document.getElementById("btnToggleRecords").addEventListener("click", () => {
+        panel.classList.toggle("open");
+        if (panel.classList.contains("open")) loadRecords();
+      });
+
+      refreshStatus();
+    })();
+  </script>
 </body>
 </html>

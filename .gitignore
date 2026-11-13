@@ -1,0 +1,5 @@
+.env.turso
+local_fallback.db
+local_fallback.db-*
+__pycache__/
+*.pyc

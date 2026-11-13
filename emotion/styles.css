@@ -1,0 +1,226 @@
+:root{--ink:#39354a;--muted:#77758b;--paper:#fffdf8;--line:#eee8dd;--purple:#7665c5;--purple-dark:#5d4da9;--yellow:#ffe99a;--shadow:0 14px 38px #53442a12}
+*{box-sizing:border-box}body{margin:0;background:#fff9ed;color:var(--ink);font-family:'Gowun Dodum','Malgun Gothic',sans-serif;min-height:100vh}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:3px solid #7665c588;outline-offset:3px}.page{max-width:1120px;margin:auto;padding:20px 28px 62px}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{border:0;background:none;display:flex;align-items:center;gap:10px;font:22px 'Jua',sans-serif}.brand-mark{width:41px;height:41px;display:grid;place-items:center;border-radius:15px;background:#ffe99a;font-size:24px;transform:rotate(-5deg)}.top-note{font-size:14px;color:var(--muted);background:#fff;padding:9px 14px;border:1px solid var(--line);border-radius:99px}.hero{position:relative;overflow:hidden;border:1px solid #f2e9d7;background:linear-gradient(110deg,#fff4cc,#fff8eb 53%,#f2efff);border-radius:28px;padding:29px 38px;display:flex;align-items:center;justify-content:space-between;min-height:188px;box-shadow:var(--shadow)}.hero-copy{max-width:610px;position:relative;z-index:1}.eyebrow{font:14px 'Jua',sans-serif;letter-spacing:.3px;color:#a87931}.hero h1{font:clamp(30px,4vw,43px) 'Jua',sans-serif;line-height:1.2;margin:7px 0 9px}.hero p{margin:0;color:#6d687d;font-size:16px;line-height:1.65}.hero-art{width:210px;min-width:160px;margin-right:18px;filter:drop-shadow(0 8px 8px #69562a18)}.hero-spark{position:absolute;font-size:24px;opacity:.7}.hero-spark.s1{right:27%;top:20px}.hero-spark.s2{right:41%;bottom:24px;font-size:18px}.progress{display:flex;align-items:center;gap:8px;margin:24px 0 25px;color:#aaa6b0;font-size:13px}.progress .dot{width:25px;height:25px;border-radius:50%;background:#eeeaf3;display:grid;place-items:center;font-size:12px}.progress .active{background:#7665c5;color:#fff}.progress .done{background:#d9f0df;color:#36875a}.progress .line{width:36px;height:2px;background:#e7e0d6}.section-heading{display:flex;align-items:end;justify-content:space-between;margin:30px 2px 15px}.section-heading h2{font:25px 'Jua',sans-serif;margin:0}.section-heading p{margin:0;color:var(--muted);font-size:14px}.moods{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.mood-card{border:1px solid var(--line);border-radius:22px;background:#fff;padding:14px 14px 16px;text-align:left;transition:.2s;box-shadow:0 5px 16px #55452b08}.mood-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#d7cdec}.mood-picture{height:136px;border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden}.mood-picture svg{width:115px;height:115px;position:relative;z-index:1}.mood-picture:after{content:'';position:absolute;width:95px;height:95px;background:#ffffff78;border-radius:50%;bottom:-35px;right:-15px}.mood-label{font:21px 'Jua',sans-serif;margin:13px 4px 4px;display:flex;align-items:center;gap:8px}.mood-desc{font-size:13px;color:var(--muted);margin:0 4px;line-height:1.45}.mood-arrow{float:right;color:#a7a1b5;font-size:18px}.mood-card[data-mood="happy"] .mood-picture{background:#fff0c1}.mood-card[data-mood="sad"] .mood-picture{background:#dff1fa}.mood-card[data-mood="angry"] .mood-picture{background:#ffe2dc}.mood-card[data-mood="surprised"] .mood-picture{background:#eae5ff}.privacy-note{margin:19px 0 0;padding:12px 15px;border-radius:14px;background:#f2f0fb;color:#6d6786;font-size:13px;display:flex;gap:9px;align-items:center}.stage{display:none}.stage.visible{display:block;animation:arrive .32s ease}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.back{border:0;background:transparent;color:#777188;padding:8px 0;margin:0 0 8px;font-weight:bold}.back:hover{color:var(--purple)}.chosen-banner{border-radius:22px;padding:19px 24px;display:flex;align-items:center;gap:17px;margin:5px 0 24px}.chosen-banner svg{width:74px;height:74px;flex:none}.chosen-banner h2{font:27px 'Jua',sans-serif;margin:0 0 4px}.chosen-banner p{margin:0;color:#6c687b}.chosen-banner .badge{margin-left:auto;white-space:nowrap;background:#ffffff9c;padding:9px 12px;border-radius:99px;font-size:13px}.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.method-card{border:1px solid var(--line);background:#fff;border-radius:19px;padding:12px;text-align:left;transition:.2s;box-shadow:0 4px 14px #55452b08}.method-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#c9bee9}.method-art{height:145px;border-radius:13px;overflow:hidden;background:var(--wash,#f5f0ff);display:grid;place-items:center}.method-art svg{width:100%;height:100%;display:block}.method-title{font:19px 'Jua',sans-serif;margin:12px 5px 4px}.method-sub{font-size:13px;line-height:1.5;color:var(--muted);margin:0 5px 6px}.go{font-size:12px;color:#8878c7;margin:0 5px}.detail{display:none;margin-top:24px;background:#fff;border:1px solid var(--line);border-radius:25px;padding:21px;box-shadow:var(--shadow);grid-template-columns:minmax(260px,.9fr) 1.1fr;grid-template-areas:"art copy" "act act";gap:25px}.detail.open{display:grid;animation:arrive .3s ease}.detail-art{border-radius:19px;overflow:hidden;background:#f4f0ff;min-height:280px;display:grid;place-items:center;grid-area:art}.detail-copy{grid-area:copy}.detail-art svg{width:100%;height:100%;min-height:280px}.detail-copy{padding:8px 8px 8px 0}.detail-kicker{font:14px 'Jua',sans-serif;color:#9384cd}.detail-copy h3{font:29px 'Jua',sans-serif;margin:7px 0}.detail-copy .intro{color:#777188;line-height:1.65;margin:0 0 15px}.steps{list-style:none;padding:0;margin:0;display:grid;gap:9px}.steps li{display:flex;gap:10px;align-items:flex-start;line-height:1.55}.step-no{flex:none;width:24px;height:24px;border-radius:50%;background:#eeeafd;color:#6e5db5;display:grid;place-items:center;font:14px 'Jua',sans-serif}.say-box{margin:17px 0 0;padding:12px 14px;border-radius:13px;background:#fff7d9;color:#6d5a36;font-size:14px;line-height:1.55}.detail-actions{display:flex;gap:9px;margin-top:16px}.action{border:0;border-radius:12px;padding:10px 15px;font-weight:bold}.action.primary{background:#7665c5;color:#fff}.action.secondary{background:#f2eff9;color:#63588c}.done-panel{display:none;text-align:center;padding:16px;margin-top:17px;background:#edfaef;border-radius:14px;color:#39734c}.done-panel.show{display:block}.footer{margin:34px 0 0;text-align:center;color:#9c97a5;font-size:12px}.tiny-cloud{position:absolute;right:40px;top:20px;color:#fff;font-size:30px}
+/* ===== 장면 그림 강화 ===== */
+.svg-anim .bob{animation:svgBob 7s ease-in-out infinite}
+.svg-anim .bob2{animation:svgBob 9.5s ease-in-out -2.2s infinite}
+.svg-anim .twinkle{animation:svgTwinkle 3.4s ease-in-out infinite}
+.svg-anim .twinkle2{animation:svgTwinkle 4.8s ease-in-out -1.5s infinite}
+.svg-anim .sway{transform-box:fill-box;transform-origin:50% 100%;animation:svgSway 5.5s ease-in-out infinite}
+.svg-anim .sway2{transform-box:fill-box;transform-origin:50% 100%;animation:svgSway 7.2s ease-in-out -1.8s infinite}
+.svg-anim .drift{animation:svgDrift 17s ease-in-out infinite}
+.svg-anim .drift2{animation:svgDrift 23s ease-in-out -6s infinite}
+.svg-anim .spinSlow{transform-box:fill-box;transform-origin:center;animation:svgSpin 42s linear infinite}
+.svg-anim .rain{animation:svgRain 1.25s linear infinite}
+.svg-anim .rain2{animation:svgRain 1.6s linear -.6s infinite}
+.svg-anim .rise{animation:svgRise 4.6s ease-out infinite}
+.svg-anim .pulse{transform-box:fill-box;transform-origin:center;animation:svgPulse 4.6s ease-in-out infinite}
+.svg-anim .blink{animation:svgBlink 3.6s ease-in-out infinite}
+@keyframes svgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes svgDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
+@keyframes svgTwinkle{0%,100%{opacity:.25;transform:scale(.82)}50%{opacity:1;transform:scale(1.06)}}
+@keyframes svgSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes svgSpin{to{transform:rotate(360deg)}}
+@keyframes svgRain{0%{transform:translateY(-6px);opacity:0}18%{opacity:1}100%{transform:translateY(16px);opacity:0}}
+@keyframes svgRise{0%{transform:translateY(8px);opacity:0}25%{opacity:.9}100%{transform:translateY(-22px);opacity:0}}
+@keyframes svgPulse{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.06);opacity:1}}
+@keyframes svgBlink{0%,92%,100%{opacity:1}95%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.svg-anim *{animation:none!important}}
+.mood-picture svg{transition:transform .35s ease}
+.mood-card:hover .mood-picture svg{transform:scale(1.06) rotate(-2deg)}
+.method-art{position:relative;transition:background .25s}
+.method-art svg{transition:transform .45s ease}
+.method-card:hover .method-art svg{transform:scale(1.045)}
+.tap-badge{position:absolute;z-index:2;left:8px;top:8px;background:#ffffffdd;border:1px solid #ded5f3;color:#6d5db5;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:bold;backdrop-filter:blur(3px);box-shadow:0 3px 9px #4a3d2214}
+/* ===== 태블릿 활동 ===== */
+.tablet-activity{grid-area:act;border-top:2px dashed #efe9dc;padding-top:17px;margin-top:2px}
+.ta-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+.ta-badge{font:13px 'Jua',sans-serif;background:#efeaff;color:#5f4fae;border-radius:99px;padding:5px 11px;white-space:nowrap}
+.ta-head strong{font:20px 'Jua',sans-serif;color:#4b4460}
+.ta-hint{margin-left:auto;font-size:12px;color:#9a94a8}
+.ta-stage{background:linear-gradient(145deg,#fbf8ff,#fffdf6);border:1px solid #efe9df;border-radius:18px;padding:15px;min-height:118px}
+.ta-stage.ta-flash{animation:taFlash .55s ease}
+@keyframes taFlash{0%{box-shadow:0 0 0 0 #7665c555}60%{box-shadow:0 0 0 10px #7665c500}100%{box-shadow:none}}
+.ta-status{margin:10px 2px 0;font-size:13px;color:#7a7489;line-height:1.5}
+.ta-status b{color:#5d4da9}
+.ta-btn{border:0;border-radius:12px;padding:10px 15px;font-weight:bold;font-size:14px;background:#7665c5;color:#fff;min-height:44px;transition:.18s;touch-action:manipulation}
+.ta-btn:hover{background:#6654b6;transform:translateY(-1px)}
+.ta-btn.soft{background:#f1edfa;color:#63588c}
+.ta-btn.gold{background:#f7c85f;color:#6b4e13}
+.ta-btn:disabled{opacity:.45;cursor:default;transform:none}
+.ta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.ta-chip{border:1px solid #e2dbf5;background:#fff;color:#5e5580;border-radius:99px;padding:9px 13px;font-size:13px;min-height:42px;transition:.16s;touch-action:manipulation}
+.ta-chip:hover{border-color:#b9a8ef;background:#faf7ff}
+.ta-chip.on{background:#7665c5;border-color:#7665c5;color:#fff;box-shadow:0 4px 12px #7665c533}
+.ta-done{display:flex;gap:8px;align-items:center;background:#edfaef;color:#39734c;border-radius:12px;padding:10px 13px;font-size:13px;margin-top:11px;animation:arrive .3s ease}
+/* 숨 고르기 */
+.ta-breathe{display:grid;place-items:center;gap:8px;text-align:center;padding:4px 0}
+.ta-breath-circle{width:170px;height:170px;border-radius:50%;border:0;display:grid;place-items:center;align-content:center;gap:3px;background:radial-gradient(circle at 38% 30%,#fff8d8,#ffe7a8 62%,#f7cf7d);box-shadow:0 0 0 12px #ffeec455,0 10px 26px #b08b3c33;transform:scale(.74);transition:transform .12s linear,box-shadow .3s;touch-action:manipulation}
+.ta-breath-circle .lbl{font:21px 'Jua',sans-serif;color:#7a5a27}
+.ta-breath-circle .sub{font-size:11px;color:#9a7d4a}
+.ta-breathe .dots{display:flex;gap:7px;margin-top:4px}
+.ta-breathe .dots span{width:9px;height:9px;border-radius:50%;background:#e8dfc6;transition:.3s}
+.ta-breathe .dots span.on{background:#f0b94f;transform:scale(1.15)}
+/* 음악 */
+.ta-pads{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ta-pad{border:0;border-radius:14px;padding:13px 4px 11px;font-size:24px;background:#f4efff;color:#5f4fae;box-shadow:0 3px 0 #dfd6f3;min-height:70px;touch-action:manipulation;transition:.12s}
+.ta-pad small{display:block;font-size:11px;margin-top:3px;color:#8b80b5}
+.ta-pad:active,.ta-pad.hit{transform:translateY(3px) scale(.97);box-shadow:none;background:#e4d9ff}
+.ta-pad.ok{background:#e5f8e9;box-shadow:0 3px 0 #c6e8ce;color:#2f7d4b}
+.ta-pad.bad{animation:taShake .3s}
+@keyframes taShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.ta-notes{display:flex;gap:5px;justify-content:center;margin-top:10px;min-height:18px;font-size:16px}
+.ta-notes span{animation:taNote .5s ease}
+@keyframes taNote{from{transform:translateY(6px) scale(.5);opacity:0}to{transform:none;opacity:1}}
+/* 산책 */
+.ta-walk-svg{width:100%;height:auto;display:block;touch-action:none;cursor:grab}
+.ta-walk-svg:active{cursor:grabbing}
+.ta-collect{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.ta-collect span{border:1px dashed #d8cfc0;border-radius:10px;padding:4px 9px;font-size:13px;color:#b3aa9c;transition:.25s}
+.ta-collect span.on{border-color:#8cc6a2;background:#effaf2;color:#3d8459;font-weight:bold}
+/* 책 읽기 */
+.ta-book{border-radius:14px;background:#fffdf7;border:1px solid #eadfc8;padding:14px;box-shadow:inset 0 0 0 4px #fff,0 6px 16px #6b5b3b10;text-align:center;min-height:150px;display:grid;align-content:center;gap:6px;transition:.25s}
+.ta-book.flip{animation:taFlip .38s ease}
+@keyframes taFlip{0%{transform:perspective(600px) rotateY(0)}45%{transform:perspective(600px) rotateY(-18deg);opacity:.55}100%{transform:none;opacity:1}}
+.ta-book .bemoji{font-size:30px;line-height:1}
+.ta-book p{margin:0;font-size:15px;line-height:1.6;color:#5b5344}
+.ta-book .bpage{font-size:11px;color:#a9a191}
+.ta-saved{font-size:12px;color:#7a7489;margin-top:8px;display:grid;gap:3px}
+.ta-saved b{color:#5d4da9}
+/* 물 마시기 */
+.ta-water{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center}
+.ta-cup{position:relative;width:90px;height:112px;margin:auto;border:3px solid #9fc9dd;border-top:0;border-radius:8px 8px 18px 18px;background:linear-gradient(#f5fcff,#e8f6fc);overflow:hidden;box-shadow:0 6px 14px #7fa9bb22}
+.ta-cup .fill{position:absolute;left:0;right:0;bottom:0;height:88%;background:linear-gradient(#a9e0f3,#7cc8e6);transition:height .55s cubic-bezier(.34,1.3,.64,1)}
+.ta-cup .shine{position:absolute;left:11px;top:8px;width:7px;height:38px;border-radius:6px;background:#ffffffb0}
+.ta-cup .bub{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffffffa8;animation:taBub 2.4s ease-in infinite}
+@keyframes taBub{from{transform:translateY(60px);opacity:0}30%{opacity:.9}to{transform:translateY(-30px);opacity:0}}
+.ta-sips{display:flex;gap:6px;margin-top:6px}
+.ta-sips i{width:22px;height:22px;border-radius:50%;border:2px dashed #cfdde4;display:grid;place-items:center;font-style:normal;font-size:12px;color:#a9bcc6}
+.ta-sips i.on{border:0;background:#8ed6ec;color:#fff}
+/* 이야기 */
+.ta-talk{display:grid;gap:10px}
+.ta-bubble{position:relative;background:#fff;border:2px solid #d8cdf3;border-radius:16px;padding:13px 15px;font-size:17px;line-height:1.5;color:#4b4460;box-shadow:0 5px 15px #6d5db514}
+.ta-bubble:after{content:'';position:absolute;left:34px;bottom:-11px;width:16px;height:16px;background:#fff;border-right:2px solid #d8cdf3;border-bottom:2px solid #d8cdf3;transform:rotate(45deg)}
+.ta-bubble b{color:#7665c5;border-bottom:2px dotted #c9bcf3;padding:0 3px}
+.ta-bubble.pop{animation:taPop .4s ease}
+@keyframes taPop{0%{transform:scale(.94)}55%{transform:scale(1.03)}100%{transform:none}}
+/* 그리기 */
+.ta-draw-wrap{display:grid;gap:9px}
+.ta-draw-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.ta-swatch{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #ddd6c8;transition:.15s;padding:0}
+.ta-swatch.on{transform:scale(1.16);box-shadow:0 0 0 3px #7665c5}
+.ta-size{width:38px;height:34px;border-radius:10px;border:1px solid #e4ddce;background:#fff;display:grid;place-items:center;padding:0}
+.ta-size.on{background:#efeaff;border-color:#b9a8ef}
+.ta-size i{display:block;border-radius:50%;background:#6b5a52}
+#drawCanvas{width:100%;height:210px;border-radius:12px;border:1px solid #e6dfd1;background:#fff;touch-action:none;display:block;cursor:crosshair}
+/* 포근한 쉼 */
+.ta-cozy{display:grid;place-items:center;gap:9px;text-align:center}
+.ta-hug{width:132px;height:132px;border-radius:50%;border:0;background:radial-gradient(circle at 40% 32%,#ffe6ec,#ffc9d6 65%,#f7aebf);box-shadow:0 0 0 10px #ffdde455,0 10px 22px #c98b9a33;font-size:46px;display:grid;place-items:center;touch-action:none;transition:transform .15s}
+.ta-hug.grow{transform:scale(1.07)}
+.ta-meter{width:100%;max-width:280px;height:12px;border-radius:99px;background:#efe7dc;overflow:hidden}
+.ta-meter i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ffc2d0,#f28aa4);transition:width .12s linear}
+/* 친구 */
+.ta-friends{display:grid;gap:10px}
+.ta-figures{display:flex;justify-content:center;align-items:end;gap:34px;position:relative;min-height:96px}
+.ta-figure{display:grid;justify-items:center;gap:2px;font-size:13px;color:#7a7489}
+.ta-figure .face{font-size:46px;line-height:1;transition:transform .25s}
+.ta-figure .face.happy{transform:scale(1.1) translateY(-3px)}
+.ta-fly{position:absolute;left:50%;bottom:44px;font-size:20px;animation:taFly 1.1s ease forwards;pointer-events:none}
+@keyframes taFly{0%{transform:translate(-34px,10px) scale(.6);opacity:0}25%{opacity:1}100%{transform:translate(30px,-46px) scale(1.15);opacity:0}}
+.ta-heart-count{font:16px 'Jua',sans-serif;color:#d8687f;text-align:center}
+/* 고마움 항아리 */
+.ta-jar-wrap{display:grid;grid-template-columns:100px 1fr;gap:14px;align-items:center}
+.ta-jar{position:relative;height:112px;border:3px solid #8fbdb2;border-radius:10px 10px 24px 24px;background:linear-gradient(#f3fdf9,#e4f6ef);overflow:hidden;box-shadow:0 6px 14px #5d8f8422}
+.ta-jar:before{content:'';position:absolute;left:8px;top:8px;width:7px;height:36px;border-radius:6px;background:#fffaf0cc}
+.ta-jar .lid{position:absolute;left:-4px;right:-4px;top:-3px;height:11px;border-radius:6px;background:#f6c3cc;border:2px solid #c99aa2;z-index:2}
+.ta-jar .note{position:absolute;width:30px;height:22px;border-radius:3px;background:#fffdf0;border:1px solid #d9c7a8;box-shadow:0 2px 4px #6b5b3b16;animation:taDrop .5s cubic-bezier(.34,1.4,.64,1)}
+@keyframes taDrop{from{transform:translateY(-40px) rotate(14deg);opacity:0}to{opacity:1}}
+.ta-jar .note:after{content:'';position:absolute;left:5px;top:6px;width:19px;height:1.5px;background:#e2d3b8;box-shadow:0 5px 0 #e2d3b8,0 10px 0 #e2d3b8}
+.ta-jarlist{display:grid;gap:5px;max-height:100px;overflow:auto;font-size:12px;color:#6f6879}
+.ta-jarlist b{display:block;background:#fff8e0;border-radius:8px;padding:5px 8px;font-weight:normal;border:1px solid #f0e2bd}
+.ta-input{flex:1;min-width:120px;border:1px solid #e0d8ee;border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;background:#fff;min-height:44px;color:var(--ink)}
+.ta-input:focus{outline:3px solid #7665c533;border-color:#b9a8ef}
+/* 춤 */
+.ta-dance{display:grid;gap:10px;text-align:center}
+.ta-dancer{font-size:50px;line-height:1;transition:transform .18s;display:inline-block}
+.ta-dancer.jump{transform:translateY(-11px) rotate(-6deg) scale(1.08)}
+.ta-beatpads{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ta-beat{border:0;border-radius:13px;padding:11px 3px;font-size:21px;min-height:62px;touch-action:manipulation;box-shadow:0 3px 0 #00000012;transition:.12s;color:#5e4b3a}
+.ta-beat:nth-child(1){background:#ffe0e5}.ta-beat:nth-child(2){background:#fff0c9}.ta-beat:nth-child(3){background:#dff2e2}.ta-beat:nth-child(4){background:#e5defa}
+.ta-beat:active,.ta-beat.hit{transform:translateY(3px) scale(.96);box-shadow:none}
+/* 성취 */
+.ta-trophy{display:grid;gap:10px;text-align:center}
+.ta-trophy .cup{font-size:48px;line-height:1;transition:transform .3s,filter .3s;filter:grayscale(.55);opacity:.75}
+.ta-trophy .cup.lit{filter:none;opacity:1;transform:scale(1.12);animation:taPop .5s ease}
+.ta-stars{display:flex;gap:8px;justify-content:center}
+.ta-star{width:52px;height:52px;border-radius:14px;border:1px solid #eadfbe;background:#fffdf3;font-size:24px;color:#d8cdaf;touch-action:manipulation;transition:.18s}
+.ta-star.on{background:#fff5c9;border-color:#f0c95a;color:#f0b42e;transform:scale(1.06);box-shadow:0 5px 14px #f0c95a33}
+/* 질문 카드 */
+.ta-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ta-flipcard{position:relative;height:112px;border:0;background:none;padding:0;perspective:700px;touch-action:manipulation}
+.ta-flipcard i{position:absolute;inset:0;border-radius:13px;padding:10px;display:grid;place-items:center;text-align:center;font-style:normal;font-size:12px;line-height:1.45;backface-visibility:hidden;transition:transform .5s}
+.ta-flipcard .front{background:linear-gradient(150deg,#f1ecff,#e6ddff);border:1px solid #d6c9f7;color:#6a5aa8;font-size:22px}
+.ta-flipcard .back{background:#fffdf6;border:1px solid #eadfc8;color:#6b6350;transform:rotateY(180deg)}
+.ta-flipcard.flip .front{transform:rotateY(180deg)}
+.ta-flipcard.flip .back{transform:rotateY(360deg)}
+/* 메모 */
+.ta-write{display:grid;gap:9px}
+.ta-textarea{width:100%;min-height:104px;border:1px solid #e0d8ee;border-radius:13px;padding:11px 13px;font:inherit;font-size:14px;line-height:1.6;resize:vertical;background:#fffef9;color:var(--ink)}
+.ta-textarea:focus{outline:3px solid #7665c533;border-color:#b9a8ef}
+.ta-note-preview{background:#fff9df;border:1px solid #f0e2bd;border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.55;color:#6b5a36;position:relative;animation:arrive .3s ease}
+.ta-note-preview .stamp{position:absolute;right:8px;top:8px;font-size:17px}
+/* 완료 축하 */
+.ta-confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+.ta-confetti i{position:absolute;top:-14px;width:8px;height:13px;border-radius:2px;animation:taConfetti 1.5s ease-in forwards}
+@keyframes taConfetti{to{transform:translateY(112vh) rotate(540deg);opacity:.2}}
+@media(max-width:900px){.methods{grid-template-columns:repeat(2,1fr)}.section-heading{flex-direction:column;align-items:flex-start;gap:4px}.hero-art{width:180px}}
+@media(max-width:760px){.page{padding:14px 16px 42px}.hero{padding:23px;min-height:160px}.hero-art{width:150px;margin-right:0}.hero p{font-size:14px}.moods{grid-template-columns:repeat(2,1fr);gap:11px}.mood-picture{height:115px}.mood-picture svg{height:100px;width:100px}.methods{grid-template-columns:repeat(2,1fr);gap:10px}.method-art{height:120px}.method-card{padding:9px}.chosen-banner{padding:14px;gap:11px}.chosen-banner svg{width:57px;height:57px}.chosen-banner h2{font-size:22px}.chosen-banner .badge{display:none}.detail{grid-template-columns:1fr;grid-template-areas:"art" "copy" "act";padding:14px;gap:15px}.detail-art{min-height:220px;max-height:300px}.detail-art svg{min-height:220px}.detail-copy{padding:0 4px 4px}.top-note{font-size:12px;padding:7px 10px}.ta-stage{padding:12px}.ta-head strong{font-size:18px}.ta-hint{display:none}.ta-breath-circle{width:148px;height:148px}.ta-cards{grid-template-columns:1fr 1fr}.ta-cards .ta-flipcard:last-child{grid-column:1/-1}.ta-jar-wrap{grid-template-columns:82px 1fr;gap:10px}.ta-water{grid-template-columns:92px 1fr;gap:10px}.ta-cup{width:74px;height:96px}.ta-book{padding:12px}.ta-bubble{font-size:15px}.ta-pads{gap:6px}.ta-pad{font-size:20px;min-height:62px}.ta-beat{padding:9px 2px;font-size:18px}.ta-star{width:46px;height:46px}.ta-swatch{width:31px;height:31px}}
+@media(max-width:420px){.hero-art{width:105px;min-width:92px}.hero{padding:19px}.hero h1{font-size:29px}.hero p{font-size:13px}.methods{grid-template-columns:1fr 1fr}.method-art{height:102px}.method-title{font-size:17px}.section-heading{align-items:start;gap:6px;flex-direction:column}.progress{margin:18px 0;gap:5px;font-size:11px}.progress .line{width:16px}.progress .dot{width:22px;height:22px;font-size:11px}.top-note{max-width:135px;text-align:center;font-size:11px;padding:6px 9px}.ta-input,.ta-textarea{font-size:16px}}
+
+/* ===== 강화된 그래픽 & 애니메이션 + 추가 활동 7종 ===== */
+.top-actions{display:flex;align-items:center;gap:10px}
+.home-link{text-decoration:none;background:#f3f0fc;color:#5d4da9;padding:8px 13px;border-radius:99px;font-size:13px;font-weight:bold;border:1px solid #e2dbf5;transition:.15s}
+.home-link:hover{background:#e7e0fb;transform:translateY(-1px)}
+.hero{background:linear-gradient(120deg,#fff3c4,#fff9eb 48%,#eee9ff 100%);animation:heroGlow 9s ease-in-out infinite alternate}
+@keyframes heroGlow{0%{box-shadow:0 14px 38px #53442a12}100%{box-shadow:0 18px 46px #7665c524}}
+.hero-spark{animation:sparkFloat 3.6s ease-in-out infinite}
+.hero-spark.s2{animation-delay:-1.8s}
+@keyframes sparkFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.18)}}
+.mood-card{position:relative;overflow:hidden}
+.mood-card:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 16px 34px #5d4da91f}
+.method-card{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.method-card:hover{transform:translateY(-5px)}
+
+/* 꽃밭 */
+.ta-pots{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ta-pot{border:2px solid #e7dec8;border-radius:16px;background:#fffdf7;padding:14px 6px;display:grid;place-items:center;gap:6px;transition:.2s;touch-action:manipulation}
+.ta-pot .plant{font-size:34px;line-height:1;transition:transform .25s}
+.ta-pot small{font-size:12px;color:#7a7489}
+.ta-pot.bloom{background:#effaf2;border-color:#9bd3ad}
+.ta-pot.pop .plant{transform:scale(1.24)}
+
+/* 비눗방울 */
+.ta-bubble-wrap{display:grid;gap:10px}
+.ta-bubble-sky{position:relative;height:156px;border-radius:16px;background:linear-gradient(180deg,#e0f4ff,#f4f8ff);border:1px solid #d5e8f5;overflow:hidden}
+.ta-float-bub{position:absolute;border:2px solid #9bd3f4;background:rgba(255,255,255,.82);border-radius:99px;padding:8px 13px;font-size:13px;color:#416883;box-shadow:0 6px 14px rgba(100,170,210,.22);animation:bubFloat 3.5s ease-in-out infinite;transition:transform .2s,opacity .2s}
+.ta-float-bub.pop-out{transform:scale(1.35);opacity:0}
+@keyframes bubFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* 쿠션 & 불꽃 식히기 */
+.ta-cushion-btn{width:136px;height:136px;border-radius:28px;border:0;background:radial-gradient(circle at 35% 30%,#ffe5ec,#ffb8c9);box-shadow:0 8px 0 #e69aa9,0 14px 24px rgba(200,100,120,.2);font-size:54px;transition:transform .12s;touch-action:manipulation}
+.ta-cushion-btn.squish{transform:scale(.91,1.06) translateY(4px)}
+.ta-ice-wrap{display:grid;place-items:center;gap:8px;text-align:center}
+.ta-flame{font-size:58px;line-height:1;transition:transform .25s}
+
+/* 레이더 & 오감 */
+.ta-radar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.ta-radar-item{border:2px solid #dfe8e4;border-radius:14px;background:#fff;padding:12px 6px;font-size:28px;display:grid;place-items:center;gap:4px;transition:.2s}
+.ta-radar-item small{font-size:12px;color:#6c757d}
+.ta-radar-item.on{background:#e9f8ee;border-color:#78c291;transform:scale(1.04)}
+.ta-ground-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* 응원 엽서 */
+.ta-letter{display:grid;gap:10px}
+.ta-postcard{background:linear-gradient(135deg,#fffef7,#fff5db);border:2px dashed #e6cf98;border-radius:16px;padding:16px;text-align:center;display:grid;gap:6px}
+.ta-postcard .pc-sticker{font-size:34px}
+.ta-postcard .pc-msg{font:18px 'Jua',sans-serif;color:#5c4a26}
+@media(max-width:600px){.ta-pots,.ta-radar-grid{grid-template-columns:repeat(2,1fr)}.ta-ground-list{grid-template-columns:1fr}}
