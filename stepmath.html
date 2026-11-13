@@ -54,7 +54,8 @@ button:disabled{cursor:not-allowed}
 .gate-mark{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-size:32px;box-shadow:0 10px 22px rgba(37,99,235,.25)}
 .gate-title{font-size:clamp(27px,5vw,42px);font-weight:950;letter-spacing:-1px}
 .gate-subtitle{font-size:16px;color:var(--ink-soft);font-weight:700;line-height:1.6;margin-top:5px;max-width:760px}
-.course-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+.course-prompt{margin-top:22px;font-size:17px;font-weight:950}
+.course-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px}
 .course-card{border:2px solid var(--line);border-radius:24px;background:#fff;padding:20px;text-align:left;min-height:250px;cursor:pointer;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-start;gap:10px;transition:transform .15s,border-color .15s,box-shadow .15s}
 .course-card:hover,.course-card:focus-visible{transform:translateY(-3px);border-color:#60a5fa;box-shadow:0 16px 34px rgba(15,23,42,.12)}
 .course-icon{width:54px;height:54px;border-radius:17px;background:#eff6ff;display:grid;place-items:center;font-size:29px}
@@ -944,38 +945,39 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
 </style>
 </head>
 <body>
-<section class="course-gate" id="courseGate" aria-labelledby="gateTitle">
+ <section class="course-gate" id="courseGate" aria-labelledby="gateTitle">
   <div class="gate-brand">
     <div class="gate-mark" aria-hidden="true">🧮</div>
     <div>
-      <h1 class="gate-title" id="gateTitle" tabindex="-1">오늘의 수학 코스를 골라요</h1>
-      <p class="gate-subtitle">원하는 코스를 선택하면 짧은 활동을 하나씩 만나요. 천천히 보고, 눌러 보고, 스스로 해 볼 수 있어요.</p>
+       <h1 class="gate-title" id="gateTitle" tabindex="-1">오늘 할 수학을 골라요</h1>
+       <p class="gate-subtitle">선생님과 함께 코스를 골라요. 먼저 보고, 같이 해 보고, 혼자서도 해 볼 수 있어요.</p>
     </div>
   </div>
-  <div class="course-grid" role="list" aria-label="학습 코스 선택">
+   <h2 class="course-prompt">선생님, 수업할 코스를 골라 주세요</h2>
+   <div class="course-grid" role="list" aria-label="선생님이 고르는 학습 코스">
     <button type="button" class="course-card" data-course="number">
       <span class="course-icon" aria-hidden="true">🔢</span>
-      <h2>수 감각과 연산</h2>
-      <p>같은 것 찾기부터 세기, 덧셈·뺄셈, 자릿값 묶기, 곱셈·나눗셈, 분수와 소수까지 익혀요.</p>
-      <span class="course-meta">9개 학습 단계 · 묶음 그림과 분수·소수 모델</span>
+       <h2>숫자 놀이</h2>
+       <p>같은 것을 찾고, 하나씩 세고, 더하고 빼고, 여러 개씩 묶어 봐요.</p>
+       <span class="course-meta">활동 9개 · 세기부터 분수까지</span>
     </button>
     <button type="button" class="course-card" data-course="daily">
       <span class="course-icon" aria-hidden="true">🕒</span>
-      <h2>도형과 생활 속 측정</h2>
-      <p>길이·들이·무게·시각·돈을 재고, 여러 도형의 특징과 반복되는 규칙을 찾아요.</p>
-      <span class="course-meta">2개 학습 단계 · 생활 장면 연결</span>
+       <h2>도형과 생활 놀이</h2>
+       <p>도형을 놓아 보고, 길이·물의 양·무게·시계·돈을 살펴봐요.</p>
+       <span class="course-meta">활동 2개 · 도형과 생활 속 재기</span>
     </button>
     <button type="button" class="course-card" data-course="data">
       <span class="course-icon" aria-hidden="true">📊</span>
-      <h2>자료 읽기와 문제해결</h2>
-      <p>자료를 세어 그래프로 나타내고, 가장 많거나 적은 것을 찾아 생활 속 문제를 풀어요.</p>
-      <span class="course-meta">1개 학습 단계 · 그래프와 이야기 문제</span>
+       <h2>그래프 놀이</h2>
+       <p>과일을 그래프에 놓고, 무엇이 가장 많은지 찾아봐요.</p>
+       <span class="course-meta">활동 1개 · 그래프와 이야기 문제</span>
     </button>
   </div>
-  <p class="gate-note">💡 학습은 <b>살펴보기 → 함께 해보기 → 혼자 해보기</b> 순서로 진행돼요. 구체물을 <b>손가락으로 끌어다 놓는 터치 활동</b>이며, 10개·100개 묶기, 도형 옮기기, 시계바늘·자를 끌기까지 직접 해 볼 수 있어요. 정답을 서두르지 않아도 괜찮아요.</p>
+   <p class="gate-note">💡 활동은 <b>먼저 보기 → 같이 해보기 → 혼자 해보기</b> 순서예요. 그림을 눌러도 되고 손가락으로 끌어 놓아도 돼요. 틀려도 괜찮아요. 다시 해 볼 수 있어요.</p>
   <div class="row-flex" style="justify-content:center;margin-top:14px">
-    <button type="button" class="btn primary" id="allActivitiesBtn">🎯 12개 활동 모두 보기</button>
-    <button type="button" class="btn soft" id="gateSettingsBtn">⚙️ 학습 지원 설정</button>
+     <button type="button" class="btn primary" id="allActivitiesBtn">🎯 모든 활동 둘러보기</button>
+     <button type="button" class="btn soft" id="gateSettingsBtn">⚙️ 화면·도움 설정</button>
   </div>
 </section>
 
@@ -986,19 +988,19 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
       <div class="brand-mark" aria-hidden="true">🧮</div>
       <div>
         <div class="brand-title">수학 공책</div>
-        <div class="brand-sub">손가락으로 끌어 보는 12개 활동 · 10·100 묶기 · 특수교육 지원</div>
+       <div class="brand-sub">세고, 놓고, 끌어 보며 배우는 수학</div>
       </div>
     </div>
     <div class="top-actions">
       <div class="view-switch" role="tablist" aria-label="화면 보기 선택">
-        <button type="button" id="viewActivityBtn" class="on" role="tab" aria-selected="true">🎯 활동</button>
-        <button type="button" id="viewCalcBtn" role="tab" aria-selected="false">🧮 계산기</button>
+         <button type="button" id="viewActivityBtn" class="on" role="tab" aria-selected="true">🎯 놀이</button>
+         <button type="button" id="viewCalcBtn" role="tab" aria-selected="false">🧮 숫자 넣기</button>
       </div>
       <button type="button" class="icon-btn on" id="voiceBtn" aria-pressed="true">🔊 음성 안내</button>
-      <button type="button" class="icon-btn off" id="courseBtn">🗂️ 코스 선택</button>
-      <button type="button" class="icon-btn off" id="helpBtn">📚 단계 안내</button>
-      <button type="button" class="icon-btn off" id="settingsBtn">⚙️ 설정</button>
-      <button type="button" class="icon-btn off" id="resetBtn">🧹 처음으로</button>
+       <button type="button" class="icon-btn off" id="courseBtn">🗂️ 코스 바꾸기</button>
+       <button type="button" class="icon-btn off" id="helpBtn">📚 수학 놀이 안내</button>
+       <button type="button" class="icon-btn off" id="settingsBtn">⚙️ 화면·도움 설정</button>
+       <button type="button" class="icon-btn off" id="resetBtn">🧹 숫자 지우기</button>
     </div>
   </header>
 
@@ -1031,15 +1033,16 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
 
       <section class="lesson-path" aria-label="단계별 학습 활동" id="lessonPanel">
         <div class="lesson-path-top">
-          <h2 class="lesson-path-title" id="lessonTitle">이번 활동</h2>
+         <h2 class="lesson-path-title" id="lessonTitle">이번 놀이</h2>
           <span class="lesson-count" id="lessonCount"></span>
         </div>
         <div class="lesson-steps" id="lessonSteps" aria-label="수업 순서"></div>
         <p class="lesson-instruction" id="lessonInstruction" aria-live="polite"></p>
         <div class="lesson-actions">
-          <button type="button" class="btn soft" id="goToolBtn">교구로 이동 ↓</button>
-          <button type="button" class="btn soft" id="lessonPrevBtn">← 이전</button>
-          <button type="button" class="btn primary" id="lessonNextBtn">다음 활동 →</button>
+           <button type="button" class="btn soft" id="goToolBtn">놀이로 가기 ↓</button>
+           <button type="button" class="btn soft" id="lessonPrevBtn">← 이전</button>
+           <button type="button" class="btn amber" id="lessonModelBtn">👩‍🏫 같이 해보기</button>
+           <button type="button" class="btn primary" id="lessonNextBtn">다음 →</button>
         </div>
       </section>
 
@@ -1094,7 +1097,7 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
             <button type="button" class="btn amber" id="hintBtn">💡 도움</button>
             <button type="button" class="btn green" id="independentBtn">✓ 스스로 했어요</button>
             <button type="button" class="btn soft" id="helpedBtn">🤝 도움 받았어요</button>
-            <button type="button" class="btn primary" id="nextTaskBtn">다음 →</button>
+             <button type="button" class="btn primary" id="nextTaskBtn">다음 순서 →</button>
           </div>
           <div class="progress-note" id="progressNote">손가락으로 구체물을 끌어다 놓아 보세요. 잘못 놓아도 괜찮아요. 다시 해 볼 수 있어요.</div>
         </div>
@@ -1105,8 +1108,8 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
       <div class="card">
         <div class="card-head">
           <div>
-            <h2 class="card-title">📐 수학 공식</h2>
-            <div class="card-sub">가로식과 세로식을 눈으로 비교해 보세요</div>
+     <h2 class="card-title">📐 숫자로 나타내기</h2>
+     <div class="card-sub">가로와 세로로 계산해요</div>
           </div>
           <div class="tabs" id="formulaTabs" role="tablist" aria-label="공식 보기 방식"></div>
         </div>
@@ -1120,7 +1123,7 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
       <div class="card">
         <div class="card-head">
           <div>
-            <h2 class="card-title">🍎 구체물로 보기</h2>
+            <h2 class="card-title">🍎 그림으로 풀어 보기</h2>
             <div class="card-sub" id="concreteSub">구체물이 하나씩 모여요</div>
           </div>
           <div class="card-tools">
@@ -1133,7 +1136,7 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
       <div class="card history-card">
         <div class="card-head">
           <div>
-            <h2 class="card-title">📖 풀이 기록</h2>
+            <h2 class="card-title">📖 계산 기록</h2>
             <div class="card-sub">이 브라우저에만 저장돼요 (인터넷 없이도 사용 가능)</div>
           </div>
           <button type="button" class="btn soft" id="clearHistoryBtn">기록 지우기</button>
@@ -1274,7 +1277,7 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
   <div class="modal-inner">
     <div class="modal-head">
       <div>
-        <div class="modal-title" id="settingsTitle">⚙️ 학습 지원 설정</div>
+        <div class="modal-title" id="settingsTitle">⚙️ 화면과 도움 설정</div>
         <div class="modal-sub">학생에게 맞는 화면과 도움 수준을 골라 주세요. 이 브라우저에만 저장됩니다.</div>
       </div>
       <button type="button" class="btn soft" id="closeSettingsBtn">닫기</button>
@@ -1651,30 +1654,30 @@ function speak(text) {
    2. 12단계 교육과정 + 상태
    ============================================================ */
 const STAGES = [
-  { id: 1, domain: 'num', title: '짝짓기와 분류', short: '분류', subtitle: '같은 것끼리 모으기', hint: '색과 모양을 살펴보고 같은 것끼리 바구니에 담아 보세요. 분류는 수 세기의 첫걸음이에요.', preset: null, tool: 'sort' },
-  { id: 2, domain: 'num', title: '하나씩 세어보기', short: '세기', subtitle: '일대일 대응과 수 감각', hint: '10칸 판의 칸을 하나씩 눌러 보세요. 손가락으로 짚으며 숫자와 개수를 연결합니다.', preset: { first: '7', op: null, second: '' }, tool: 'count' },
-  { id: 3, domain: 'num', title: '수의 순서와 크기', short: '비교', subtitle: '순서수 · 크기 비교 (>, <, =)', hint: '두 수를 나란히 놓고 하나씩 짝을 지어 보세요. 어느 쪽이 더 많은지 수직선에서도 확인할 수 있어요.', preset: { first: '6', op: '+', second: '4' }, tool: 'compare' },
-  { id: 4, domain: 'num', title: '모으기와 가르기', short: '모으기', subtitle: '한 자리 덧셈과 뺄셈', hint: '3+5=8처럼 두 묶음이 하나로 모이거나 다시 둘로 갈라지는 모습을 눈으로 확인해 보세요.', preset: { first: '3', op: '+', second: '5' }, tool: 'compose' },
+  { id: 1, domain: 'num', title: '짝짓기와 분류', short: '같은 것 찾기', subtitle: '같은 것끼리 모으기', hint: '색과 모양을 살펴보고 같은 것끼리 바구니에 담아 보세요. 분류는 수 세기의 첫걸음이에요.', preset: null, tool: 'sort' },
+  { id: 2, domain: 'num', title: '하나씩 세어보기', short: '하나씩 세기', subtitle: '일대일 대응과 수 감각', hint: '10칸 판의 칸을 하나씩 눌러 보세요. 손가락으로 짚으며 숫자와 개수를 연결합니다.', preset: { first: '7', op: null, second: '' }, tool: 'count' },
+  { id: 3, domain: 'num', title: '수의 순서와 크기', short: '어느 쪽이 많을까', subtitle: '순서수 · 크기 비교 (>, <, =)', hint: '두 수를 나란히 놓고 하나씩 짝을 지어 보세요. 어느 쪽이 더 많은지 수직선에서도 확인할 수 있어요.', preset: { first: '6', op: '+', second: '4' }, tool: 'compare' },
+  { id: 4, domain: 'num', title: '모으기와 가르기', short: '모으고 나누기', subtitle: '한 자리 덧셈과 뺄셈', hint: '3+5=8처럼 두 묶음이 하나로 모이거나 다시 둘로 갈라지는 모습을 눈으로 확인해 보세요.', preset: { first: '3', op: '+', second: '5' }, tool: 'compose' },
   { id: 5, domain: 'num', title: '10 만들어 계산하기', short: '10 만들기', subtitle: '받아올림의 기초', hint: '10칸 판의 빈칸을 먼저 채워 10을 만들고, 남은 수를 더하면 계산이 쉬워져요.', preset: { first: '7', op: '+', second: '5' }, tool: 'maketen' },
-  { id: 6, domain: 'num', title: '덧셈·뺄셈 전략', short: '전략', subtitle: '모두 세기 · 이어 세기 · 거꾸로 세기', hint: '같은 계산도 여러 방법으로 풀 수 있어요. 수직선에서 점프하는 모습을 보며 전략을 골라 보세요.', preset: { first: '8', op: '+', second: '7' }, tool: 'strategy' },
-  { id: 7, domain: 'num', title: '자릿값과 세로식', short: '자릿값', subtitle: '백·십·일 수모형과 받아올림·받아내림', hint: '일모형 10개가 모이면 십모형 1개로 묶어요. 자릿값을 맞춰 세로식을 써 보세요.', preset: { first: '24', op: '+', second: '18' }, tool: 'place' },
-  { id: 8, domain: 'num', title: '묶음 곱셈과 나누기', short: '곱셈·나눗셈', subtitle: '같은 수씩 묶기 · 똑같이 나누기', hint: '곱셈은 같은 수씩 여러 묶음, 나눗셈은 전체를 여러 곳에 똑같이 나누는 것이에요.', preset: { first: '3', op: '×', second: '4' }, tool: 'multiply' },
+  { id: 6, domain: 'num', title: '덧셈·뺄셈 전략', short: '점프하며 계산', subtitle: '모두 세기 · 이어 세기 · 거꾸로 세기', hint: '같은 계산도 여러 방법으로 풀 수 있어요. 수직선에서 점프하는 모습을 보며 전략을 골라 보세요.', preset: { first: '8', op: '+', second: '7' }, tool: 'strategy' },
+  { id: 7, domain: 'num', title: '자릿값과 세로식', short: '십·백 묶기', subtitle: '백·십·일 수모형과 받아올림·받아내림', hint: '일모형 10개가 모이면 십모형 1개로 묶어요. 숫자의 자리를 맞춰 계산해요.', preset: { first: '24', op: '+', second: '18' }, tool: 'place' },
+  { id: 8, domain: 'num', title: '묶음 곱셈과 나누기', short: '같은 수 묶기', subtitle: '같은 수씩 묶기 · 똑같이 나누기', hint: '같은 수씩 여러 묶음을 만들거나, 모두에게 똑같이 나누어 보세요.', preset: { first: '3', op: '×', second: '4' }, tool: 'multiply' },
   { id: 9, domain: 'num', title: '분수와 소수', short: '분수·소수', subtitle: '전체와 부분 · 소수 표현', hint: '전체를 똑같이 나눈 조각을 분수와 소수로 나타내고, 계산기에서 분수·소수를 직접 계산해 보세요.', preset: { first: '1/2', op: '+', second: '1/4' }, tool: 'fraction' },
-  { id: 10, domain: 'shape', title: '측정하기', short: '측정', subtitle: '길이 · 들이 · 무게 · 시계 · 화폐', hint: '눈금을 움직이며 길이, 들이, 무게, 시간, 돈을 재어 보세요. 단위를 함께 읽는 습관이 중요해요.', preset: { first: '12', op: null, second: '' }, tool: 'measure' },
-  { id: 11, domain: 'shape', title: '도형과 규칙성', short: '도형·규칙', subtitle: '평면도형 · 반복 규칙', hint: '도형의 변과 꼭짓점을 세어 보고, 반복되는 규칙에서 다음에 올 모양을 찾아보세요.', preset: { first: '4', op: '+', second: '4' }, tool: 'shape' },
-  { id: 12, domain: 'data', title: '자료와 문제해결', short: '자료·문제', subtitle: '그래프 · 생활 속 문제', hint: '자료를 세어 그래프로 나타내고, 가장 많은 것을 찾아보세요. 생활 속 문제도 식으로 풀어 봅니다.', preset: { first: '3', op: '+', second: '5' }, tool: 'data' },
+  { id: 10, domain: 'shape', title: '측정하기', short: '길이·시계 재기', subtitle: '길이 · 물의 양 · 무게 · 시계 · 돈', hint: '눈금을 움직이며 길이, 물의 양, 무게, 시간, 돈을 재어 보세요.', preset: { first: '12', op: null, second: '' }, tool: 'measure' },
+  { id: 11, domain: 'shape', title: '도형과 규칙성', short: '도형·무늬 놀이', subtitle: '도형 · 반복 무늬', hint: '도형의 변과 뾰족한 곳을 세어 보고, 반복되는 무늬에서 다음 모양을 찾아보세요.', preset: { first: '4', op: '+', second: '4' }, tool: 'shape' },
+  { id: 12, domain: 'data', title: '자료와 문제해결', short: '과일 그래프', subtitle: '그래프 · 생활 속 문제', hint: '과일을 그래프에 놓고 가장 많은 것을 찾아보세요.', preset: { first: '3', op: '+', second: '5' }, tool: 'data' },
 ];
 
 const DOMAIN_META = {
-  num: { label: '수와 연산', className: 'num' },
-  shape: { label: '도형·측정', className: 'shape' },
-  data: { label: '규칙성·자료', className: 'data' },
+  num: { label: '숫자 놀이', className: 'num' },
+  shape: { label: '도형·생활 놀이', className: 'shape' },
+  data: { label: '그래프 놀이', className: 'data' },
 };
 
 const COURSES = {
-  number: { title: '수 감각과 연산', stageIds: [1,2,3,4,5,6,7,8,9] },
-  daily: { title: '도형과 생활 속 측정', stageIds: [10,11] },
-  data: { title: '자료 읽기와 문제해결', stageIds: [12] },
+  number: { title: '숫자 놀이', stageIds: [1,2,3,4,5,6,7,8,9] },
+  daily: { title: '도형과 생활 놀이', stageIds: [10,11] },
+  data: { title: '그래프 놀이', stageIds: [12] },
 };
 
 const MICRO_LESSONS = {
@@ -2454,11 +2457,11 @@ function renderNav() {
 function renderLessonPath() {
   const stage = currentStage();
   const lesson = (state.settings.easy && EASY_LESSONS[stage.id]) ? EASY_LESSONS[stage.id] : MICRO_LESSONS[stage.id];
-  const labels = ['👀 살펴보기', '🤝 함께 해보기', '⭐ 혼자 해보기'];
+  const labels = ['👀 먼저 보기', '🤝 같이 해보기', '⭐ 혼자 해보기'];
   const stepText = state.courseComplete
     ? '코스를 마쳤어요! 원하는 활동을 다시 연습하거나 위의 코스 선택 버튼으로 다른 코스를 골라 보세요.'
     : [lesson.goal, lesson.guided, lesson.try][state.lessonStep];
-  $('lessonTitle').textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.id}단계 · ${stage.title}`;
+  $('lessonTitle').textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.id}번째 놀이 · ${stage.short}`;
   const courseStages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
   const position = Math.max(0, courseStages.indexOf(stage.id)) + 1;
   $('lessonCount').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${position}/${courseStages.length}단계 · 활동 ${state.lessonStep + 1}/3`;
@@ -2467,8 +2470,13 @@ function renderLessonPath() {
   $('lessonPrevBtn').disabled = state.lessonStep === 0 || state.courseComplete;
   const lastStage = position === courseStages.length;
   const isLastActivity = state.lessonStep === 2;
-  $('lessonNextBtn').textContent = state.courseComplete ? '첫 단계 다시 보기' : !isLastActivity ? '다음 활동 →' : lastStage ? '코스 마치기 ✓' : '이 단계 마치고 다음으로 →';
+  $('lessonNextBtn').textContent = state.courseComplete ? '첫 놀이 다시 하기' : state.lessonStep === 0 ? '같이 해보기 →' : state.lessonStep === 1 ? '혼자 해보기 →' : lastStage ? '코스 마치기 ✓' : '다음 놀이 →';
   $('lessonNextBtn').className = `btn ${isLastActivity ? 'green' : 'primary'}`;
+  const modelButton = $('lessonModelBtn');
+  if (modelButton) {
+    modelButton.disabled = state.courseComplete || state.lessonStep === 2;
+    modelButton.textContent = state.lessonStep === 2 ? '⭐ 혼자 해보기 중' : '👩‍🏫 같이 해보기';
+  }
   const ftNow = $('ftNow');
   if (ftNow) ftNow.textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.short}`;
   const ftNext = $('ftNext');
@@ -5406,24 +5414,43 @@ function giveHint(auto) {
 }
 function modelStep(stageId) {
   const body = $('toolBody');
-  if (!body) return;
-  const click = (sel) => { const el = body.querySelector(sel); if (el) el.click(); };
+  if (!body) return false;
+  const click = (sel) => {
+    const el = body.querySelector(sel);
+    if (!el || el.disabled) return false;
+    el.click();
+    return true;
+  };
+  let modeled = false;
   switch (stageId) {
-    case 1: click('[data-sort-item]'); break;
-    case 2: click('[data-count="p1"]'); break;
-    case 3: click('[data-cmp="a:1"]'); break;
-    case 4: click('[data-compose="b:1"]'); break;
-    case 5: click('[data-mt="7,5"]'); break;
-    case 6: click('[data-st]'); break;
-    case 7: click('[data-pa="add1"]'); break;
-    case 8: click('[data-mul-bundle]'); break;
-    case 9: click('[data-frac-piece="a"]'); break;
-    case 10: click('[data-mtab="length"]'); break;
-    case 11: click('[data-shape-source]'); break;
-    case 12: click('[data-data-token]'); break;
-    default: speak('같이 한 단계 해 볼게요.');
+    case 1: modeled = click('[data-sort-item]'); break;
+    case 2: modeled = click('[data-count="p1"]'); break;
+    case 3: modeled = click('[data-cmp="a:1"]'); break;
+    case 4: modeled = click('[data-compose="b:1"]'); break;
+    case 5: modeled = click('[data-mt="7,5"]'); break;
+    case 6: modeled = click('[data-st]'); break;
+    case 7: modeled = click('[data-pa="add1"]'); break;
+    case 8: modeled = click('[data-mul-bundle]'); break;
+    case 9: modeled = click('[data-frac-piece="a"]'); break;
+    case 10:
+      modeled = click('[data-mtab="length"]');
+      if (modeled) {
+        const range = body.querySelector('#lenRange');
+        if (range) {
+          range.value = String(Math.min(20, Number(range.value) + 1));
+          range.dispatchEvent(new Event('input', { bubbles: true }));
+          range.dispatchEvent(new Event('change', { bubbles: true }));
+          recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `길이 ${state.measure.length}cm`);
+        }
+      }
+      break;
+    case 11: modeled = click('[data-shape-source]'); break;
+    case 12: modeled = click('[data-data-token]'); break;
+    default: modeled = false;
   }
-  announce('같이 한 단계 해 보았어요. 이제 학생 차례예요.');
+  if (modeled) announce('같이 해 보았어요. 이제 직접 해 볼까요?');
+  else announce('놀이 화면을 먼저 골라 주세요.');
+  return modeled;
 }
 function openAac() {
   const grid = $('aacGrid');
@@ -5598,6 +5625,11 @@ function init() {
   document.addEventListener('keydown', noteInteraction, { passive: true });
   scheduleAutoHint();
   $('goToolBtn').onclick = () => $('toolCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('lessonModelBtn').onclick = () => {
+    if (!modelStep(state.stage)) return;
+    if (state.lessonStep === 0) state.lessonStep = 1;
+    renderLessonPath();
+  };
   $('lessonPrevBtn').onclick = () => {
     if (state.lessonStep > 0) {
       state.lessonStep -= 1;
