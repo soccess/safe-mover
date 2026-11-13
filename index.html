@@ -227,8 +227,8 @@
         <span id="d1StatusText">Cloudflare D1 DB 연결 상태 확인 중...</span>
       </div>
       <div class="d1-controls">
-        <label for="studentNameInput" style="font-size:12.5px;color:#CBD5E1;">학생 이름</label>
-        <input id="studentNameInput" class="d1-input" type="text" placeholder="기본 학생" maxlength="30">
+        <button type="button" class="d1-btn" id="btnStudentLogin">🎨 캐릭터 로그인</button>
+        <button type="button" class="d1-btn" id="btnTeacherMode">👩‍🏫 교사 모드</button>
         <button type="button" class="d1-btn" id="btnToggleRecords">📋 D1 학습 기록</button>
         <button type="button" class="d1-btn" id="btnRefreshD1">↻ 상태 확인</button>
       </div>
@@ -239,12 +239,14 @@
     </section>
   </div>
 
+  <script>window.D1_HIDE_FLOATING = true;</script>
   <script src="./assets/d1_client.js"></script>
   <script>
     (function () {
       const dot = document.getElementById("d1Dot");
       const statusText = document.getElementById("d1StatusText");
-      const nameInput = document.getElementById("studentNameInput");
+      const btnStudentLogin = document.getElementById("btnStudentLogin");
+      const btnTeacherMode = document.getElementById("btnTeacherMode");
       const panel = document.getElementById("d1RecordsPanel");
       const listEl = document.getElementById("d1RecordsList");
       const gameNames = {
@@ -260,11 +262,17 @@
         }[ch]));
       }
 
+      function syncProfileBtn() {
+        if (!window.D1Bridge) return;
+        const ch = window.D1Bridge.getCharacter();
+        btnStudentLogin.innerHTML = `${window.D1Bridge.charSvg(ch.id, 18)} <span>${esc(window.D1Bridge.getClassName())} · ${esc(ch.name)}</span>`;
+      }
+
       if (window.D1Bridge) {
-        nameInput.value = window.D1Bridge.getStudentName();
-        nameInput.addEventListener("change", () => {
-          nameInput.value = window.D1Bridge.setStudentName(nameInput.value);
-        });
+        syncProfileBtn();
+        window.D1Bridge.onProfileChange(syncProfileBtn);
+        btnStudentLogin.addEventListener("click", () => window.D1Bridge.openStudentLoginModal());
+        btnTeacherMode.addEventListener("click", () => window.D1Bridge.openTeacherModal());
       }
 
       async function refreshStatus() {
@@ -289,7 +297,7 @@
         listEl.innerHTML = rows.map((r) => {
           const g = gameNames[r.game] || r.game;
           return '<div class="d1-item"><span><b>[' + esc(g) + ']</b> ' +
-            esc(r.student_name || "기본 학생") + ' · ' + esc(r.stage || "") + ' — ' + esc(r.summary || "") +
+            esc(r.class_name || "기본반") + ' · ' + esc(r.student_name || "🐰 토끼") + ' · ' + esc(r.stage || "") + ' — ' + esc(r.summary || "") +
             '</span><span>' + esc(r.created_at || "") + '</span></div>';
         }).join("");
       }
