@@ -7,9 +7,182 @@
 <title>마음 날씨 연구소 | 감정표현하기</title>
 <style>
 :root{--ink:#39354a;--muted:#77758b;--paper:#fffdf8;--line:#eee8dd;--purple:#7665c5;--purple-dark:#5d4da9;--yellow:#ffe99a;--shadow:0 14px 38px #53442a12}
-*{box-sizing:border-box}body{margin:0;background:#fff9ed;color:var(--ink);font-family:'Gowun Dodum','Malgun Gothic',sans-serif;min-height:100vh}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:3px solid #7665c588;outline-offset:3px}.page{max-width:1120px;margin:auto;padding:20px 28px 62px}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{border:0;background:none;display:flex;align-items:center;gap:10px;font:22px 'Jua',sans-serif}.brand-mark{width:41px;height:41px;display:grid;place-items:center;border-radius:15px;background:#ffe99a;font-size:24px;transform:rotate(-5deg)}.top-note{font-size:14px;color:var(--muted);background:#fff;padding:9px 14px;border:1px solid var(--line);border-radius:99px}.hero{position:relative;overflow:hidden;border:1px solid #f2e9d7;background:linear-gradient(110deg,#fff4cc,#fff8eb 53%,#f2efff);border-radius:28px;padding:29px 38px;display:flex;align-items:center;justify-content:space-between;min-height:188px;box-shadow:var(--shadow)}.hero-copy{max-width:610px;position:relative;z-index:1}.eyebrow{font:14px 'Jua',sans-serif;letter-spacing:.3px;color:#a87931}.hero h1{font:clamp(30px,4vw,43px) 'Jua',sans-serif;line-height:1.2;margin:7px 0 9px}.hero p{margin:0;color:#6d687d;font-size:16px;line-height:1.65}.hero-art{width:210px;min-width:160px;margin-right:18px;filter:drop-shadow(0 8px 8px #69562a18)}.hero-spark{position:absolute;font-size:24px;opacity:.7}.hero-spark.s1{right:27%;top:20px}.hero-spark.s2{right:41%;bottom:24px;font-size:18px}.progress{display:flex;align-items:center;gap:8px;margin:24px 0 25px;color:#aaa6b0;font-size:13px}.progress .dot{width:25px;height:25px;border-radius:50%;background:#eeeaf3;display:grid;place-items:center;font-size:12px}.progress .active{background:#7665c5;color:#fff}.progress .done{background:#d9f0df;color:#36875a}.progress .line{width:36px;height:2px;background:#e7e0d6}.section-heading{display:flex;align-items:end;justify-content:space-between;margin:30px 2px 15px}.section-heading h2{font:25px 'Jua',sans-serif;margin:0}.section-heading p{margin:0;color:var(--muted);font-size:14px}.moods{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.mood-card{border:1px solid var(--line);border-radius:22px;background:#fff;padding:14px 14px 16px;text-align:left;transition:.2s;box-shadow:0 5px 16px #55452b08}.mood-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#d7cdec}.mood-picture{height:136px;border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden}.mood-picture svg{width:115px;height:115px;position:relative;z-index:1}.mood-picture:after{content:'';position:absolute;width:95px;height:95px;background:#ffffff78;border-radius:50%;bottom:-35px;right:-15px}.mood-label{font:21px 'Jua',sans-serif;margin:13px 4px 4px;display:flex;align-items:center;gap:8px}.mood-desc{font-size:13px;color:var(--muted);margin:0 4px;line-height:1.45}.mood-arrow{float:right;color:#a7a1b5;font-size:18px}.mood-card[data-mood="happy"] .mood-picture{background:#fff0c1}.mood-card[data-mood="sad"] .mood-picture{background:#dff1fa}.mood-card[data-mood="angry"] .mood-picture{background:#ffe2dc}.mood-card[data-mood="surprised"] .mood-picture{background:#eae5ff}.privacy-note{margin:19px 0 0;padding:12px 15px;border-radius:14px;background:#f2f0fb;color:#6d6786;font-size:13px;display:flex;gap:9px;align-items:center}.stage{display:none}.stage.visible{display:block;animation:arrive .32s ease}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.back{border:0;background:transparent;color:#777188;padding:8px 0;margin:0 0 8px;font-weight:bold}.back:hover{color:var(--purple)}.chosen-banner{border-radius:22px;padding:19px 24px;display:flex;align-items:center;gap:17px;margin:5px 0 24px}.chosen-banner svg{width:74px;height:74px;flex:none}.chosen-banner h2{font:27px 'Jua',sans-serif;margin:0 0 4px}.chosen-banner p{margin:0;color:#6c687b}.chosen-banner .badge{margin-left:auto;white-space:nowrap;background:#ffffff9c;padding:9px 12px;border-radius:99px;font-size:13px}.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.method-card{border:1px solid var(--line);background:#fff;border-radius:19px;padding:12px;text-align:left;transition:.2s;box-shadow:0 4px 14px #55452b08}.method-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#c9bee9}.method-art{height:145px;border-radius:13px;overflow:hidden;background:var(--wash,#f5f0ff);display:grid;place-items:center}.method-art svg{width:100%;height:100%;display:block}.method-title{font:19px 'Jua',sans-serif;margin:12px 5px 4px}.method-sub{font-size:13px;line-height:1.5;color:var(--muted);margin:0 5px 6px}.go{font-size:12px;color:#8878c7;margin:0 5px}.detail{display:none;margin-top:24px;background:#fff;border:1px solid var(--line);border-radius:25px;padding:21px;box-shadow:var(--shadow);grid-template-columns:minmax(260px,.9fr) 1.1fr;gap:25px}.detail.open{display:grid;animation:arrive .3s ease}.detail-art{border-radius:19px;overflow:hidden;background:#f4f0ff;min-height:280px;display:grid;place-items:center}.detail-art svg{width:100%;height:100%;min-height:280px}.detail-copy{padding:8px 8px 8px 0}.detail-kicker{font:14px 'Jua',sans-serif;color:#9384cd}.detail-copy h3{font:29px 'Jua',sans-serif;margin:7px 0}.detail-copy .intro{color:#777188;line-height:1.65;margin:0 0 15px}.steps{list-style:none;padding:0;margin:0;display:grid;gap:9px}.steps li{display:flex;gap:10px;align-items:flex-start;line-height:1.55}.step-no{flex:none;width:24px;height:24px;border-radius:50%;background:#eeeafd;color:#6e5db5;display:grid;place-items:center;font:14px 'Jua',sans-serif}.say-box{margin:17px 0 0;padding:12px 14px;border-radius:13px;background:#fff7d9;color:#6d5a36;font-size:14px;line-height:1.55}.detail-actions{display:flex;gap:9px;margin-top:16px}.action{border:0;border-radius:12px;padding:10px 15px;font-weight:bold}.action.primary{background:#7665c5;color:#fff}.action.secondary{background:#f2eff9;color:#63588c}.done-panel{display:none;text-align:center;padding:16px;margin-top:17px;background:#edfaef;border-radius:14px;color:#39734c}.done-panel.show{display:block}.footer{margin:34px 0 0;text-align:center;color:#9c97a5;font-size:12px}.tiny-cloud{position:absolute;right:40px;top:20px;color:#fff;font-size:30px}
-@media(max-width:760px){.page{padding:14px 16px 42px}.hero{padding:23px;min-height:160px}.hero-art{width:150px;margin-right:0}.hero p{font-size:14px}.moods{grid-template-columns:repeat(2,1fr);gap:11px}.mood-picture{height:115px}.mood-picture svg{height:100px;width:100px}.methods{grid-template-columns:repeat(2,1fr);gap:10px}.method-art{height:120px}.method-card{padding:9px}.chosen-banner{padding:14px;gap:11px}.chosen-banner svg{width:57px;height:57px}.chosen-banner h2{font-size:22px}.chosen-banner .badge{display:none}.detail{grid-template-columns:1fr;padding:14px;gap:15px}.detail-art{min-height:220px;max-height:300px}.detail-art svg{min-height:220px}.detail-copy{padding:0 4px 4px}.top-note{font-size:12px;padding:7px 10px}}
-@media(max-width:420px){.hero-art{width:105px;min-width:92px}.hero{padding:19px}.hero h1{font-size:29px}.hero p{font-size:13px}.methods{grid-template-columns:1fr 1fr}.method-art{height:102px}.method-title{font-size:17px}.section-heading{align-items:start;gap:6px;flex-direction:column}.progress{margin:18px 0}.top-note{max-width:135px;text-align:center}}
+*{box-sizing:border-box}body{margin:0;background:#fff9ed;color:var(--ink);font-family:'Gowun Dodum','Malgun Gothic',sans-serif;min-height:100vh}button{font:inherit;color:inherit;cursor:pointer}button:focus-visible{outline:3px solid #7665c588;outline-offset:3px}.page{max-width:1120px;margin:auto;padding:20px 28px 62px}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{border:0;background:none;display:flex;align-items:center;gap:10px;font:22px 'Jua',sans-serif}.brand-mark{width:41px;height:41px;display:grid;place-items:center;border-radius:15px;background:#ffe99a;font-size:24px;transform:rotate(-5deg)}.top-note{font-size:14px;color:var(--muted);background:#fff;padding:9px 14px;border:1px solid var(--line);border-radius:99px}.hero{position:relative;overflow:hidden;border:1px solid #f2e9d7;background:linear-gradient(110deg,#fff4cc,#fff8eb 53%,#f2efff);border-radius:28px;padding:29px 38px;display:flex;align-items:center;justify-content:space-between;min-height:188px;box-shadow:var(--shadow)}.hero-copy{max-width:610px;position:relative;z-index:1}.eyebrow{font:14px 'Jua',sans-serif;letter-spacing:.3px;color:#a87931}.hero h1{font:clamp(30px,4vw,43px) 'Jua',sans-serif;line-height:1.2;margin:7px 0 9px}.hero p{margin:0;color:#6d687d;font-size:16px;line-height:1.65}.hero-art{width:210px;min-width:160px;margin-right:18px;filter:drop-shadow(0 8px 8px #69562a18)}.hero-spark{position:absolute;font-size:24px;opacity:.7}.hero-spark.s1{right:27%;top:20px}.hero-spark.s2{right:41%;bottom:24px;font-size:18px}.progress{display:flex;align-items:center;gap:8px;margin:24px 0 25px;color:#aaa6b0;font-size:13px}.progress .dot{width:25px;height:25px;border-radius:50%;background:#eeeaf3;display:grid;place-items:center;font-size:12px}.progress .active{background:#7665c5;color:#fff}.progress .done{background:#d9f0df;color:#36875a}.progress .line{width:36px;height:2px;background:#e7e0d6}.section-heading{display:flex;align-items:end;justify-content:space-between;margin:30px 2px 15px}.section-heading h2{font:25px 'Jua',sans-serif;margin:0}.section-heading p{margin:0;color:var(--muted);font-size:14px}.moods{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.mood-card{border:1px solid var(--line);border-radius:22px;background:#fff;padding:14px 14px 16px;text-align:left;transition:.2s;box-shadow:0 5px 16px #55452b08}.mood-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#d7cdec}.mood-picture{height:136px;border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden}.mood-picture svg{width:115px;height:115px;position:relative;z-index:1}.mood-picture:after{content:'';position:absolute;width:95px;height:95px;background:#ffffff78;border-radius:50%;bottom:-35px;right:-15px}.mood-label{font:21px 'Jua',sans-serif;margin:13px 4px 4px;display:flex;align-items:center;gap:8px}.mood-desc{font-size:13px;color:var(--muted);margin:0 4px;line-height:1.45}.mood-arrow{float:right;color:#a7a1b5;font-size:18px}.mood-card[data-mood="happy"] .mood-picture{background:#fff0c1}.mood-card[data-mood="sad"] .mood-picture{background:#dff1fa}.mood-card[data-mood="angry"] .mood-picture{background:#ffe2dc}.mood-card[data-mood="surprised"] .mood-picture{background:#eae5ff}.privacy-note{margin:19px 0 0;padding:12px 15px;border-radius:14px;background:#f2f0fb;color:#6d6786;font-size:13px;display:flex;gap:9px;align-items:center}.stage{display:none}.stage.visible{display:block;animation:arrive .32s ease}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.back{border:0;background:transparent;color:#777188;padding:8px 0;margin:0 0 8px;font-weight:bold}.back:hover{color:var(--purple)}.chosen-banner{border-radius:22px;padding:19px 24px;display:flex;align-items:center;gap:17px;margin:5px 0 24px}.chosen-banner svg{width:74px;height:74px;flex:none}.chosen-banner h2{font:27px 'Jua',sans-serif;margin:0 0 4px}.chosen-banner p{margin:0;color:#6c687b}.chosen-banner .badge{margin-left:auto;white-space:nowrap;background:#ffffff9c;padding:9px 12px;border-radius:99px;font-size:13px}.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.method-card{border:1px solid var(--line);background:#fff;border-radius:19px;padding:12px;text-align:left;transition:.2s;box-shadow:0 4px 14px #55452b08}.method-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#c9bee9}.method-art{height:145px;border-radius:13px;overflow:hidden;background:var(--wash,#f5f0ff);display:grid;place-items:center}.method-art svg{width:100%;height:100%;display:block}.method-title{font:19px 'Jua',sans-serif;margin:12px 5px 4px}.method-sub{font-size:13px;line-height:1.5;color:var(--muted);margin:0 5px 6px}.go{font-size:12px;color:#8878c7;margin:0 5px}.detail{display:none;margin-top:24px;background:#fff;border:1px solid var(--line);border-radius:25px;padding:21px;box-shadow:var(--shadow);grid-template-columns:minmax(260px,.9fr) 1.1fr;grid-template-areas:"art copy" "act act";gap:25px}.detail.open{display:grid;animation:arrive .3s ease}.detail-art{border-radius:19px;overflow:hidden;background:#f4f0ff;min-height:280px;display:grid;place-items:center;grid-area:art}.detail-copy{grid-area:copy}.detail-art svg{width:100%;height:100%;min-height:280px}.detail-copy{padding:8px 8px 8px 0}.detail-kicker{font:14px 'Jua',sans-serif;color:#9384cd}.detail-copy h3{font:29px 'Jua',sans-serif;margin:7px 0}.detail-copy .intro{color:#777188;line-height:1.65;margin:0 0 15px}.steps{list-style:none;padding:0;margin:0;display:grid;gap:9px}.steps li{display:flex;gap:10px;align-items:flex-start;line-height:1.55}.step-no{flex:none;width:24px;height:24px;border-radius:50%;background:#eeeafd;color:#6e5db5;display:grid;place-items:center;font:14px 'Jua',sans-serif}.say-box{margin:17px 0 0;padding:12px 14px;border-radius:13px;background:#fff7d9;color:#6d5a36;font-size:14px;line-height:1.55}.detail-actions{display:flex;gap:9px;margin-top:16px}.action{border:0;border-radius:12px;padding:10px 15px;font-weight:bold}.action.primary{background:#7665c5;color:#fff}.action.secondary{background:#f2eff9;color:#63588c}.done-panel{display:none;text-align:center;padding:16px;margin-top:17px;background:#edfaef;border-radius:14px;color:#39734c}.done-panel.show{display:block}.footer{margin:34px 0 0;text-align:center;color:#9c97a5;font-size:12px}.tiny-cloud{position:absolute;right:40px;top:20px;color:#fff;font-size:30px}
+/* ===== 장면 그림 강화 ===== */
+.svg-anim .bob{animation:svgBob 7s ease-in-out infinite}
+.svg-anim .bob2{animation:svgBob 9.5s ease-in-out -2.2s infinite}
+.svg-anim .twinkle{animation:svgTwinkle 3.4s ease-in-out infinite}
+.svg-anim .twinkle2{animation:svgTwinkle 4.8s ease-in-out -1.5s infinite}
+.svg-anim .sway{transform-box:fill-box;transform-origin:50% 100%;animation:svgSway 5.5s ease-in-out infinite}
+.svg-anim .sway2{transform-box:fill-box;transform-origin:50% 100%;animation:svgSway 7.2s ease-in-out -1.8s infinite}
+.svg-anim .drift{animation:svgDrift 17s ease-in-out infinite}
+.svg-anim .drift2{animation:svgDrift 23s ease-in-out -6s infinite}
+.svg-anim .spinSlow{transform-box:fill-box;transform-origin:center;animation:svgSpin 42s linear infinite}
+.svg-anim .rain{animation:svgRain 1.25s linear infinite}
+.svg-anim .rain2{animation:svgRain 1.6s linear -.6s infinite}
+.svg-anim .rise{animation:svgRise 4.6s ease-out infinite}
+.svg-anim .pulse{transform-box:fill-box;transform-origin:center;animation:svgPulse 4.6s ease-in-out infinite}
+.svg-anim .blink{animation:svgBlink 3.6s ease-in-out infinite}
+@keyframes svgBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes svgDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
+@keyframes svgTwinkle{0%,100%{opacity:.25;transform:scale(.82)}50%{opacity:1;transform:scale(1.06)}}
+@keyframes svgSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes svgSpin{to{transform:rotate(360deg)}}
+@keyframes svgRain{0%{transform:translateY(-6px);opacity:0}18%{opacity:1}100%{transform:translateY(16px);opacity:0}}
+@keyframes svgRise{0%{transform:translateY(8px);opacity:0}25%{opacity:.9}100%{transform:translateY(-22px);opacity:0}}
+@keyframes svgPulse{0%,100%{transform:scale(.94);opacity:.75}50%{transform:scale(1.06);opacity:1}}
+@keyframes svgBlink{0%,92%,100%{opacity:1}95%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.svg-anim *{animation:none!important}}
+.mood-picture svg{transition:transform .35s ease}
+.mood-card:hover .mood-picture svg{transform:scale(1.06) rotate(-2deg)}
+.method-art{position:relative;transition:background .25s}
+.method-art svg{transition:transform .45s ease}
+.method-card:hover .method-art svg{transform:scale(1.045)}
+.tap-badge{position:absolute;z-index:2;left:8px;top:8px;background:#ffffffdd;border:1px solid #ded5f3;color:#6d5db5;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:bold;backdrop-filter:blur(3px);box-shadow:0 3px 9px #4a3d2214}
+/* ===== 태블릿 활동 ===== */
+.tablet-activity{grid-area:act;border-top:2px dashed #efe9dc;padding-top:17px;margin-top:2px}
+.ta-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+.ta-badge{font:13px 'Jua',sans-serif;background:#efeaff;color:#5f4fae;border-radius:99px;padding:5px 11px;white-space:nowrap}
+.ta-head strong{font:20px 'Jua',sans-serif;color:#4b4460}
+.ta-hint{margin-left:auto;font-size:12px;color:#9a94a8}
+.ta-stage{background:linear-gradient(145deg,#fbf8ff,#fffdf6);border:1px solid #efe9df;border-radius:18px;padding:15px;min-height:118px}
+.ta-stage.ta-flash{animation:taFlash .55s ease}
+@keyframes taFlash{0%{box-shadow:0 0 0 0 #7665c555}60%{box-shadow:0 0 0 10px #7665c500}100%{box-shadow:none}}
+.ta-status{margin:10px 2px 0;font-size:13px;color:#7a7489;line-height:1.5}
+.ta-status b{color:#5d4da9}
+.ta-btn{border:0;border-radius:12px;padding:10px 15px;font-weight:bold;font-size:14px;background:#7665c5;color:#fff;min-height:44px;transition:.18s;touch-action:manipulation}
+.ta-btn:hover{background:#6654b6;transform:translateY(-1px)}
+.ta-btn.soft{background:#f1edfa;color:#63588c}
+.ta-btn.gold{background:#f7c85f;color:#6b4e13}
+.ta-btn:disabled{opacity:.45;cursor:default;transform:none}
+.ta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.ta-chip{border:1px solid #e2dbf5;background:#fff;color:#5e5580;border-radius:99px;padding:9px 13px;font-size:13px;min-height:42px;transition:.16s;touch-action:manipulation}
+.ta-chip:hover{border-color:#b9a8ef;background:#faf7ff}
+.ta-chip.on{background:#7665c5;border-color:#7665c5;color:#fff;box-shadow:0 4px 12px #7665c533}
+.ta-done{display:flex;gap:8px;align-items:center;background:#edfaef;color:#39734c;border-radius:12px;padding:10px 13px;font-size:13px;margin-top:11px;animation:arrive .3s ease}
+/* 숨 고르기 */
+.ta-breathe{display:grid;place-items:center;gap:8px;text-align:center;padding:4px 0}
+.ta-breath-circle{width:170px;height:170px;border-radius:50%;border:0;display:grid;place-items:center;align-content:center;gap:3px;background:radial-gradient(circle at 38% 30%,#fff8d8,#ffe7a8 62%,#f7cf7d);box-shadow:0 0 0 12px #ffeec455,0 10px 26px #b08b3c33;transform:scale(.74);transition:transform .12s linear,box-shadow .3s;touch-action:manipulation}
+.ta-breath-circle .lbl{font:21px 'Jua',sans-serif;color:#7a5a27}
+.ta-breath-circle .sub{font-size:11px;color:#9a7d4a}
+.ta-breathe .dots{display:flex;gap:7px;margin-top:4px}
+.ta-breathe .dots span{width:9px;height:9px;border-radius:50%;background:#e8dfc6;transition:.3s}
+.ta-breathe .dots span.on{background:#f0b94f;transform:scale(1.15)}
+/* 음악 */
+.ta-pads{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ta-pad{border:0;border-radius:14px;padding:13px 4px 11px;font-size:24px;background:#f4efff;color:#5f4fae;box-shadow:0 3px 0 #dfd6f3;min-height:70px;touch-action:manipulation;transition:.12s}
+.ta-pad small{display:block;font-size:11px;margin-top:3px;color:#8b80b5}
+.ta-pad:active,.ta-pad.hit{transform:translateY(3px) scale(.97);box-shadow:none;background:#e4d9ff}
+.ta-pad.ok{background:#e5f8e9;box-shadow:0 3px 0 #c6e8ce;color:#2f7d4b}
+.ta-pad.bad{animation:taShake .3s}
+@keyframes taShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.ta-notes{display:flex;gap:5px;justify-content:center;margin-top:10px;min-height:18px;font-size:16px}
+.ta-notes span{animation:taNote .5s ease}
+@keyframes taNote{from{transform:translateY(6px) scale(.5);opacity:0}to{transform:none;opacity:1}}
+/* 산책 */
+.ta-walk-svg{width:100%;height:auto;display:block;touch-action:none;cursor:grab}
+.ta-walk-svg:active{cursor:grabbing}
+.ta-collect{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.ta-collect span{border:1px dashed #d8cfc0;border-radius:10px;padding:4px 9px;font-size:13px;color:#b3aa9c;transition:.25s}
+.ta-collect span.on{border-color:#8cc6a2;background:#effaf2;color:#3d8459;font-weight:bold}
+/* 책 읽기 */
+.ta-book{border-radius:14px;background:#fffdf7;border:1px solid #eadfc8;padding:14px;box-shadow:inset 0 0 0 4px #fff,0 6px 16px #6b5b3b10;text-align:center;min-height:150px;display:grid;align-content:center;gap:6px;transition:.25s}
+.ta-book.flip{animation:taFlip .38s ease}
+@keyframes taFlip{0%{transform:perspective(600px) rotateY(0)}45%{transform:perspective(600px) rotateY(-18deg);opacity:.55}100%{transform:none;opacity:1}}
+.ta-book .bemoji{font-size:30px;line-height:1}
+.ta-book p{margin:0;font-size:15px;line-height:1.6;color:#5b5344}
+.ta-book .bpage{font-size:11px;color:#a9a191}
+.ta-saved{font-size:12px;color:#7a7489;margin-top:8px;display:grid;gap:3px}
+.ta-saved b{color:#5d4da9}
+/* 물 마시기 */
+.ta-water{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center}
+.ta-cup{position:relative;width:90px;height:112px;margin:auto;border:3px solid #9fc9dd;border-top:0;border-radius:8px 8px 18px 18px;background:linear-gradient(#f5fcff,#e8f6fc);overflow:hidden;box-shadow:0 6px 14px #7fa9bb22}
+.ta-cup .fill{position:absolute;left:0;right:0;bottom:0;height:88%;background:linear-gradient(#a9e0f3,#7cc8e6);transition:height .55s cubic-bezier(.34,1.3,.64,1)}
+.ta-cup .shine{position:absolute;left:11px;top:8px;width:7px;height:38px;border-radius:6px;background:#ffffffb0}
+.ta-cup .bub{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffffffa8;animation:taBub 2.4s ease-in infinite}
+@keyframes taBub{from{transform:translateY(60px);opacity:0}30%{opacity:.9}to{transform:translateY(-30px);opacity:0}}
+.ta-sips{display:flex;gap:6px;margin-top:6px}
+.ta-sips i{width:22px;height:22px;border-radius:50%;border:2px dashed #cfdde4;display:grid;place-items:center;font-style:normal;font-size:12px;color:#a9bcc6}
+.ta-sips i.on{border:0;background:#8ed6ec;color:#fff}
+/* 이야기 */
+.ta-talk{display:grid;gap:10px}
+.ta-bubble{position:relative;background:#fff;border:2px solid #d8cdf3;border-radius:16px;padding:13px 15px;font-size:17px;line-height:1.5;color:#4b4460;box-shadow:0 5px 15px #6d5db514}
+.ta-bubble:after{content:'';position:absolute;left:34px;bottom:-11px;width:16px;height:16px;background:#fff;border-right:2px solid #d8cdf3;border-bottom:2px solid #d8cdf3;transform:rotate(45deg)}
+.ta-bubble b{color:#7665c5;border-bottom:2px dotted #c9bcf3;padding:0 3px}
+.ta-bubble.pop{animation:taPop .4s ease}
+@keyframes taPop{0%{transform:scale(.94)}55%{transform:scale(1.03)}100%{transform:none}}
+/* 그리기 */
+.ta-draw-wrap{display:grid;gap:9px}
+.ta-draw-tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.ta-swatch{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #ddd6c8;transition:.15s;padding:0}
+.ta-swatch.on{transform:scale(1.16);box-shadow:0 0 0 3px #7665c5}
+.ta-size{width:38px;height:34px;border-radius:10px;border:1px solid #e4ddce;background:#fff;display:grid;place-items:center;padding:0}
+.ta-size.on{background:#efeaff;border-color:#b9a8ef}
+.ta-size i{display:block;border-radius:50%;background:#6b5a52}
+#drawCanvas{width:100%;height:210px;border-radius:12px;border:1px solid #e6dfd1;background:#fff;touch-action:none;display:block;cursor:crosshair}
+/* 포근한 쉼 */
+.ta-cozy{display:grid;place-items:center;gap:9px;text-align:center}
+.ta-hug{width:132px;height:132px;border-radius:50%;border:0;background:radial-gradient(circle at 40% 32%,#ffe6ec,#ffc9d6 65%,#f7aebf);box-shadow:0 0 0 10px #ffdde455,0 10px 22px #c98b9a33;font-size:46px;display:grid;place-items:center;touch-action:none;transition:transform .15s}
+.ta-hug.grow{transform:scale(1.07)}
+.ta-meter{width:100%;max-width:280px;height:12px;border-radius:99px;background:#efe7dc;overflow:hidden}
+.ta-meter i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ffc2d0,#f28aa4);transition:width .12s linear}
+/* 친구 */
+.ta-friends{display:grid;gap:10px}
+.ta-figures{display:flex;justify-content:center;align-items:end;gap:34px;position:relative;min-height:96px}
+.ta-figure{display:grid;justify-items:center;gap:2px;font-size:13px;color:#7a7489}
+.ta-figure .face{font-size:46px;line-height:1;transition:transform .25s}
+.ta-figure .face.happy{transform:scale(1.1) translateY(-3px)}
+.ta-fly{position:absolute;left:50%;bottom:44px;font-size:20px;animation:taFly 1.1s ease forwards;pointer-events:none}
+@keyframes taFly{0%{transform:translate(-34px,10px) scale(.6);opacity:0}25%{opacity:1}100%{transform:translate(30px,-46px) scale(1.15);opacity:0}}
+.ta-heart-count{font:16px 'Jua',sans-serif;color:#d8687f;text-align:center}
+/* 고마움 항아리 */
+.ta-jar-wrap{display:grid;grid-template-columns:100px 1fr;gap:14px;align-items:center}
+.ta-jar{position:relative;height:112px;border:3px solid #8fbdb2;border-radius:10px 10px 24px 24px;background:linear-gradient(#f3fdf9,#e4f6ef);overflow:hidden;box-shadow:0 6px 14px #5d8f8422}
+.ta-jar:before{content:'';position:absolute;left:8px;top:8px;width:7px;height:36px;border-radius:6px;background:#fffaf0cc}
+.ta-jar .lid{position:absolute;left:-4px;right:-4px;top:-3px;height:11px;border-radius:6px;background:#f6c3cc;border:2px solid #c99aa2;z-index:2}
+.ta-jar .note{position:absolute;width:30px;height:22px;border-radius:3px;background:#fffdf0;border:1px solid #d9c7a8;box-shadow:0 2px 4px #6b5b3b16;animation:taDrop .5s cubic-bezier(.34,1.4,.64,1)}
+@keyframes taDrop{from{transform:translateY(-40px) rotate(14deg);opacity:0}to{opacity:1}}
+.ta-jar .note:after{content:'';position:absolute;left:5px;top:6px;width:19px;height:1.5px;background:#e2d3b8;box-shadow:0 5px 0 #e2d3b8,0 10px 0 #e2d3b8}
+.ta-jarlist{display:grid;gap:5px;max-height:100px;overflow:auto;font-size:12px;color:#6f6879}
+.ta-jarlist b{display:block;background:#fff8e0;border-radius:8px;padding:5px 8px;font-weight:normal;border:1px solid #f0e2bd}
+.ta-input{flex:1;min-width:120px;border:1px solid #e0d8ee;border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;background:#fff;min-height:44px;color:var(--ink)}
+.ta-input:focus{outline:3px solid #7665c533;border-color:#b9a8ef}
+/* 춤 */
+.ta-dance{display:grid;gap:10px;text-align:center}
+.ta-dancer{font-size:50px;line-height:1;transition:transform .18s;display:inline-block}
+.ta-dancer.jump{transform:translateY(-11px) rotate(-6deg) scale(1.08)}
+.ta-beatpads{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ta-beat{border:0;border-radius:13px;padding:11px 3px;font-size:21px;min-height:62px;touch-action:manipulation;box-shadow:0 3px 0 #00000012;transition:.12s;color:#5e4b3a}
+.ta-beat:nth-child(1){background:#ffe0e5}.ta-beat:nth-child(2){background:#fff0c9}.ta-beat:nth-child(3){background:#dff2e2}.ta-beat:nth-child(4){background:#e5defa}
+.ta-beat:active,.ta-beat.hit{transform:translateY(3px) scale(.96);box-shadow:none}
+/* 성취 */
+.ta-trophy{display:grid;gap:10px;text-align:center}
+.ta-trophy .cup{font-size:48px;line-height:1;transition:transform .3s,filter .3s;filter:grayscale(.55);opacity:.75}
+.ta-trophy .cup.lit{filter:none;opacity:1;transform:scale(1.12);animation:taPop .5s ease}
+.ta-stars{display:flex;gap:8px;justify-content:center}
+.ta-star{width:52px;height:52px;border-radius:14px;border:1px solid #eadfbe;background:#fffdf3;font-size:24px;color:#d8cdaf;touch-action:manipulation;transition:.18s}
+.ta-star.on{background:#fff5c9;border-color:#f0c95a;color:#f0b42e;transform:scale(1.06);box-shadow:0 5px 14px #f0c95a33}
+/* 질문 카드 */
+.ta-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ta-flipcard{position:relative;height:112px;border:0;background:none;padding:0;perspective:700px;touch-action:manipulation}
+.ta-flipcard i{position:absolute;inset:0;border-radius:13px;padding:10px;display:grid;place-items:center;text-align:center;font-style:normal;font-size:12px;line-height:1.45;backface-visibility:hidden;transition:transform .5s}
+.ta-flipcard .front{background:linear-gradient(150deg,#f1ecff,#e6ddff);border:1px solid #d6c9f7;color:#6a5aa8;font-size:22px}
+.ta-flipcard .back{background:#fffdf6;border:1px solid #eadfc8;color:#6b6350;transform:rotateY(180deg)}
+.ta-flipcard.flip .front{transform:rotateY(180deg)}
+.ta-flipcard.flip .back{transform:rotateY(360deg)}
+/* 메모 */
+.ta-write{display:grid;gap:9px}
+.ta-textarea{width:100%;min-height:104px;border:1px solid #e0d8ee;border-radius:13px;padding:11px 13px;font:inherit;font-size:14px;line-height:1.6;resize:vertical;background:#fffef9;color:var(--ink)}
+.ta-textarea:focus{outline:3px solid #7665c533;border-color:#b9a8ef}
+.ta-note-preview{background:#fff9df;border:1px solid #f0e2bd;border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.55;color:#6b5a36;position:relative;animation:arrive .3s ease}
+.ta-note-preview .stamp{position:absolute;right:8px;top:8px;font-size:17px}
+/* 완료 축하 */
+.ta-confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
+.ta-confetti i{position:absolute;top:-14px;width:8px;height:13px;border-radius:2px;animation:taConfetti 1.5s ease-in forwards}
+@keyframes taConfetti{to{transform:translateY(112vh) rotate(540deg);opacity:.2}}
+@media(max-width:900px){.methods{grid-template-columns:repeat(2,1fr)}.section-heading{flex-direction:column;align-items:flex-start;gap:4px}.hero-art{width:180px}}
+@media(max-width:760px){.page{padding:14px 16px 42px}.hero{padding:23px;min-height:160px}.hero-art{width:150px;margin-right:0}.hero p{font-size:14px}.moods{grid-template-columns:repeat(2,1fr);gap:11px}.mood-picture{height:115px}.mood-picture svg{height:100px;width:100px}.methods{grid-template-columns:repeat(2,1fr);gap:10px}.method-art{height:120px}.method-card{padding:9px}.chosen-banner{padding:14px;gap:11px}.chosen-banner svg{width:57px;height:57px}.chosen-banner h2{font-size:22px}.chosen-banner .badge{display:none}.detail{grid-template-columns:1fr;grid-template-areas:"art" "copy" "act";padding:14px;gap:15px}.detail-art{min-height:220px;max-height:300px}.detail-art svg{min-height:220px}.detail-copy{padding:0 4px 4px}.top-note{font-size:12px;padding:7px 10px}.ta-stage{padding:12px}.ta-head strong{font-size:18px}.ta-hint{display:none}.ta-breath-circle{width:148px;height:148px}.ta-cards{grid-template-columns:1fr 1fr}.ta-cards .ta-flipcard:last-child{grid-column:1/-1}.ta-jar-wrap{grid-template-columns:82px 1fr;gap:10px}.ta-water{grid-template-columns:92px 1fr;gap:10px}.ta-cup{width:74px;height:96px}.ta-book{padding:12px}.ta-bubble{font-size:15px}.ta-pads{gap:6px}.ta-pad{font-size:20px;min-height:62px}.ta-beat{padding:9px 2px;font-size:18px}.ta-star{width:46px;height:46px}.ta-swatch{width:31px;height:31px}}
+@media(max-width:420px){.hero-art{width:105px;min-width:92px}.hero{padding:19px}.hero h1{font-size:29px}.hero p{font-size:13px}.methods{grid-template-columns:1fr 1fr}.method-art{height:102px}.method-title{font-size:17px}.section-heading{align-items:start;gap:6px;flex-direction:column}.progress{margin:18px 0;gap:5px;font-size:11px}.progress .line{width:16px}.progress .dot{width:22px;height:22px;font-size:11px}.top-note{max-width:135px;text-align:center;font-size:11px;padding:6px 9px}.ta-input,.ta-textarea{font-size:16px}}
 </style>
 </head>
 <body>
@@ -18,29 +191,30 @@
   <section class="hero"><div class="hero-copy"><div class="eyebrow">오늘의 마음 탐험</div><h1>내 마음의 날씨는<br>어떤가요?</h1><p>마음을 알아차리는 건 나를 돌보는 첫걸음이에요.<br>지금 느끼는 감정을 골라 함께 살펴봐요.</p></div><span class="hero-spark s1">✦</span><span class="hero-spark s2">✿</span><div class="hero-art" id="heroArt"></div></section>
   <div class="progress" aria-label="진행 단계"><span class="dot active" id="p1">1</span><span>마음 고르기</span><span class="line"></span><span class="dot" id="p2">2</span><span>방법 만나기</span><span class="line"></span><span class="dot" id="p3">3</span><span>마음 돌보기</span></div>
   <section id="homeStage" class="stage visible"><div class="section-heading"><h2>지금 내 마음을 골라봐요</h2><p>감정에는 정답도, 오답도 없어요.</p></div><div class="moods" id="moodCards"></div><div class="privacy-note"><span>💛</span><span>기억해요! 감정은 우리에게 무언가를 알려주는 소중한 신호예요.</span></div></section>
-  <section id="methodStage" class="stage"><button class="back" onclick="goHome()">← 감정 다시 고르기</button><div id="chosenBanner" class="chosen-banner"></div><div class="section-heading"><h2>마음을 돌보는 방법을 골라봐요</h2><p>나에게 편안한 방법 하나를 골라도 충분해요.</p></div><div id="methodCards" class="methods"></div><div class="detail" id="detail"></div></section>
+  <section id="methodStage" class="stage"><button class="back" onclick="goHome()">← 감정 다시 고르기</button><div id="chosenBanner" class="chosen-banner"></div><div class="section-heading"><h2>마음을 돌보는 방법을 골라봐요</h2><p>나에게 편안한 방법 하나를 골라도 충분해요. 모든 방법은 태블릿에서 직접 해볼 수 있어요.</p></div><div id="methodCards" class="methods"></div><div class="detail" id="detail"></div></section>
   <footer class="footer">마음을 표현하고 돌보는 연습은 매일 조금씩 자라나요. 🌼</footer>
 </main>
 <script>
 const moods={
- happy:{label:'기쁨',face:'😄',color:'#fff0c1',tagline:'마음에 햇살이 반짝이는 날!',description:'기쁜 마음을 나누면 행복이 더 커져요.',moodLine:'기쁜 마음을 함께 나누고 오래 기억해요.',methods:[
+ happy:{label:'기쁨',adj:'기쁜',face:'😄',color:'#fff0c1',tagline:'마음에 햇살이 반짝이는 날!',description:'기쁜 마음을 나누면 행복이 더 커져요.',moodLine:'기쁜 마음을 함께 나누고 오래 기억해요.',methods:[
   ['friend','친구와 기쁨 나누기','좋은 일을 이야기하며 함께 웃어요.','기쁜 일을 한 가지 말해봐요.'],['jar','고마운 마음 모으기','오늘 고마웠던 일을 마음 항아리에 담아요.','작은 고마움도 소중한 선물이에요.'],['dance','좋아하는 노래에 춤추기','몸을 움직이며 기쁨을 신나게 표현해요.','안전한 자리에서 마음껏 흔들어봐요.'],['draw','행복한 순간 그리기','기억하고 싶은 순간을 색으로 남겨요.','그림에 제목을 붙여보세요.'],['trophy','나의 작은 성취 축하하기','내가 해낸 일을 발견하고 스스로 칭찬해요.','“내가 해냈어!”라고 말해줘요.']]},
- sad:{label:'슬픔',face:'😢',color:'#dff1fa',tagline:'마음에 빗방울이 톡톡 떨어져요.',description:'슬픈 마음도 괜찮아요. 천천히 보살펴요.',moodLine:'슬픔을 밀어내지 말고 다정하게 안아줘요.',methods:[
+ sad:{label:'슬픔',adj:'슬픈',face:'😢',color:'#dff1fa',tagline:'마음에 빗방울이 톡톡 떨어져요.',description:'슬픈 마음도 괜찮아요. 천천히 보살펴요.',moodLine:'슬픔을 밀어내지 말고 다정하게 안아줘요.',methods:[
   ['talk','믿을 수 있는 사람과 이야기하기','선생님이나 가족에게 마음을 들려줘요.','말하기 어렵다면 쪽지로 전해도 좋아요.'],['cozy','나를 포근하게 감싸기','담요나 인형을 안고 편안한 곳에서 쉬어요.','내가 나에게 다정한 말을 건네요.'],['draw','마음 색깔 그리기','지금 기분을 색과 모양으로 표현해요.','잘 그리는 것보다 표현하는 게 중요해요.'],['walk','천천히 산책하기','바깥 공기를 느끼며 천천히 걸어요.','주변에서 편안한 것 세 가지를 찾아봐요.'],['music','잔잔한 노래 듣기','마음이 편안해지는 음악을 골라 들어요.','눈을 감고 음악의 소리를 따라가 봐요.']]},
- angry:{label:'화남',face:'😠',color:'#ffe2dc',tagline:'마음속에 뜨거운 불꽃이 올라와요.',description:'화가 난 이유를 알아보고 안전하게 식혀봐요.',moodLine:'화는 중요한 신호예요. 나와 다른 사람을 안전하게 돌봐요.',methods:[
+ angry:{label:'화남',adj:'화난',face:'😠',color:'#ffe2dc',tagline:'마음속에 뜨거운 불꽃이 올라와요.',description:'화가 난 이유를 알아보고 안전하게 식혀봐요.',moodLine:'화는 중요한 신호예요. 나와 다른 사람을 안전하게 돌봐요.',methods:[
   ['breathe','천천히 숨 쉬기','코로 천천히 들이쉬고 입으로 길게 내쉬어요.','풍선에 바람을 넣고 빼듯 천천히 해봐요.'],['music','좋아하는 노래 듣기','조용한 곳에서 좋아하는 노래를 들어요.','소리에 집중하며 몸의 긴장을 풀어봐요.'],['walk','천천히 산책하기','안전한 곳에서 선생님과 함께 걸어요.','발이 땅에 닿는 느낌을 알아차려요.'],['read','책 읽기','편안한 책 한 권을 골라 읽어요.','이야기 속으로 잠시 마음을 쉬게 해요.'],['water','물 마시기','물을 조금씩 천천히 마셔요.','차가운 물이 목을 지나가는 느낌을 살펴봐요.']]},
- surprised:{label:'놀람',face:'😮',color:'#eae5ff',tagline:'어? 무슨 일이 일어난 걸까요?',description:'놀란 마음을 가라앉히고 천천히 살펴봐요.',moodLine:'깜짝 놀랐을 땐 잠깐 멈추고 안전한지 먼저 살펴요.',methods:[
+ surprised:{label:'놀람',adj:'놀란',face:'😮',color:'#eae5ff',tagline:'어? 무슨 일이 일어난 걸까요?',description:'놀란 마음을 가라앉히고 천천히 살펴봐요.',moodLine:'깜짝 놀랐을 땐 잠깐 멈추고 안전한지 먼저 살펴요.',methods:[
   ['breathe','잠깐 멈추고 숨 고르기','발을 바닥에 붙이고 천천히 숨을 쉬어요.','지금 여기에 있다는 걸 느껴봐요.'],['question','궁금한 점 물어보기','믿을 수 있는 어른에게 무슨 일인지 물어요.','모르는 것을 물어보는 건 좋은 용기예요.'],['write','마음 메모하기','무슨 일이 있었는지 한두 문장 적어요.','알게 된 사실과 내 느낌을 나눠 적어봐요.'],['talk','선생님과 이야기하기','놀란 마음을 선생님에게 알려요.','“제가 조금 놀랐어요”라고 말해도 좋아요.'],['draw','놀란 순간 그려보기','기억에 남는 장면을 그림으로 표현해요.','그림으로 차근차근 생각을 정리해요.']]}
 };
 const sceneLabels={breathe:'숨을 천천히',music:'음악에 귀 기울여요',walk:'바깥 공기 산책',read:'책과 함께 쉬어요',water:'물 한 모금',talk:'마음을 나눠요',draw:'마음 그림',cozy:'포근한 쉼',friend:'기쁨을 나눠요',jar:'고마움 항아리',dance:'신나는 춤',trophy:'작은 성취',question:'궁금한 걸 물어요',write:'마음 메모'};
 /* ===== 마음 날씨 연구소 · 따뜻한 파스텔 일러스트 ===== */
 const MOOD_PAL={
- happy:{sky1:'#fff9dd',sky2:'#ffeec1',hill:'#d3ebb9',hill2:'#aed795',ground:'#bbdf9f',edge:'#96c27c'},
- sad:{sky1:'#eef9fe',sky2:'#d7edf8',hill:'#cde6db',hill2:'#a9d1c5',ground:'#b8dcd0',edge:'#8dbfae'},
- angry:{sky1:'#fff4ec',sky2:'#ffddd2',hill:'#f5d2c3',hill2:'#eab4a3',ground:'#f1c5b4',edge:'#d89a86'},
- surprised:{sky1:'#f7f2ff',sky2:'#e6ddff',hill:'#d5e8da',hill2:'#b7d6c1',ground:'#c8e2cf',edge:'#9ac2a6'}
+ happy:{sky1:'#fff9dd',sky2:'#ffeec1',horizon:'#fff5d4',hill:'#d3ebb9',hill2:'#aed795',ground:'#bbdf9f',edge:'#96c27c'},
+ sad:{sky1:'#eef9fe',sky2:'#d7edf8',horizon:'#e8f7fd',hill:'#cde6db',hill2:'#a9d1c5',ground:'#b8dcd0',edge:'#8dbfae'},
+ angry:{sky1:'#fff4ec',sky2:'#ffddd2',horizon:'#ffeadf',hill:'#f5d2c3',hill2:'#eab4a3',ground:'#f1c5b4',edge:'#d89a86'},
+ surprised:{sky1:'#f7f2ff',sky2:'#e6ddff',horizon:'#f3edff',hill:'#d5e8da',hill2:'#b7d6c1',ground:'#c8e2cf',edge:'#9ac2a6'}
 };
 const SCENE_ARMS={breathe:'wide',music:'hold',walk:'walk',read:'book',water:'cup',talk:'raise',draw:'draw',cozy:'hug',friend:'hold',jar:'draw',dance:'cheer',trophy:'cheer',question:'raise',write:'write',hero:'wave'};
+let SVG_SEQ=0;
 
 /* ---------- 표정 그림 ---------- */
 function faceSvg(mood){
@@ -81,16 +255,22 @@ function faceSvg(mood){
   mouth=`<ellipse cx="60" cy="84" rx="5" ry="6.4" fill="#b45c63" stroke="#8d4a50" stroke-width="1.8"/><ellipse cx="60" cy="86" rx="2.6" ry="2.6" fill="#f3a0a5"/>`;
   blush=`<ellipse cx="37" cy="77" rx="6" ry="3.4" fill="#f6a29f" opacity=".55"/><ellipse cx="83" cy="77" rx="6" ry="3.4" fill="#f6a29f" opacity=".55"/>`;
  }
- return `<svg viewBox="0 0 120 120" role="img" aria-label="${(typeof moods!=='undefined'&&moods[mood]?moods[mood].label:'')} 표정 그림" xmlns="http://www.w3.org/2000/svg">
+ return `<svg class="svg-anim" viewBox="0 0 120 120" role="img" aria-label="${(typeof moods!=='undefined'&&moods[mood]?moods[mood].label:'')} 표정 그림" xmlns="http://www.w3.org/2000/svg">
   <defs>
    <radialGradient id="${id}-skin" cx="38%" cy="28%" r="78%"><stop offset="0" stop-color="#ffead3"/><stop offset=".62" stop-color="#ffd9b8"/><stop offset="1" stop-color="#f6c39c"/></radialGradient>
    <linearGradient id="${id}-shirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.shirt1}"/><stop offset="1" stop-color="${c.shirt2}"/></linearGradient>
    <linearGradient id="${id}-hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b443d"/><stop offset="1" stop-color="#3c2c28"/></linearGradient>
+   <radialGradient id="${id}-bg" cx="34%" cy="24%" r="84%"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".5" stop-color="${c.bg}"/><stop offset="1" stop-color="${c.ring}" stop-opacity=".5"/></radialGradient>
+   <filter id="${id}-sh" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#6b5a52" flood-opacity=".2"/></filter>
    <clipPath id="${id}-clip"><circle cx="60" cy="60" r="55"/></clipPath>
   </defs>
-  <circle cx="60" cy="60" r="55" fill="${c.bg}"/>
-  <circle cx="60" cy="60" r="55" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="6"/>
-  <circle cx="60" cy="60" r="50" fill="none" stroke="${c.ring}" stroke-width="1.6" stroke-dasharray="2 6" opacity=".85"/>
+  <circle cx="60" cy="60" r="55" fill="url(#${id}-bg)"/>
+  <g filter="url(#${id}-sh)">
+   <circle cx="60" cy="60" r="55" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="6"/>
+   <circle cx="60" cy="60" r="50" fill="none" stroke="${c.ring}" stroke-width="1.6" stroke-dasharray="2 6" opacity=".85"/>
+   <circle cx="60" cy="60" r="46" fill="none" stroke="#ffffff" stroke-opacity=".3" stroke-width="1"/>
+  </g>
+  <g fill="#fff" class="svg-anim"><path d="M16 40l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" class="twinkle" opacity=".9"/><path d="M105 87l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" class="twinkle2" opacity=".85"/><circle cx="104" cy="24" r="1.8" class="twinkle" opacity=".8"/><circle cx="16" cy="92" r="1.4" class="twinkle2" opacity=".7"/></g>
   ${weather}
   <g clip-path="url(#${id}-clip)">
   <path d="M14 106q2-26 46-26t46 26v10H14z" fill="url(#${id}-shirt)" stroke="#6b5a52" stroke-width="2"/>
@@ -117,39 +297,63 @@ function faceSvg(mood){
 }
 /* ---------- 공통 장면 ---------- */
 function bgScene(mood,type){
- const p=MOOD_PAL[mood]||MOOD_PAL.happy,id='bg-'+type+'-'+mood;
+ const p=MOOD_PAL[mood]||MOOD_PAL.happy,id='bg-'+type+'-'+mood+'-'+(++SVG_SEQ);
  let weather='';
- const sun=`<g transform="translate(210 27)"><circle r="21" fill="url(#${id}-glow)" opacity=".7"/><circle r="13" fill="url(#${id}-sun)"/><g stroke="#eebc4e" stroke-width="2.4" stroke-linecap="round"><path d="M0-18v-5m0 46v-5M-18 0h-5m46 0h-5M-13-13l-3-3m32 32 3 3m0-32-3 3M-16 16l-3 3"/></g></g>`;
- const cloud=(x,y,s,o)=>`<g transform="translate(${x} ${y}) scale(${s})" opacity="${o}" fill="#fff"><ellipse cx="0" cy="0" rx="16" ry="9"/><circle cx="-8" cy="-3" r="8"/><circle cx="3" cy="-7" r="10"/><circle cx="11" cy="-1" r="7"/></g>`;
+ const sun=`<g transform="translate(210 27)"><circle r="24" fill="url(#${id}-glow)" opacity=".8" class="pulse"/><circle r="13" fill="url(#${id}-sun)"/><g class="spinSlow" stroke="#eebc4e" stroke-width="2.4" stroke-linecap="round"><path d="M0-18v-5m0 46v-5M-18 0h-5m46 0h-5M-13-13l-3-3m32 32 3 3m0-32-3 3M-16 16l-3 3"/></g></g>`;
+ const cloud=(x,y,s,o,cls='')=>`<g transform="translate(${x} ${y}) scale(${s})" opacity="${o}"><g class="${cls}" fill="#fff"><ellipse cx="0" cy="0" rx="16" ry="9"/><circle cx="-8" cy="-3" r="8"/><circle cx="3" cy="-7" r="10"/><circle cx="11" cy="-1" r="7"/></g></g>`;
  if(mood==='happy'){
-  weather=`${sun}${cloud(40,28,.9,.92)}${cloud(150,20,.6,.7)}<g stroke="#c9a15a" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7"><path d="M52 44q5-6 10 0q5-6 10 0"/><path d="M142 38q4-5 8 0q4-5 8 0"/></g><g fill="#fff" opacity=".85"><path d="M186 60l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M24 70l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z"/></g>`;
+  weather=`${sun}${cloud(40,28,.9,.92,'bob')}${cloud(150,20,.6,.7,'bob2')}<g stroke="#c9a15a" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7" class="drift"><path d="M52 44q5-6 10 0q5-6 10 0"/><path d="M142 38q4-5 8 0q4-5 8 0"/></g><g fill="#fff" opacity=".85"><path d="M186 60l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" class="twinkle"/><path d="M24 70l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" class="twinkle2"/><path d="M126 22l1.4 3.4 3.4 1.4-3.4 1.4L126 32l-1.4-3.4-3.4-1.4 3.4-1.4z" class="twinkle"/></g><g stroke="#c9a15a" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".55" class="drift2"><path d="M172 78q6-4 12 0M182 85q5-3 10 0"/></g>`;
  }else if(mood==='sad'){
-  weather=`<g>${cloud(196,30,1.15,.95)}${cloud(58,22,.7,.75)}<g stroke="#8ecbe4" stroke-width="2.2" stroke-linecap="round"><path d="M180 48l-3 8m14-6-3 9m15-12-3 9m15-6-3 8M66 40l-2 7m12-5-2 7"/></g></g><g fill="#fff" opacity=".6"><circle cx="30" cy="52" r="2"/><circle cx="118" cy="34" r="1.6"/></g>`;
+  weather=`<g>${cloud(196,30,1.15,.95,'bob')}${cloud(58,22,.7,.75,'bob2')}<g stroke="#8ecbe4" stroke-width="2.2" stroke-linecap="round"><g class="rain"><path d="M180 48l-3 8m14-6-3 9"/></g><g class="rain2"><path d="M196 46l-2 7m12-5-2 7M66 40l-2 7"/></g></g></g><g fill="#fff" opacity=".6"><circle cx="30" cy="52" r="2" class="twinkle"/><circle cx="118" cy="34" r="1.6" class="twinkle2"/><circle cx="84" cy="24" r="1.4" class="twinkle"/></g><path d="M22 60q8-7 16 0" fill="none" stroke="#a9cfe0" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
  }else if(mood==='angry'){
-  weather=`<g>${cloud(198,30,1.1,.9)}<path d="M202 44l-7 14h8l-6 14 15-19h-8l6-9z" fill="#f3a24d" stroke="#cf7e32" stroke-width="1.6" stroke-linejoin="round"/><g stroke="#e9a28c" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85"><path d="M28 34q12-9 24 0t24 0"/><path d="M40 46q10-7 20 0"/></g></g>`;
+  weather=`<g>${cloud(198,30,1.1,.9,'bob')}${cloud(64,24,.8,.6,'bob2')}<path d="M202 44l-7 14h8l-6 14 15-19h-8l6-9z" fill="#f3a24d" stroke="#cf7e32" stroke-width="1.6" stroke-linejoin="round" class="blink"/><g stroke="#e9a28c" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85"><path d="M28 34q12-9 24 0t24 0"/><path d="M40 46q10-7 20 0"/></g><g fill="#f6b48c"><circle cx="176" cy="66" r="1.8" class="rise"/><circle cx="190" cy="74" r="1.4" class="rise"/><circle cx="162" cy="78" r="1.2" class="rise"/></g></g>`;
  }else{
-  weather=`<g>${cloud(190,30,.95,.75)}<g fill="#fff"><path d="M34 28l2.6 6.6 6.6 2.6-6.6 2.6L34 46l-2.6-6.2L25 37.2l6.4-2.6z"/><path d="M168 58l1.8 4.6 4.6 1.8-4.6 1.8-1.8 4.6-1.8-4.6-4.6-1.8 4.6-1.8z"/></g><g fill="none" stroke="#c2aef0" stroke-width="2.2" stroke-linecap="round"><path d="M52 34q10-9 20 0t20 0"/><circle cx="140" cy="22" r="2.6"/><circle cx="154" cy="34" r="1.8"/></g></g>`;
+  weather=`<g>${cloud(190,30,.95,.75,'bob')}<g fill="#fff"><path d="M34 28l2.6 6.6 6.6 2.6-6.6 2.6L34 46l-2.6-6.2L25 37.2l6.4-2.6z" class="twinkle"/><path d="M168 58l1.8 4.6 4.6 1.8-4.6 1.8-1.8 4.6-1.8-4.6-4.6-1.8 4.6-1.8z" class="twinkle2"/><path d="M120 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" class="twinkle"/></g><g fill="none" stroke="#c2aef0" stroke-width="2.2" stroke-linecap="round" class="drift"><path d="M52 34q10-9 20 0t20 0"/><circle cx="140" cy="22" r="2.6"/><circle cx="154" cy="34" r="1.8"/><path d="M24 48q6-5 12 0"/></g></g>`;
  }
- const flowers=`<g><g transform="translate(28 108)"><g fill="#fff"><circle cx="0" cy="-5" r="3"/><circle cx="4.8" cy="-1.6" r="3"/><circle cx="3" cy="4" r="3"/><circle cx="-3" cy="4" r="3"/><circle cx="-4.8" cy="-1.6" r="3"/></g><circle r="2" fill="#ffd35e"/></g><g transform="translate(232 104) scale(.9)"><g fill="#ffe1ea"><circle cx="0" cy="-5" r="3"/><circle cx="4.8" cy="-1.6" r="3"/><circle cx="3" cy="4" r="3"/><circle cx="-3" cy="4" r="3"/><circle cx="-4.8" cy="-1.6" r="3"/></g><circle r="2" fill="#ffd35e"/></g><g stroke="#7fae6b" stroke-width="2" stroke-linecap="round"><path d="M28 112v7m204-6v6"/><path d="M46 118q3-5 6 0m138 0q3-5 6 0"/></g></g>`;
+ const flowers=`<g><g transform="translate(28 108)" class="sway"><g fill="#fff"><circle cx="0" cy="-5" r="3"/><circle cx="4.8" cy="-1.6" r="3"/><circle cx="3" cy="4" r="3"/><circle cx="-3" cy="4" r="3"/><circle cx="-4.8" cy="-1.6" r="3"/></g><circle r="2" fill="#ffd35e"/></g><g transform="translate(232 104) scale(.9)" class="sway2"><g fill="#ffe1ea"><circle cx="0" cy="-5" r="3"/><circle cx="4.8" cy="-1.6" r="3"/><circle cx="3" cy="4" r="3"/><circle cx="-3" cy="4" r="3"/><circle cx="-4.8" cy="-1.6" r="3"/></g><circle r="2" fill="#ffd35e"/></g><g transform="translate(15 121) scale(.8)" class="sway2"><g fill="#fff3c0"><circle cx="0" cy="-4.6" r="2.7"/><circle cx="4.4" cy="-1.4" r="2.7"/><circle cx="2.7" cy="3.7" r="2.7"/><circle cx="-2.7" cy="3.7" r="2.7"/><circle cx="-4.4" cy="-1.4" r="2.7"/></g><circle r="1.8" fill="#e8a86a"/></g><g transform="translate(226 123) scale(.75)" class="sway"><g fill="#e6ddff"><circle cx="0" cy="-4.6" r="2.7"/><circle cx="4.4" cy="-1.4" r="2.7"/><circle cx="2.7" cy="3.7" r="2.7"/><circle cx="-2.7" cy="3.7" r="2.7"/><circle cx="-4.4" cy="-1.4" r="2.7"/></g><circle r="1.8" fill="#ffd35e"/></g><g stroke="#7fae6b" stroke-width="2" stroke-linecap="round"><path d="M28 112v7m204-6v6m-217 5v5m207-4v5"/><path d="M46 118q3-5 6 0m138 0q3-5 6 0"/><path d="M8 130q2-8 4-10m4 10q-1-7-4-9"/><path d="M234 132q2-7 4-9m3 9q-1-6-3-8"/></g></g>`;
+ let groundExtra='';
+ if(mood==='sad'){
+  groundExtra=`<g><ellipse cx="196" cy="130" rx="21" ry="4.6" fill="#a9d6e6" opacity=".5"/><ellipse cx="196" cy="130" rx="13" ry="2.8" fill="none" stroke="#d7f1fa" stroke-width="1.4" class="pulse"/><ellipse cx="36" cy="133" rx="13" ry="3" fill="#a9d6e6" opacity=".4"/></g>`;
+ }else if(mood==='happy'){
+  groundExtra=`<g fill="#ffd97a"><path d="M148 128l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8z" opacity=".9" class="twinkle"/><path d="M186 134l1.3 3 3 1.3-3 1.3-1.3 3-1.3-3-3-1.3 3-1.3z" opacity=".75" class="twinkle2"/></g>`;
+ }else if(mood==='angry'){
+  groundExtra=`<g stroke="#d9a08d" stroke-width="1.6" fill="none" opacity=".4" stroke-linecap="round"><path d="M160 128q6-5 12 0m-8 5q4-3 8 0"/><path d="M30 126q5-4 10 0"/></g>`;
+ }else{
+  groundExtra=`<g fill="#c9d6f0" opacity=".45"><circle cx="154" cy="130" r="2.2" class="pulse"/><circle cx="162" cy="135" r="1.5"/><circle cx="204" cy="127" r="1.8"/></g>`;
+ }
  return `<defs>
-  <linearGradient id="${id}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.sky1}"/><stop offset="1" stop-color="${p.sky2}"/></linearGradient>
-  <linearGradient id="${id}-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.hill}"/><stop offset="1" stop-color="${p.hill2}"/></linearGradient>
-  <linearGradient id="${id}-ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.ground}"/><stop offset="1" stop-color="${p.edge}"/></linearGradient>
-  <radialGradient id="${id}-sun"><stop offset="0" stop-color="#fff8cf"/><stop offset="1" stop-color="#ffd45f"/></radialGradient>
-  <radialGradient id="${id}-glow"><stop offset="0" stop-color="#fffdf0" stop-opacity=".95"/><stop offset="1" stop-color="#fffdf0" stop-opacity="0"/></radialGradient>
-  <radialGradient id="${id}-vig" cx="50%" cy="42%" r="76%"><stop offset=".55" stop-color="#8a6a3f" stop-opacity="0"/><stop offset="1" stop-color="#8a6a3f" stop-opacity=".18"/></radialGradient>
+  <linearGradient id="${id}-sky" x1="0" y1="0" x2=".28" y2="1"><stop offset="0" stop-color="${p.sky1}"/><stop offset=".58" stop-color="${p.sky2}"/><stop offset="1" stop-color="${p.horizon||p.sky2}"/></linearGradient>
+  <linearGradient id="${id}-hill" x1="0" y1="0" x2=".18" y2="1"><stop offset="0" stop-color="${p.hill}"/><stop offset=".6" stop-color="${p.hill2}"/><stop offset="1" stop-color="${p.hill}"/></linearGradient>
+  <linearGradient id="${id}-ground" x1="0" y1="0" x2=".12" y2="1"><stop offset="0" stop-color="${p.ground}"/><stop offset="1" stop-color="${p.edge}"/></linearGradient>
+  <radialGradient id="${id}-sun"><stop offset="0" stop-color="#fffbe2"/><stop offset=".55" stop-color="#ffe27a"/><stop offset="1" stop-color="#ffd45f"/></radialGradient>
+  <radialGradient id="${id}-glow"><stop offset="0" stop-color="#fffdf0" stop-opacity=".98"/><stop offset=".55" stop-color="#fff6c4" stop-opacity=".45"/><stop offset="1" stop-color="#fffdf0" stop-opacity="0"/></radialGradient>
+  <radialGradient id="${id}-light" cx="14%" cy="6%" r="86%"><stop offset="0" stop-color="#ffffff" stop-opacity=".6"/><stop offset=".45" stop-color="#fffdf5" stop-opacity=".16"/><stop offset="1" stop-color="#fffdf5" stop-opacity="0"/></radialGradient>
+  <pattern id="${id}-dots" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="1.2" cy="1.2" r=".62" fill="#fff" opacity=".5"/></pattern>
+  <radialGradient id="${id}-vig" cx="50%" cy="42%" r="76%"><stop offset=".52" stop-color="#8a6a3f" stop-opacity="0"/><stop offset="1" stop-color="#8a6a3f" stop-opacity=".2"/></radialGradient>
+  <filter id="${id}-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4"/></filter>
  </defs>
  <rect width="240" height="140" fill="url(#${id}-sky)"/>
+ <rect width="240" height="140" fill="url(#${id}-dots)" opacity=".35" pointer-events="none"/>
+ <g opacity=".45" pointer-events="none"><path d="M-10 6L38 140h24L30-4z" fill="#fff" opacity=".5"/><path d="M66-6L108 140h18L84-6z" fill="#fff" opacity=".32"/><path d="M176-8l30 148h16L198-8z" fill="#fff" opacity=".26"/></g>
  ${weather}
- <path d="M0 104q40-26 84-9t76-7q42-11 80 10v42H0z" fill="url(#${id}-hill)" opacity=".9"/>
+ <g fill="#5f6d55" opacity=".4"><path d="M118 40q4-4 8 0q4-4 8 0" fill="none" stroke="#7c8a6d" stroke-width="1.5" stroke-linecap="round"/><path d="M132 48q3-3 6 0q3-3 6 0" fill="none" stroke="#7c8a6d" stroke-width="1.3" stroke-linecap="round"/></g>
+ <ellipse cx="206" cy="98" rx="62" ry="22" fill="#fff" opacity=".22" filter="url(#${id}-soft)"/>
+ <path d="M0 100q38-24 82-11t78-3q40-10 80 9v45H0z" fill="${p.hill}" opacity=".5"/>
+ <path d="M0 104q40-26 84-9t76-7q42-11 80 10v42H0z" fill="url(#${id}-hill)" opacity=".95"/>
  <path d="M0 113q46-18 92-4t70-2q42-8 78 6v27H0z" fill="url(#${id}-ground)"/>
- <g stroke="${p.edge}" stroke-width="1.6" stroke-linecap="round" opacity=".45"><path d="M14 124q4-6 8 0m44 4q4-6 8 0m52 0q4-6 8 0m52-3q4-6 8 0"/></g>
- <g transform="translate(126 111)"><circle cx="-9" cy="1" r="7" fill="#a5cf8e"/><circle cx="2" cy="-3" r="8" fill="#b6da9f"/><circle cx="12" cy="1" r="6" fill="#99c785"/></g>
- <g transform="translate(29 111)"><path d="M-14-8L0-19l14 11z" fill="#e8a48d" stroke="#b97c66" stroke-width="1.4" stroke-linejoin="round"/><rect x="-11" y="-8" width="22" height="11" fill="#fff4dc" stroke="#b97c66" stroke-width="1.4"/><rect x="-2" y="-4" width="6" height="7" fill="#c98f6b"/><path d="M-14 8h28" stroke="#b97c66" stroke-width="1.2" opacity=".5"/></g>
+ <path d="M0 113q46-18 92-4t70-2q42-8 78 6" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="1.6"/>
+ <path d="M110 140q8-17 25-25q13-7 18-14" fill="none" stroke="#f6e9c8" stroke-width="7" stroke-linecap="round" opacity=".4"/>
+ <path d="M0 118q46-14 92-1t70-2q42-7 78 5" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="4" stroke-linecap="round"/>
+ <g transform="translate(126 111)"><circle cx="-9" cy="1" r="7" fill="#a5cf8e"/><circle cx="2" cy="-3" r="8" fill="#b6da9f"/><circle cx="12" cy="1" r="6" fill="#99c785"/><circle cx="4" cy="-8" r="3.4" fill="#cae3b8"/></g>
+ <g transform="translate(29 111)"><path d="M-14-8L0-19l14 11z" fill="#e8a48d" stroke="#b97c66" stroke-width="1.4" stroke-linejoin="round"/><rect x="-11" y="-8" width="22" height="11" fill="#fff4dc" stroke="#b97c66" stroke-width="1.4"/><rect x="-2" y="-4" width="6" height="7" fill="#c98f6b"/><path d="M-14 8h28" stroke="#b97c66" stroke-width="1.2" opacity=".5"/><path d="M11-14v-7" stroke="#b97c66" stroke-width="1.4" stroke-linecap="round"/><path d="M11-21q4-2 6 2q-4 3-6-2" fill="#f6a3a8" stroke="#b97c66" stroke-width="1"/></g>
  <g transform="translate(42 58) rotate(-10)"><path d="M0 0q-8-9-2-13q7-3 8 6" fill="#ffe4a8" stroke="#dfb45f" stroke-width="1"/><path d="M0 0q8-9 2-13q-6-3-8 6" fill="#ffd07a" stroke="#dfb45f" stroke-width="1"/><path d="M0-3v7" stroke="#a97f50" stroke-width="1.4" stroke-linecap="round"/></g>
- <g fill="#e6d6b8" stroke="#c2ac87" stroke-width=".9"><ellipse cx="112" cy="124" rx="4" ry="2.3"/><ellipse cx="119" cy="121" rx="2.6" ry="1.7"/></g>
- <path d="M58 40l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#fff" opacity=".8"/>
+ <g fill="#e6d6b8" stroke="#c2ac87" stroke-width=".9"><ellipse cx="112" cy="124" rx="4" ry="2.3"/><ellipse cx="119" cy="121" rx="2.6" ry="1.7"/><ellipse cx="102" cy="128" rx="2.2" ry="1.4"/></g>
+ <g fill="#fff" opacity=".8"><path d="M58 40l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" class="twinkle"/><path d="M204 88l1.3 3.2 3.2 1.3-3.2 1.3-1.3 3.2-1.3-3.2-3.2-1.3 3.2-1.3z" class="twinkle2"/></g>
+ <g transform="translate(22 50)" class="drift"><g fill="#fff" stroke="#e9b7c3" stroke-width=".8"><path d="M0 0q-7-9 0-9t0 9" opacity=".95"/><path d="M0 0q-11 2-8-5q4-6 8 5" opacity=".9"/><path d="M0 0q11 2 8-5q-4-6-8 5" opacity=".9"/></g><path d="M0 0v5" stroke="#c9b79b" stroke-width=".8"/></g>
+ <g transform="translate(224 64) scale(.8)" class="drift2"><g fill="#fff" stroke="#e9b7c3" stroke-width=".8"><path d="M0 0q-7-9 0-9t0 9"/><path d="M0 0q-11 2-8-5q4-6 8 5"/><path d="M0 0q11 2 8-5q-4-6-8 5"/></g><path d="M0 0v5" stroke="#c9b79b" stroke-width=".8"/></g>
+ ${groundExtra}
  ${flowers}
+ <rect width="240" height="140" fill="url(#${id}-light)" pointer-events="none" opacity=".7"/>
  <rect width="240" height="140" fill="url(#${id}-vig)" pointer-events="none"/>`;
 }
 
@@ -183,6 +387,12 @@ function kid(mood,type,dx,dy,scale=1,alt=false){
   face=`<path d="M-11-5q3-3 6-2M5-7q3-1 6 2" fill="none" stroke="#4a3733" stroke-width="1.7" stroke-linecap="round"/><g><ellipse cx="-6.5" cy="3" rx="3.9" ry="4.5" fill="#fff"/><ellipse cx="6.5" cy="3" rx="3.9" ry="4.5" fill="#fff"/><circle cx="-6.5" cy="3" r="1.9" fill="#5d4336"/><circle cx="6.5" cy="3" r="1.9" fill="#5d4336"/><circle cx="-7.4" cy="1.8" r="1" fill="#fff"/><circle cx="5.6" cy="1.8" r="1" fill="#fff"/></g><ellipse cx="0" cy="11" rx="2.8" ry="3.6" fill="#b45c63" stroke="#8d4a50" stroke-width="1.2"/>`;
   extra=`<path d="M-20 3q-3-3 0-6" fill="none" stroke="#b8a6e6" stroke-width="1.8" stroke-linecap="round"/>`;
  }
+ if(type==='breathe'||type==='cozy'){
+  face=`<path d="M-11 2q4 4 8 0M3 2q4 4 8 0" fill="none" stroke="#4a3733" stroke-width="2" stroke-linecap="round"/><path d="M-3 11q3 3 6 0" fill="none" stroke="#a25f63" stroke-width="1.8" stroke-linecap="round"/>`;
+ }
+ if(type==='write'){extra+=`<g transform="translate(-20 -1) rotate(-22)"><rect x="-1.3" y="-8" width="2.6" height="14" rx="1" fill="#ffd97a" stroke="#c99a45" stroke-width=".8"/><path d="M-1.3 6l1.3 3 1.3-3z" fill="#6b5a52"/></g>`}
+ if(type==='draw'){extra+=`<circle cx="12" cy="13" r="2.6" fill="#f4a3a8" opacity=".4"/><circle cx="8" cy="15" r="1.4" fill="#8ed6ec" opacity=".45"/>`}
+ if(type==='walk'){extra+=`<path d="M-15 33q-4 6 0 10" fill="none" stroke="#8a6a4f" stroke-width="3.2" stroke-linecap="round"/>`}
  if(type==='music'){
   extra+=`<g><path d="M-20 0q0-23 20-23t20 23" fill="none" stroke="#7c68bd" stroke-width="5" stroke-linecap="round"/><rect x="-25" y="-4" width="9" height="15" rx="4.5" fill="#a58fd8" stroke="#6b5a52" stroke-width="1.8"/><rect x="16" y="-4" width="9" height="15" rx="4.5" fill="#a58fd8" stroke="#6b5a52" stroke-width="1.8"/></g>`;
  }
@@ -197,12 +407,19 @@ function kid(mood,type,dx,dy,scale=1,alt=false){
    <path d="M2 46h9l1 16H3z" fill="#8194cc"/>
    <path d="M-12 61q0 3 3 3h7q2 0 2-3z" fill="#fffdf6"/>
    <path d="M2 61q0 3 3 3h7q2 0 2-3z" fill="#fffdf6"/>
+   <path d="M-11 47l9-1M3 47l9 1" stroke="#a7b8e6" stroke-width="1.4"/>
   </g>
   <path d="M-9 62h9M4 62h9" stroke="#d9d2c4" stroke-width="1.6"/>
+  <path d="M-9 64h6M4 64h6" stroke="#fff" stroke-width="1.2" opacity=".75" stroke-linecap="round"/>
   ${blanket}
   <path d="M-15 26q7-6 15-6t15 6l3 22q-9 4-18 4t-18-4z" fill="${shirt}" stroke="#6b5a52" stroke-width="2"/>
+  <path d="M-15 43q15 4 30 0l0 5q-15 4-30 0z" fill="#0000000f"/>
   <path d="M-12 32q12 4 24 0" fill="none" stroke="#fff" stroke-width="1.8" opacity=".55"/>
+  <path d="M-13 40q13 4 26 0" fill="none" stroke="#fff" stroke-width="1.2" opacity=".3"/>
   <path d="M-6 38h12v8h-12z" fill="${shirtDark}" stroke="#6b5a52" stroke-width="1.4"/>
+  <path d="M-3 40h6v4h-6z" fill="#fff" opacity=".18"/>
+  <path d="M-6 23q6 5 12 0" fill="none" stroke="#6b5a52" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="0" cy="36" r="1.2" fill="#fff" opacity=".65"/>
   <path d="M-4 25q-1 5-3 7M4 25q1 5 3 7" stroke="#fffdf2" stroke-width="1.8" fill="none" stroke-linecap="round"/>
   <path d="M-4 18h8v8h-8z" fill="#f8cda7" stroke="#dca87f" stroke-width="1.4"/>
   <path d="${pose.l}" fill="none" stroke="#6b5a52" stroke-width="7.4" stroke-linecap="round"/>
@@ -378,7 +595,7 @@ function sceneSVG(type,mood){
  }else if(type==='water'){
   front=`<path d="M96 88q8-3 10 2" fill="none" stroke="#6b5a52" stroke-width="2"/>`;
  }
- return `<svg viewBox="0 0 240 140" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${(typeof sceneLabels!=='undefined'?sceneLabels[type]:'')||'마음 돌보기'} 장면 그림" xmlns="http://www.w3.org/2000/svg">
+ return `<svg class="svg-anim" viewBox="0 0 240 140" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${(typeof sceneLabels!=='undefined'?sceneLabels[type]:'')||'마음 돌보기'} 장면 그림" xmlns="http://www.w3.org/2000/svg">
   ${bgScene(mood,type)}
   ${type==='friend'?prop:`<g transform="translate(${propShift} 0)">${prop}</g>`}
   ${akid}
@@ -389,38 +606,465 @@ function sceneSVG(type,mood){
 
 /* ---------- 히어로 ---------- */
 function heroSVG(){
- return `<svg viewBox="0 0 200 165" role="img" aria-label="무지개 아래에서 마음 풍선을 든 아이" xmlns="http://www.w3.org/2000/svg">
+ const hid='hero'+(++SVG_SEQ);
+ return `<svg class="svg-anim" viewBox="0 0 200 165" role="img" aria-label="무지개 아래에서 마음 풍선을 든 아이" xmlns="http://www.w3.org/2000/svg">
   <defs>
-   <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff8dc" stop-opacity="0"/><stop offset="1" stop-color="#fff3cf" stop-opacity="0"/></linearGradient>
-   <linearGradient id="hero-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe9b7"/><stop offset="1" stop-color="#a6d190"/></linearGradient>
-   <radialGradient id="hero-sun"><stop offset="0" stop-color="#fff6c2"/><stop offset="1" stop-color="#ffd35d"/></radialGradient>
-   <linearGradient id="hero-heart" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb6c2"/><stop offset="1" stop-color="#f4839a"/></linearGradient>
-   <linearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".86" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>
-   <mask id="hero-mask"><rect width="200" height="165" fill="url(#hero-fade)"/></mask>
+   <linearGradient id="${hid}-hill" x1="0" y1="0" x2=".15" y2="1"><stop offset="0" stop-color="#d9f0c2"/><stop offset=".55" stop-color="#b7de9e"/><stop offset="1" stop-color="#8fc47a"/></linearGradient>
+   <radialGradient id="${hid}-sun"><stop offset="0" stop-color="#fffbe2"/><stop offset=".55" stop-color="#ffe582"/><stop offset="1" stop-color="#ffd35d"/></radialGradient>
+   <radialGradient id="${hid}-glow"><stop offset="0" stop-color="#fff8c9" stop-opacity=".95"/><stop offset=".6" stop-color="#fff3b0" stop-opacity=".35"/><stop offset="1" stop-color="#fff8c9" stop-opacity="0"/></radialGradient>
+   <linearGradient id="${hid}-heart" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc7d0"/><stop offset=".5" stop-color="#f795a8"/><stop offset="1" stop-color="#ee7c94"/></linearGradient>
+   <linearGradient id="${hid}-heart2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3ecff"/><stop offset="1" stop-color="#9dd2f1"/></linearGradient>
+   <linearGradient id="${hid}-fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".84" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>
+   <pattern id="${hid}-dots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="1.4" cy="1.4" r=".7" fill="#fff" opacity=".55"/></pattern>
+   <mask id="${hid}-mask"><rect width="200" height="165" fill="url(#${hid}-fade)"/></mask>
+   <filter id="${hid}-soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.2"/></filter>
   </defs>
-  <g fill="none" stroke-width="8" stroke-linecap="round" opacity=".55">
+  <rect width="200" height="165" fill="url(#${hid}-dots)" opacity=".5"/>
+  <g fill="none" stroke-width="9" stroke-linecap="round" opacity=".32" filter="url(#${hid}-soft)">
    <path d="M30 132a72 72 0 0 1 144 0" stroke="#f6a3a8"/>
    <path d="M41 132a61 61 0 0 1 122 0" stroke="#ffcf7a"/>
    <path d="M52 132a50 50 0 0 1 100 0" stroke="#a9d8a8"/>
    <path d="M63 132a39 39 0 0 1 78 0" stroke="#a9d3e8"/>
    <path d="M74 132a28 28 0 0 1 56 0" stroke="#c9b6f2"/>
   </g>
-  <g transform="translate(38 42)"><circle r="17" fill="url(#hero-sun)"/><g stroke="#eebc4e" stroke-width="2.8" stroke-linecap="round"><path d="M0-24v-7m0 55v-7M-24 0h-7m55 0h-7M-17-17l-5-5m44 44 5 5m0-44-5 5M-22 22l-5 5"/></g><path d="M-6-2q2.4-3 5 0M2-2q2.4-3 5 0M-5 5q5 5 10 0" fill="none" stroke="#7a5a33" stroke-width="1.8" stroke-linecap="round"/><circle cx="-10" cy="4" r="2.4" fill="#f6a29f" opacity=".7"/><circle cx="11" cy="4" r="2.4" fill="#f6a29f" opacity=".7"/></g>
-  <g fill="#fff" opacity=".95"><path d="M168 36q0-9 10-9t10 9q8 0 8 7t-8 7h-20q-8 0-8-7t8-7"/><path d="M18 92q0-6 7-6t7 6q6 0 6 5t-6 5H18q-6 0-6-5t6-5" opacity=".8"/></g>
-  <g stroke="#8ecbe4" stroke-width="2.2" stroke-linecap="round" opacity=".9"><path d="M166 55l-2 6m11-4-2 6"/></g>
-  <path d="M0 139q42-16 100-2t100-3v31H0z" fill="url(#hero-hill)" mask="url(#hero-mask)"/>
-  <g><g transform="translate(31 144)"><g fill="#fff"><circle cx="0" cy="-4" r="2.4"/><circle cx="3.8" cy="-1.2" r="2.4"/><circle cx="2.4" cy="3.2" r="2.4"/><circle cx="-2.4" cy="3.2" r="2.4"/><circle cx="-3.8" cy="-1.2" r="2.4"/></g><circle r="1.6" fill="#ffd35e"/></g><g transform="translate(170 150) scale(.85)"><g fill="#ffe1ea"><circle cx="0" cy="-4" r="2.4"/><circle cx="3.8" cy="-1.2" r="2.4"/><circle cx="2.4" cy="3.2" r="2.4"/><circle cx="-2.4" cy="3.2" r="2.4"/><circle cx="-3.8" cy="-1.2" r="2.4"/></g><circle r="1.6" fill="#ffd35e"/></g></g>
+  <g fill="none" stroke-width="8" stroke-linecap="round" opacity=".62">
+   <path d="M30 132a72 72 0 0 1 144 0" stroke="#f6a3a8"/>
+   <path d="M41 132a61 61 0 0 1 122 0" stroke="#ffcf7a"/>
+   <path d="M52 132a50 50 0 0 1 100 0" stroke="#a9d8a8"/>
+   <path d="M63 132a39 39 0 0 1 78 0" stroke="#a9d3e8"/>
+   <path d="M74 132a28 28 0 0 1 56 0" stroke="#c9b6f2"/>
+  </g>
+  <path d="M30 132a72 72 0 0 1 144 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="2 10" opacity=".75"/>
+  <g transform="translate(38 42)"><circle r="27" fill="url(#${hid}-glow)" class="pulse"/><circle r="17" fill="url(#${hid}-sun)"/><g class="spinSlow" stroke="#eebc4e" stroke-width="2.8" stroke-linecap="round"><path d="M0-24v-7m0 55v-7M-24 0h-7m55 0h-7M-17-17l-5-5m44 44 5 5m0-44-5 5M-22 22l-5 5"/></g><path d="M-6-2q2.4-3 5 0M2-2q2.4-3 5 0M-5 5q5 5 10 0" fill="none" stroke="#7a5a33" stroke-width="1.8" stroke-linecap="round"/><circle cx="-10" cy="4" r="2.4" fill="#f6a29f" opacity=".7"/><circle cx="11" cy="4" r="2.4" fill="#f6a29f" opacity=".7"/></g>
+  <g class="bob"><g transform="translate(168 36)" fill="#fff" opacity=".95"><path d="M0 0q0-9 10-9t10 9q8 0 8 7t-8 7H0q-8 0-8-7t8-7"/><path d="M-2 6q10 4 20 0" fill="none" stroke="#eef6ff" stroke-width="2"/></g></g>
+  <g class="bob2"><g transform="translate(18 92) scale(.72)" fill="#fff" opacity=".82"><path d="M0 0q0-9 10-9t10 9q8 0 8 7t-8 7H0q-8 0-8-7t8-7"/></g></g>
+  <g stroke="#8ecbe4" stroke-width="2.2" stroke-linecap="round" opacity=".9" class="rain"><path d="M166 55l-2 6m11-4-2 6"/></g>
+  <g fill="none" stroke="#c9a15a" stroke-width="1.6" stroke-linecap="round" opacity=".7" class="drift"><path d="M96 32q5-5 10 0q5-5 10 0"/><path d="M112 40q4-4 8 0q4-4 8 0"/></g>
+  <g transform="translate(150 24)" class="drift2"><g fill="#fff" stroke="#e9b7c3" stroke-width=".8"><path d="M0 0q-8-10 0-10t0 10"/><path d="M0 0q-12 2-9-6q4-7 9 6"/><path d="M0 0q12 2 9-6q-4-7-9 6"/></g><path d="M0 0v6" stroke="#c9b79b" stroke-width=".8"/></g>
+  <path d="M0 142q42-18 100-3t100-4v30H0z" fill="url(#${hid}-hill)" mask="url(#${hid}-mask)"/>
+  <path d="M0 149q46-13 96-1t104-3v20H0z" fill="#a9d38e" opacity=".55"/>
+  <path d="M0 156q50-9 100-1t100-2v12H0z" fill="#8ec277" opacity=".5"/>
+  <g class="sway"><g transform="translate(31 144)"><g fill="#fff"><circle cx="0" cy="-4" r="2.4"/><circle cx="3.8" cy="-1.2" r="2.4"/><circle cx="2.4" cy="3.2" r="2.4"/><circle cx="-2.4" cy="3.2" r="2.4"/><circle cx="-3.8" cy="-1.2" r="2.4"/></g><circle r="1.6" fill="#ffd35e"/></g></g>
+  <g class="sway2"><g transform="translate(170 150) scale(.85)"><g fill="#ffe1ea"><circle cx="0" cy="-4" r="2.4"/><circle cx="3.8" cy="-1.2" r="2.4"/><circle cx="2.4" cy="3.2" r="2.4"/><circle cx="-2.4" cy="3.2" r="2.4"/><circle cx="-3.8" cy="-1.2" r="2.4"/></g><circle r="1.6" fill="#ffd35e"/></g></g>
+  <g class="sway"><g transform="translate(148 156) scale(.7)"><g fill="#fff5c8"><circle cx="0" cy="-4" r="2.4"/><circle cx="3.8" cy="-1.2" r="2.4"/><circle cx="2.4" cy="3.2" r="2.4"/><circle cx="-2.4" cy="3.2" r="2.4"/><circle cx="-3.8" cy="-1.2" r="2.4"/></g><circle r="1.6" fill="#e8a86a"/></g></g>
+  <g stroke="#7fae6b" stroke-width="2" stroke-linecap="round"><path d="M14 162q2-9 5-12m4 12q-1-8-4-11"/><path d="M188 163q2-8 5-11m3 11q-1-7-3-10"/><path d="M60 164q2-7 4-9"/></g>
+  <g fill="#e6d6b8" stroke="#c2ac87" stroke-width=".9"><ellipse cx="132" cy="160" rx="3.4" ry="1.9"/><ellipse cx="138" cy="158" rx="2.2" ry="1.4"/></g>
   ${kid('happy','hero',96,61,1.12)}
-  <g transform="translate(140 34)"><path d="M0-6q-11-12-4-22q8-8 14 0q6-8 14 0q7 10-4 22l-10 9z" fill="url(#hero-heart)" stroke="#c96a7c" stroke-width="1.6"/><path d="M-1-24q2-6 8-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></g>
   <path d="M138 42q-3 20-12 36" fill="none" stroke="#b98a5c" stroke-width="1.6" stroke-dasharray="3 3"/>
-  <g fill="#fff" opacity=".9"><path d="M176 66l2.2 5.4 5.4 2.2-5.4 2.2L176 81l-2.2-5.2-5.4-2.2 5.4-2.2z"/><path d="M14 116l1.8 4.4 4.4 1.8-4.4 1.8L14 128l-1.8-4.4-4.4-1.8 4.4-1.8z"/></g>
+  <g class="bob"><g transform="translate(140 34)"><path d="M0-6q-11-12-4-22q8-8 14 0q6-8 14 0q7 10-4 22l-10 9z" fill="url(#${hid}-heart)" stroke="#c96a7c" stroke-width="1.6"/><path d="M-1-24q2-6 8-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M-6-14q4-4 8-2" fill="none" stroke="#ffd9df" stroke-width="1.8" stroke-linecap="round" opacity=".8"/></g></g>
+  <path d="M166 56q-2 14-8 24" fill="none" stroke="#b98a5c" stroke-width="1.4" stroke-dasharray="3 3"/>
+  <g class="bob2"><g transform="translate(166 48) scale(.78)"><path d="M0-6q-11-12-4-22q8-8 14 0q6-8 14 0q7 10-4 22l-10 9z" fill="url(#${hid}-heart2)" stroke="#6fa9c7" stroke-width="1.8"/><path d="M-1-24q2-6 8-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></g></g>
+  <g fill="#fff" opacity=".95"><path d="M176 66l2.2 5.4 5.4 2.2-5.4 2.2L176 81l-2.2-5.2-5.4-2.2 5.4-2.2z" class="twinkle"/><path d="M14 116l1.8 4.4 4.4 1.8-4.4 1.8L14 128l-1.8-4.4-4.4-1.8 4.4-1.8z" class="twinkle2"/><path d="M118 14l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" class="twinkle" opacity=".8"/></g>
  </svg>`;
 }
+
+/* ================= 태블릿 활동 ================= */
+let taDispose=null,taAC=null;
+function taTone(freq,dur=.45,kind='sine',vol=.055){
+ try{
+  taAC=taAC||new (window.AudioContext||window.webkitAudioContext)();
+  if(taAC.state==='suspended')taAC.resume();
+  const o=taAC.createOscillator(),g=taAC.createGain(),t=taAC.currentTime;
+  o.type=kind;o.frequency.value=freq;
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.linearRampToValueAtTime(vol,t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(taAC.destination);
+  o.start(t);o.stop(t+dur+.03);
+ }catch(e){}
+}
+function taSpeak(text){
+ try{
+  if(!('speechSynthesis' in window))return false;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ko-KR';u.rate=.9;u.pitch=1.04;
+  speechSynthesis.speak(u);
+  return true;
+ }catch(e){return false}
+}
+function taConfetti(){
+ if(document.querySelector('.ta-confetti'))return;
+ const box=document.createElement('div');box.className='ta-confetti';
+ const cols=['#f6a3a8','#ffd97a','#a9d8a8','#a9d3e8','#c9b6f2','#ffb6c2'];
+ for(let i=0;i<30;i++){
+  const p=document.createElement('i');
+  p.style.left=(Math.random()*100)+'%';
+  p.style.background=cols[i%cols.length];
+  p.style.animationDelay=(Math.random()*.45)+'s';
+  p.style.animationDuration=(1.15+Math.random()*.9)+'s';
+  box.append(p);
+ }
+ document.body.append(box);setTimeout(()=>box.remove(),2600);
+}
+function taStatus(stage,html){const p=stage.querySelector('.ta-status');if(p)p.innerHTML=html}
+function taDone(stage,msg,party=true){
+ if(stage.querySelector('.ta-done')){taStatus(stage,msg);return}
+ const d=document.createElement('div');d.className='ta-done';
+ d.innerHTML='<span>🌷</span><span>'+msg+'</span>';
+ stage.append(d);
+ const dot=document.getElementById('p3');if(dot)dot.className='dot done';
+ if(party)taConfetti();
+ stage.classList.add('ta-flash');setTimeout(()=>stage.classList.remove('ta-flash'),600);
+}
+const TABLET_ACT={
+ breathe:{name:'숨 고르기',hint:'큰 원을 눌러 3번 숨 쉬어요',
+  html:`<div class="ta-breathe"><button class="ta-breath-circle" type="button" aria-label="숨 고르기 시작"><span class="lbl">시작</span><span class="sub">눌러서 숨 고르기</span></button><div class="dots"><span></span><span></span><span></span></div><p class="ta-status" aria-live="polite">천천히 준비해요. 원을 눌러 주세요.</p></div>`,
+  init(stage){
+   const circle=stage.querySelector('.ta-breath-circle'),lbl=stage.querySelector('.lbl'),sub=stage.querySelector('.sub'),dots=[...stage.querySelectorAll('.dots span')];
+   const steps=[{d:4000,label:'들이쉬어요',sub:'코로 하나, 둘, 셋',from:.74,to:1},{d:1500,label:'멈춰요',sub:'잠깐 숨을 참아요',from:1,to:1},{d:6000,label:'내쉬어요',sub:'입으로 하나, 둘, 셋, 넷',from:1,to:.74}];
+   let idx=0,t0=0,cycle=0,raf=0,running=false;
+   const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+   function phaseStart(){const s=steps[idx];lbl.textContent=s.label;sub.textContent=s.sub;taStatus(stage,s.label+' · '+s.sub);t0=performance.now()}
+   function frame(now){
+    if(!running)return;
+    const s=steps[idx],p=Math.min(1,(now-t0)/s.d);
+    circle.style.transform='scale('+(s.from+(s.to-s.from)*ease(p)).toFixed(3)+')';
+    if(p>=1){
+     idx++;
+     if(idx>=steps.length){
+      idx=0;cycle++;dots.forEach((d,i)=>d.classList.toggle('on',i<cycle));
+      if(cycle>=3){running=false;circle.style.transform='scale(.74)';lbl.textContent='완료!';sub.textContent='마음이 조금 편안해졌어요';taDone(stage,'3번 숨을 고르며 마음을 살펴봤어요. 정말 잘했어요!');return}
+      phaseStart();
+     }
+    }
+    raf=requestAnimationFrame(frame);
+   }
+   circle.addEventListener('click',()=>{
+    if(running){running=false;cancelAnimationFrame(raf);lbl.textContent='계속';sub.textContent='눌러서 이어서 숨 쉬어요';taStatus(stage,'잠시 멈췄어요. 준비되면 다시 눌러요.');return}
+    running=true;if(cycle===0)dots.forEach(d=>d.classList.remove('on'));
+    phaseStart();raf=requestAnimationFrame(frame);
+   });
+   return ()=>{running=false;cancelAnimationFrame(raf)};
+  }},
+ music:{name:'소리 따라하기',hint:'패드를 눌러 소리를 듣고 따라 해요',
+  html:`<div><div class="ta-pads"><button class="ta-pad" type="button" data-note="0">♪<small>도</small></button><button class="ta-pad" type="button" data-note="1">♫<small>미</small></button><button class="ta-pad" type="button" data-note="2">♬<small>솔</small></button><button class="ta-pad" type="button" data-note="3">♪<small>높은 도</small></button></div><div class="ta-notes" aria-hidden="true"></div><div class="ta-row"><button class="ta-btn soft" type="button" data-play>▶ 따라하기 시작</button><span class="ta-status" style="margin:0">먼저 마음에 드는 소리를 눌러봐요.</span></div></div>`,
+  init(stage){
+   const pads=[...stage.querySelectorAll('.ta-pad')],notes=stage.querySelector('.ta-notes');
+   const freqs=[523.25,659.25,783.99,1046.5],pattern=[0,2,1,3],timers=[];
+   let accept=false,user=0;
+   const later=(fn,ms)=>{const t=setTimeout(fn,ms);timers.push(t);return t};
+   const hit=p=>{p.classList.add('hit');later(()=>p.classList.remove('hit'),150)};
+   pads.forEach(p=>p.addEventListener('click',()=>{
+    const n=+p.dataset.note;
+    taTone(freqs[n],.7,'sine',.06);hit(p);
+    notes.insertAdjacentHTML('beforeend','<span>'+['♪','♫','♬','♪'][n]+'</span>');
+    while(notes.children.length>7)notes.firstElementChild.remove();
+    if(!accept)return;
+    if(n===pattern[user]){
+     p.classList.add('ok');later(()=>p.classList.remove('ok'),520);user++;
+     if(user>=pattern.length){accept=false;taDone(stage,'네 소리를 귀 기울여 듣고 잘 따라 했어요!')}
+     else taStatus(stage,'좋아요! 다음 소리를 눌러봐요 ('+user+' / '+pattern.length+')');
+    }else{
+     p.classList.add('bad');later(()=>p.classList.remove('bad'),420);user=0;
+     taStatus(stage,'괜찮아요. 다시 듣고 처음부터 눌러볼까요?');
+    }
+   }));
+   stage.querySelector('[data-play]').addEventListener('click',()=>{
+    accept=false;user=0;taStatus(stage,'잘 들어보세요. 소리가 반짝일 거예요…');
+    pattern.forEach((n,i)=>later(()=>{const p=pads[n];taTone(freqs[n],.6);hit(p)},500+i*680));
+    later(()=>{accept=true;taStatus(stage,'이제 들은 순서대로 눌러봐요! (0 / '+pattern.length+')')},500+pattern.length*680+250);
+   });
+   return ()=>timers.forEach(clearTimeout);
+  }},
+ walk:{name:'마음 산책 길',hint:'길을 따라 손가락을 천천히 밀어요',
+  html:`<div><svg class="ta-walk-svg" viewBox="0 0 320 112" role="img" aria-label="손가락으로 따라 걷는 산책 길"><path d="M22 92C80 22 128 104 188 58S286 26 300 60" fill="none" stroke="#eadfc0" stroke-width="17" stroke-linecap="round"/><path class="walk-path" d="M22 92C80 22 128 104 188 58S286 26 300 60" fill="none" stroke="#fffdf4" stroke-width="7" stroke-linecap="round"/><path d="M22 92C80 22 128 104 188 58S286 26 300 60" fill="none" stroke="#d9c79b" stroke-width="2.4" stroke-dasharray="1 13" stroke-linecap="round"/><g class="walk-items" font-size="19" text-anchor="middle" dy="7"><g class="walk-item"><text>🍃</text></g><g class="walk-item"><text>🌿</text></g><g class="walk-item"><text>☁️</text></g></g><g class="walk-marker"><circle r="12" fill="#fff" stroke="#8d7cc4" stroke-width="2.6"/><text text-anchor="middle" dy="5" font-size="14">👣</text></g></svg><div class="ta-collect"><span>🍃 바람</span><span>🌿 나뭇잎</span><span>☁️ 하늘</span></div><p class="ta-status" aria-live="polite">길 위에 손가락을 대고 천천히 밀어봐요.</p></div>`,
+  init(stage){
+   const svg=stage.querySelector('.ta-walk-svg'),marker=stage.querySelector('.walk-marker'),path=stage.querySelector('.walk-path');
+   const items=[...stage.querySelectorAll('.walk-item')],badges=[...stage.querySelectorAll('.ta-collect span')];
+   const len=path.getTotalLength(),spots=[.28,.56,.84],collected=new Set();
+   let done=false;
+   spots.forEach((s,i)=>{const pt=path.getPointAtLength(len*s),g=items[i];g.setAttribute('transform','translate('+pt.x+' '+pt.y+')');g.setAttribute('opacity','.32')});
+   function place(p){const pt=path.getPointAtLength(len*Math.max(0,Math.min(1,p)));marker.setAttribute('transform','translate('+pt.x+' '+pt.y+')')}
+   function move(e){
+    if(done)return;
+    const r=svg.getBoundingClientRect();
+    const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    place(p);
+    spots.forEach((s,i)=>{
+     if(p>=s-.012&&!collected.has(i)){
+      collected.add(i);items[i].setAttribute('opacity','1');items[i].classList.add('pop');badges[i].classList.add('on');
+      taTone([659,784,1046][i]||880,.28,'sine',.03);
+     }
+    });
+    taStatus(stage,'길을 따라 걷는 중… '+collected.size+' / 3');
+    if(collected.size===3){done=true;taDone(stage,'바람·나뭇잎·하늘을 모두 만났어요. 마음이 한결 가벼워졌어요!')}
+   }
+   let down=false;
+   svg.addEventListener('pointerdown',e=>{down=true;try{svg.setPointerCapture(e.pointerId)}catch(x){};move(e)});
+   svg.addEventListener('pointermove',e=>{if(down)move(e)});
+   ['pointerup','pointercancel','pointerleave'].forEach(t=>svg.addEventListener(t,()=>{down=false}));
+   return ()=>{done=true};
+  }},
+ read:{name:'마음 그림책',hint:'책장을 넘기며 천천히 읽어요',
+  html:`<div><div class="ta-book"><div class="bemoji">🌧️</div><p class="btext"></p><div class="bpage"></div></div><div class="ta-row"><button class="ta-btn soft" type="button" data-prev>← 이전</button><button class="ta-btn" type="button" data-next>다음 →</button><button class="ta-chip" type="button" data-bm>🔖 마음에 남기기</button></div><div class="ta-saved" aria-live="polite"></div><p class="ta-status">한 장씩 천천히 읽어도 괜찮아요.</p></div>`,
+  init(stage){
+   const book=stage.querySelector('.ta-book'),emoji=stage.querySelector('.bemoji'),text=stage.querySelector('.btext'),pageNo=stage.querySelector('.bpage'),prev=stage.querySelector('[data-prev]'),next=stage.querySelector('[data-next]'),bm=stage.querySelector('[data-bm]'),saved=stage.querySelector('.ta-saved');
+   const pages=[
+    {e:'🌧️',t:'오늘 마음에 빗방울이 내려도 괜찮아요. 마음 날씨는 언제나 바뀌니까요.'},
+    {e:'☕',t:'나는 나를 천천히 돌볼 수 있어요. 따뜻한 차 한 모금처럼 천천히요.'},
+    {e:'🤝',t:'도움이 필요하면 손을 들어요. 나는 혼자가 아니에요.'}
+   ];
+   let i=0,savedCount=0;
+   function render(){
+    const p=pages[i];emoji.textContent=p.e;text.textContent=p.t;pageNo.textContent=(i+1)+' / '+pages.length;
+    prev.disabled=i===0;next.textContent=i===pages.length-1?'다 읽었어요 ✓':'다음 →';
+    book.classList.remove('flip');void book.offsetWidth;book.classList.add('flip');
+   }
+   prev.addEventListener('click',()=>{if(i>0){i--;render()}});
+   next.addEventListener('click',()=>{if(i<pages.length-1){i++;render()}else taDone(stage,'그림책을 끝까지 읽으며 마음을 쓰다듬었어요.')});
+   bm.addEventListener('click',()=>{
+    if(savedCount>=2){taStatus(stage,'마음에 남는 문장은 두 개까지 담을 수 있어요.');return}
+    savedCount++;saved.insertAdjacentHTML('beforeend','<span>🔖 <b>'+pages[i].t+'</b></span>');
+    taStatus(stage,'마음에 남는 문장을 저장했어요.');taTone(880,.25,'sine',.04);
+   });
+   render();
+   return null;
+  }},
+ water:{name:'물 한 모금',hint:'버튼을 눌러 천천히 네 번 마셔요',
+  html:`<div class="ta-water"><div class="ta-cup"><div class="fill" style="height:88%"></div><div class="shine"></div><i class="bub" style="left:22px;bottom:14px;animation-delay:.2s"></i><i class="bub" style="left:48px;bottom:8px;animation-delay:1s"></i></div><div><div class="ta-sips"><i>1</i><i>2</i><i>3</i><i>4</i></div><div class="ta-row"><button class="ta-btn" type="button" data-sip>한 모금 🥤</button></div><p class="ta-status" aria-live="polite">물컵을 준비하고 천천히 마셔봐요.</p></div></div>`,
+  init(stage){
+   const fill=stage.querySelector('.fill'),sips=[...stage.querySelectorAll('.ta-sips i')],btn=stage.querySelector('[data-sip]');
+   const msgs=['입안이 촉촉해졌어요.','목으로 시원하게 넘어가요.','몸이 물을 반가워해요.','물이 몸 구석구석에 닿는 느낌이에요.'];
+   let n=0;
+   btn.addEventListener('click',()=>{
+    if(n>=4)return;
+    n++;sips[n-1].classList.add('on');
+    fill.style.height=Math.max(12,88-n*19)+'%';
+    taTone(520+n*70,.3,'sine',.04);
+    taStatus(stage,msgs[n-1]+' ('+n+' / 4)');
+    if(n===4){btn.disabled=true;taDone(stage,'네 번 천천히 물을 마시며 몸의 신호를 살펴봤어요.')}
+   });
+   return null;
+  }},
+ talk:{name:'내 마음 말하기',hint:'낱말을 골라 내 마음을 문장으로 말해요',
+  html:`<div class="ta-talk"><div class="ta-bubble">지금 나는 <b>___</b>한 기분이에요</div><div class="ta-row" data-chips><button class="ta-chip" type="button">기쁜</button><button class="ta-chip" type="button">슬픈</button><button class="ta-chip" type="button">화난</button><button class="ta-chip" type="button">놀란</button><button class="ta-chip" type="button">불안한</button><button class="ta-chip" type="button">피곤한</button><button class="ta-chip" type="button">외로운</button><button class="ta-chip" type="button">편안한</button></div><div class="ta-row"><button class="ta-btn" type="button" data-speak>🗣️ 소리 내어 말하기</button><button class="ta-chip" type="button" data-reset>다시 고르기</button></div><p class="ta-status" aria-live="polite">마음과 가장 가까운 낱말을 하나 골라봐요.</p></div>`,
+  init(stage){
+   const bubble=stage.querySelector('.ta-bubble'),chips=[...stage.querySelectorAll('[data-chips] .ta-chip')],speak=stage.querySelector('[data-speak]'),reset=stage.querySelector('[data-reset]');
+   let word='';
+   chips.forEach(c=>c.addEventListener('click',()=>{
+    chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');word=c.textContent;
+    bubble.innerHTML='지금 나는 <b>'+word+'</b>한 기분이에요';
+    bubble.classList.remove('pop');void bubble.offsetWidth;bubble.classList.add('pop');
+    taTone(700,.22,'sine',.03);
+    taStatus(stage,'“지금 나는 '+word+'한 기분이에요”라고 말해볼까요?');
+   }));
+   speak.addEventListener('click',()=>{
+    if(!word){taStatus(stage,'먼저 마음 낱말을 하나 골라요.');return}
+    const says='지금 나는 '+word+'한 기분이에요';
+    taStatus(stage,'말해보세요: <b>'+says+'</b>');
+    speak.disabled=true;setTimeout(()=>{speak.disabled=false},900);
+    taDone(stage,'내 마음을 낱말로 표현했어요. 말하는 것만으로도 마음이 조금 가벼워져요.');
+    taSpeak(says);
+   });
+   reset.addEventListener('click',()=>{word='';chips.forEach(x=>x.classList.remove('on'));bubble.innerHTML='지금 나는 <b>___</b>한 기분이에요';taStatus(stage,'천천히 다시 골라봐요.')});
+   return null;
+  }},
+ draw:{name:'마음 그림 그리기',hint:'손가락으로 색과 모양을 그려요',
+  html:`<div class="ta-draw-wrap"><div class="ta-draw-tools"><button class="ta-swatch on" type="button" data-c="#f28c8c" style="background:#f28c8c" aria-label="분홍"></button><button class="ta-swatch" type="button" data-c="#f7c85f" style="background:#f7c85f" aria-label="노랑"></button><button class="ta-swatch" type="button" data-c="#8bc985" style="background:#8bc985" aria-label="초록"></button><button class="ta-swatch" type="button" data-c="#7cc8e6" style="background:#7cc8e6" aria-label="하늘"></button><button class="ta-swatch" type="button" data-c="#b39ddb" style="background:#b39ddb" aria-label="보라"></button><button class="ta-swatch" type="button" data-c="#6b5a52" style="background:#6b5a52" aria-label="갈색"></button><button class="ta-size on" type="button" data-s="5" aria-label="가는 붓"><i style="width:5px;height:5px"></i></button><button class="ta-size" type="button" data-s="11" aria-label="중간 붓"><i style="width:11px;height:11px"></i></button><button class="ta-size" type="button" data-s="20" aria-label="굵은 붓"><i style="width:20px;height:20px"></i></button><button class="ta-chip" type="button" data-eraser>🧽 지우개</button><button class="ta-chip" type="button" data-undo>↩ 되돌리기</button><button class="ta-chip" type="button" data-clear>🗑 지우기</button><button class="ta-chip" type="button" data-save>⬇ 저장</button></div><canvas id="drawCanvas" aria-label="손가락으로 그리는 마음 그림판"></canvas><p class="ta-status" aria-live="polite">손가락으로 자유롭게 그려보세요. 잘 그리지 않아도 괜찮아요.</p></div>`,
+  init(stage){
+   const canvas=stage.querySelector('#drawCanvas'),ctx=canvas.getContext('2d');
+   let color='#f28c8c',size=5,eraser=false,drawing=false,last=null,strokes=0,snaps=[],w=1,h=1;
+   function fit(){
+    const r=canvas.getBoundingClientRect();if(!r.width)return;
+    const dpr=Math.min(2,window.devicePixelRatio||1),old=canvas.width?canvas.toDataURL():'';
+    w=r.width;h=r.height;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.lineCap='round';ctx.lineJoin='round';
+    if(old){const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,w,h);img.src=old}
+   }
+   const raf=requestAnimationFrame(fit);
+   const pos=e=>{const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+   canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();try{canvas.setPointerCapture(e.pointerId)}catch(x){}
+    drawing=true;snaps.push(canvas.toDataURL());if(snaps.length>10)snaps.shift();
+    const p=pos(e);last=p;ctx.fillStyle=eraser?'#fff':color;
+    ctx.beginPath();ctx.arc(p.x,p.y,size/2,0,Math.PI*2);ctx.fill();
+   });
+   canvas.addEventListener('pointermove',e=>{
+    if(!drawing)return;
+    const p=pos(e);ctx.strokeStyle=eraser?'#fff':color;ctx.lineWidth=size;
+    ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;
+   });
+   ['pointerup','pointercancel','pointerleave'].forEach(t=>canvas.addEventListener(t,()=>{
+    if(!drawing)return;drawing=false;strokes++;
+    if(strokes===3)taStatus(stage,'좋아요! 색과 모양으로 마음을 표현하고 있어요.');
+   }));
+   stage.querySelectorAll('.ta-swatch').forEach(b=>b.addEventListener('click',()=>{
+    stage.querySelectorAll('.ta-swatch').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    color=b.dataset.c;eraser=false;stage.querySelector('[data-eraser]').classList.remove('on');
+   }));
+   stage.querySelectorAll('.ta-size').forEach(b=>b.addEventListener('click',()=>{
+    stage.querySelectorAll('.ta-size').forEach(x=>x.classList.remove('on'));b.classList.add('on');size=+b.dataset.s;
+   }));
+   stage.querySelector('[data-eraser]').addEventListener('click',e=>{eraser=!eraser;e.currentTarget.classList.toggle('on',eraser)});
+   stage.querySelector('[data-clear]').addEventListener('click',()=>{snaps.push(canvas.toDataURL());ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);taStatus(stage,'새 종이에 다시 그려볼까요?')});
+   stage.querySelector('[data-undo]').addEventListener('click',()=>{
+    const s=snaps.pop();if(!s){taStatus(stage,'되돌릴 그림이 없어요.');return}
+    const img=new Image();img.onload=()=>{ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h)};img.src=s;
+   });
+   stage.querySelector('[data-save]').addEventListener('click',()=>{
+    try{const a=document.createElement('a');a.download='마음그림.png';a.href=canvas.toDataURL('image/png');a.click()}catch(e){}
+    taDone(stage,'나만의 마음 그림을 저장했어요. 그림은 나를 이해하는 멋진 언어예요.');
+   });
+   return ()=>cancelAnimationFrame(raf);
+  }},
+ cozy:{name:'포근한 안아주기',hint:'하트를 2초 동안 꾹 눌러요',
+  html:`<div class="ta-cozy"><button class="ta-hug" type="button" aria-label="꾹 눌러 안아주기">🧸</button><div class="ta-meter"><i></i></div><p class="ta-status" aria-live="polite">하트를 손가락으로 2초 동안 꾹 눌러 안아주세요.</p></div>`,
+  init(stage){
+   const btn=stage.querySelector('.ta-hug'),bar=stage.querySelector('.ta-meter i');
+   let v=0,raf=0,holding=false,last=0,done=false;
+   function frame(now){
+    const dt=last?now-last:16;last=now;
+    v=holding?Math.min(1,v+dt/2000):Math.max(0,v-dt/2600);
+    bar.style.width=(v*100).toFixed(1)+'%';
+    btn.classList.toggle('grow',holding);
+    if(v>=1&&!done){done=true;holding=false;btn.textContent='💗';taDone(stage,'따뜻하게 안아줬어요. 나를 다정하게 돌보는 시간이었어요.');}
+    if(v>0||holding)raf=requestAnimationFrame(frame);else{last=0;return}
+   }
+   const start=()=>{if(done)return;holding=true;last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(frame)};
+   const end=()=>{holding=false;if(v>0&&v<1)raf=requestAnimationFrame(frame)};
+   btn.addEventListener('pointerdown',e=>{e.preventDefault();start()});
+   ['pointerup','pointercancel','pointerleave'].forEach(t=>btn.addEventListener(t,end));
+   btn.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter')start()});
+   btn.addEventListener('keyup',end);
+   return ()=>{holding=false;cancelAnimationFrame(raf)};
+  }},
+ friend:{name:'기쁨 나누기',hint:'버튼을 눌러 친구에게 기쁨을 보내요',
+  html:`<div class="ta-friends"><div class="ta-figures"><div class="ta-figure"><span class="face">🧒</span><span>나</span></div><div class="ta-figure"><span class="face" data-friend>🧑</span><span>친구</span></div></div><div class="ta-heart-count">나눈 기쁨 0 / 5</div><button class="ta-btn" type="button" data-share>💛 기쁜 일 나누기</button><p class="ta-status" aria-live="polite">좋은 일은 나눌수록 커져요.</p></div>`,
+  init(stage){
+   const btn=stage.querySelector('[data-share]'),figures=stage.querySelector('.ta-figures'),count=stage.querySelector('.ta-heart-count'),friend=stage.querySelector('[data-friend]');
+   const lines=['오늘 재미있는 일이 있었어!','네 덕분에 웃었어.','같이 놀아서 정말 좋았어!','내 기쁨을 너에게 나눌게.','함께라서 더 행복해!'];
+   let n=0;
+   btn.addEventListener('click',()=>{
+    if(n>=5)return;
+    n++;count.textContent='나눈 기쁨 '+n+' / 5';
+    taStatus(stage,lines[n-1]);
+    taTone(660+n*55,.3,'triangle',.04);
+    const f=document.createElement('span');f.className='ta-fly';f.textContent=['💛','💗','✨','💛','💖'][n-1];figures.append(f);
+    setTimeout(()=>f.remove(),1200);
+    if(n>=5){
+     friend.textContent='😄';friend.classList.add('happy');
+     taDone(stage,'기쁨을 나누니 마음이 더 환해졌어요. 친구도 웃고 있어요!');
+    }
+   });
+   return null;
+  }},
+ jar:{name:'고마움 항아리',hint:'고마운 일을 적어 항아리에 담아요',
+  html:`<div class="ta-jar-wrap"><div class="ta-jar"><div class="lid"></div></div><div><div class="ta-row"><input class="ta-input" type="text" maxlength="24" placeholder="고마운 일을 적어요" aria-label="고마운 일"><button class="ta-btn" type="button" data-add>담기</button></div><div class="ta-row"><button class="ta-chip" type="button">가족</button><button class="ta-chip" type="button">친구</button><button class="ta-chip" type="button">선생님</button><button class="ta-chip" type="button">맛있는 간식</button></div><div class="ta-jarlist" aria-live="polite"></div></div></div><p class="ta-status">작은 고마움도 소중한 선물이에요.</p>`,
+  init(stage){
+   const jar=stage.querySelector('.ta-jar'),input=stage.querySelector('.ta-input'),list=stage.querySelector('.ta-jarlist'),add=stage.querySelector('[data-add]'),chips=[...stage.querySelectorAll('.ta-row .ta-chip')];
+   let n=0;
+   function put(txt){
+    txt=(txt||'').trim();if(!txt){input.focus();return}
+    if(n>=6){taStatus(stage,'항아리가 가득 찼어요. 마음이 따뜻해졌어요.');return}
+    n++;
+    const note=document.createElement('div');note.className='note';
+    note.style.left=(8+(n%3)*26)+'px';note.style.bottom=(6+Math.floor((n-1)/3)*26)+'px';
+    note.style.transform='rotate('+((n%2?-1:1)*(4+n*2))+'deg)';
+    jar.append(note);
+    list.insertAdjacentHTML('beforeend','<b>'+n+'. '+txt+'</b>');
+    input.value='';input.focus();taTone(740,.3,'sine',.04);
+    taStatus(stage,'고마운 마음을 '+n+'개 담았어요.');
+    if(n>=2)taDone(stage,'고마운 마음을 항아리에 담았어요. 힘든 날 꺼내 읽어봐요.');
+   }
+   add.addEventListener('click',()=>put(input.value));
+   input.addEventListener('keydown',e=>{if(e.key==='Enter')put(input.value)});
+   chips.forEach(c=>c.addEventListener('click',()=>put(c.textContent+'에게 고마웠어요')));
+   return null;
+  }},
+ dance:{name:'기분 좋은 춤',hint:'박자를 눌러 몸으로 기쁨을 표현해요',
+  html:`<div class="ta-dance"><div><span class="ta-dancer" aria-hidden="true">🕺</span></div><div class="ta-beatpads"><button class="ta-beat" type="button" data-f="392">👏<small style="display:block;font-size:10px">손</small></button><button class="ta-beat" type="button" data-f="330">🦶<small style="display:block;font-size:10px">발</small></button><button class="ta-beat" type="button" data-f="523">🦘<small style="display:block;font-size:10px">점프</small></button><button class="ta-beat" type="button" data-f="440">🌀<small style="display:block;font-size:10px">돌기</small></button></div><div class="ta-meter"><i></i></div><p class="ta-status" aria-live="polite">마음이 가는 대로 박자를 눌러봐요. 8번이면 충분해요!</p></div>`,
+  init(stage){
+   const dancer=stage.querySelector('.ta-dancer'),bar=stage.querySelector('.ta-meter i'),pads=[...stage.querySelectorAll('.ta-beat')];
+   const praise=['신나요!','리듬이 좋아요!','몸이 가벼워졌어요!','마음이 들썩들썩!'];
+   let n=0;
+   pads.forEach(p=>p.addEventListener('click',()=>{
+    if(n>=8)return;
+    n++;bar.style.width=(n/8*100)+'%';
+    taTone(+p.dataset.f,.22,'triangle',.05);
+    dancer.classList.remove('jump');void dancer.offsetWidth;dancer.classList.add('jump');
+    setTimeout(()=>dancer.classList.remove('jump'),220);
+    taStatus(stage,praise[(n-1)%praise.length]+' ('+n+' / 8)');
+    if(n>=8)taDone(stage,'몸을 움직여 기쁨을 표현했어요. 마음이 한결 밝아졌죠?');
+   }));
+   return null;
+  }},
+ trophy:{name:'나의 작은 성취',hint:'별을 눌러 오늘 해낸 일을 찾아요',
+  html:`<div class="ta-trophy"><div class="cup" aria-hidden="true">🏆</div><div class="ta-stars"><button class="ta-star" type="button" data-p="오늘 아침 스스로 일어났어요">⭐<small style="display:block;font-size:9px">아침</small></button><button class="ta-star" type="button" data-p="수업에 끝까지 참여했어요">⭐<small style="display:block;font-size:9px">수업</small></button><button class="ta-star" type="button" data-p="친구에게 다정하게 말했어요">⭐<small style="display:block;font-size:9px">친구</small></button></div><p class="ta-status" aria-live="polite">작은 일도 내가 해낸 멋진 일이에요.</p></div>`,
+  init(stage){
+   const stars=[...stage.querySelectorAll('.ta-star')],cup=stage.querySelector('.cup');
+   const praise=[];
+   stars.forEach(s=>s.addEventListener('click',()=>{
+    if(s.classList.contains('on'))return;
+    s.classList.add('on');praise.push(s.dataset.p);taTone(784+praise.length*80,.35,'sine',.05);
+    taStatus(stage,'“'+s.dataset.p+'” — 참 잘했어요! ('+praise.length+' / 3)');
+    cup.classList.add('lit');
+    if(praise.length>=3){
+     cup.classList.remove('lit');void cup.offsetWidth;cup.classList.add('lit');
+     taDone(stage,'오늘 해낸 세 가지를 찾았어요. 나는 스스로를 칭찬할 수 있어요!');
+    }
+   }));
+   return null;
+  }},
+ question:{name:'궁금한 점 묻기',hint:'카드를 뒤집고 어른에게 물어볼 질문을 만들어요',
+  html:`<div><div class="ta-cards"><button class="ta-flipcard" type="button" aria-label="무슨 일이었나요"><i class="front">❓</i><i class="back">본 것과 들은 것을 차분히 떠올려요</i></button><button class="ta-flipcard" type="button" aria-label="내 느낌은 어떤가요"><i class="front">❓</i><i class="back">놀람·궁금함·걱정 중에서 골라요</i></button><button class="ta-flipcard" type="button" aria-label="누구에게 물어볼까요"><i class="front">❓</i><i class="back">믿을 수 있는 어른을 떠올려요</i></button></div><div class="ta-row"><input class="ta-input" type="text" maxlength="40" placeholder="어른에게 물어볼 질문" aria-label="어른에게 물어볼 질문"><button class="ta-btn" type="button" data-save>질문 저장</button></div><div class="ta-saved" aria-live="polite"></div><p class="ta-status">모르는 것을 묻는 건 좋은 용기예요.</p></div>`,
+  init(stage){
+   const cards=[...stage.querySelectorAll('.ta-flipcard')],input=stage.querySelector('.ta-input'),save=stage.querySelector('[data-save]'),saved=stage.querySelector('.ta-saved');
+   let flipped=0;
+   cards.forEach(c=>c.addEventListener('click',()=>{
+    if(!c.classList.contains('flip')){flipped++;taTone(620+flipped*60,.22,'sine',.03)}
+    c.classList.toggle('flip');
+    taStatus(stage,'카드를 뒤집어 생각을 정리하고 있어요. ('+Math.min(flipped,3)+' / 3)');
+    if(flipped>=2)taDone(stage,'생각을 정리했어요. 이제 믿을 수 있는 어른에게 물어봐요.');
+   }));
+   save.addEventListener('click',()=>{
+    const q=input.value.trim();if(!q){taStatus(stage,'궁금한 점을 한 문장으로 적어봐요.');input.focus();return}
+    saved.innerHTML='<span>🙋 <b>'+q+'</b> — 선생님께 물어볼게요.</span>';
+    input.value='';taStatus(stage,'질문을 저장했어요. 물어보는 용기가 생겼어요!');
+    taDone(stage,'궁금한 점을 질문으로 만들었어요. 어른에게 차분히 물어봐요.');
+   });
+   return null;
+  }},
+ write:{name:'마음 메모',hint:'오늘의 마음을 짧게 적어 남겨요',
+  html:`<div class="ta-write"><textarea class="ta-textarea" maxlength="160" placeholder="오늘 마음에 남은 일을 적어보세요. 짧아도 괜찮아요." aria-label="마음 메모"></textarea><div class="ta-row" data-feels><button class="ta-chip" type="button">기쁨</button><button class="ta-chip" type="button">슬픔</button><button class="ta-chip" type="button">화남</button><button class="ta-chip" type="button">놀람</button><button class="ta-chip" type="button">평온</button></div><div class="ta-row"><button class="ta-btn" type="button" data-save>메모 저장</button><span class="ta-status" style="margin:0">0 / 160</span></div><div class="saved-wrap"></div></div>`,
+  init(stage){
+   const ta=stage.querySelector('.ta-textarea'),counter=stage.querySelector('.ta-row .ta-status'),save=stage.querySelector('[data-save]'),wrap=stage.querySelector('.saved-wrap'),chips=[...stage.querySelectorAll('[data-feels] .ta-chip')];
+   let feel='';
+   ta.addEventListener('input',()=>{counter.textContent=ta.value.length+' / 160'});
+   chips.forEach(c=>c.addEventListener('click',()=>{
+    chips.forEach(x=>x.classList.remove('on'));c.classList.toggle('on');feel=c.classList.contains('on')?c.textContent:'';
+   }));
+   save.addEventListener('click',()=>{
+    const v=ta.value.trim();
+    if(v.length<3){taStatus(stage,'두세 글자보다 조금 더 적어볼까요?');ta.focus();return}
+    const stamp={'기쁨':'☀️','슬픔':'🌧️','화남':'🔥','놀람':'✨','평온':'🌿'}[feel]||'💛';
+    wrap.innerHTML='<div class="ta-note-preview"><span class="stamp">'+stamp+'</span>'+v.replace(/[<>&]/g,'')+'<div style="margin-top:7px;font-size:11px;color:#a2946f">'+new Date().toLocaleDateString('ko-KR')+' · 나의 마음 메모</div></div>';
+    taTone(880,.35,'sine',.05);
+    taDone(stage,'마음을 적어 남겼어요. 메모는 나를 이해하는 작은 지도가 돼요.');
+   });
+   return null;
+  }}
+};
+function initTablet(type){
+ const stage=document.getElementById('taStage');
+ if(!stage)return;
+ const act=TABLET_ACT[type]||TABLET_ACT.talk;
+ stage.innerHTML=act.html;
+ try{taDispose=act.init(stage)||null}
+ catch(err){console.error(err);stage.insertAdjacentHTML('beforeend','<p class="ta-status">활동을 준비하지 못했어요. 다른 방법을 골라볼까요?</p>')}
+}
+function disposeTablet(){
+ if(taDispose){try{taDispose()}catch(e){};taDispose=null}
+ try{if(taAC&&taAC.state==='running')taAC.suspend()}catch(e){}
+ try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}
+}
+
 document.getElementById('heroArt').innerHTML=heroSVG();
 const moodCards=document.getElementById('moodCards');Object.entries(moods).forEach(([key,m])=>{let card=document.createElement('button');card.className='mood-card';card.dataset.mood=key;card.setAttribute('aria-label',m.label+' 선택');card.innerHTML=`<div class="mood-picture">${faceSvg(key)}</div><div class="mood-label">${m.label}<span class="mood-arrow">↗</span></div><p class="mood-desc">${m.description}</p>`;card.onclick=()=>chooseMood(key);moodCards.append(card)});
-let currentMood='';function chooseMood(key){currentMood=key;let m=moods[key];document.getElementById('homeStage').classList.remove('visible');document.getElementById('methodStage').classList.add('visible');let banner=document.getElementById('chosenBanner');banner.style.background=m.color;banner.innerHTML=`${faceSvg(key)}<div><h2>나는 지금 ${m.label}한 마음이에요</h2><p>${m.tagline} ${m.moodLine}</p></div><span class="badge">${m.face} ${m.label} 마음 날씨</span>`;let cards=document.getElementById('methodCards');cards.innerHTML='';document.getElementById('detail').className='detail';m.methods.forEach((item,i)=>{let [type,title,sub]=item;let b=document.createElement('button');b.className='method-card';b.style.setProperty('--wash',m.color);b.innerHTML=`<div class="method-art">${sceneSVG(type,key)}</div><div class="method-title">${title}</div><p class="method-sub">${sub}</p><div class="go">방법 살펴보기 →</div>`;b.onclick=()=>showDetail(item,i);cards.append(b)});document.getElementById('p1').className='dot done';document.getElementById('p2').className='dot active';document.getElementById('p3').className='dot';window.scrollTo({top:0,behavior:'smooth'})}
-function showDetail(item,index){let [type,title,sub,tip]=item,m=moods[currentMood];let actions={breathe:['편안한 자세로 앉거나 서서 발바닥을 바닥에 느껴요.','코로 하나, 둘, 셋 천천히 숨을 들이쉬어요.','입으로 하나, 둘, 셋, 넷 길게 내쉬어요.','마음이 조금 편안해질 때까지 반복해요.'],music:['내가 좋아하거나 편안하게 느끼는 노래를 골라요.','소리가 잘 들리는 편안한 자리에 앉아요.','노래의 악기나 리듬에 귀를 기울여요.','몸의 힘이 빠지는 느낌을 천천히 살펴봐요.'],walk:['선생님이나 보호자에게 산책하고 싶다고 알려요.','안전한 길에서 천천히 발걸음을 옮겨요.','바람, 나뭇잎, 하늘 중 하나를 찾아봐요.','돌아와서 몸과 마음이 어떻게 달라졌는지 느껴요.'],read:['지금 읽고 싶은 책 한 권을 골라요.','편안한 자리를 찾아 천천히 책장을 넘겨요.','마음에 남는 문장이나 그림을 찾아봐요.','다 읽지 않아도 괜찮아요. 잠시 쉬어도 좋아요.'],water:['물컵을 준비해 천천히 한 모금 마셔요.','물이 입안에 닿는 느낌을 알아차려요.','목을 지나가는 시원한 느낌을 느껴봐요.','잠깐 멈추고 몸이 보내는 신호를 살펴요.'],talk:['이야기하고 싶은 믿을 수 있는 어른을 떠올려요.','“지금 나는 ___한 기분이에요”라고 시작해요.','무슨 일이 있었는지 천천히 말해요.','말하기 어려우면 그림이나 쪽지로 전해도 돼요.'],draw:['종이와 색연필을 준비해요.','지금 마음과 닮은 색을 하나 골라요.','선, 모양, 그림으로 마음을 표현해요.','그림에 제목을 붙이거나 설명해봐요.'],cozy:['조용하고 편안한 자리를 찾아요.','담요나 인형을 안고 몸을 포근하게 해요.','어깨에 힘을 빼고 천천히 숨 쉬어요.','“나는 소중해. 조금씩 괜찮아질 거야”라고 말해요.'],friend:['기쁜 일을 함께 나누고 싶은 친구를 떠올려요.','“오늘 기분 좋은 일이 있었어!”라고 이야기해요.','친구의 기쁨도 함께 들어줘요.','함께 웃으며 좋은 순간을 기억해요.'],jar:['작은 종이나 마음 항아리를 준비해요.','오늘 고마웠던 일을 하나 떠올려요.','고마운 일을 적거나 그림으로 그려 넣어요.','마음이 힘든 날 항아리를 열어 읽어봐요.'],dance:['좋아하는 노래를 골라 안전한 공간을 만들어요.','음악을 틀고 편한 만큼 몸을 움직여요.','춤추면서 내 몸이 보내는 느낌을 살펴봐요.','즐거운 마음을 충분히 느껴봐요.'],trophy:['오늘 내가 해낸 작은 일을 떠올려요.','그 일을 해내기 위해 노력한 점을 찾아봐요.','스스로에게 “참 잘했어!”라고 말해줘요.','작은 축하 표시를 하거나 누군가와 나눠요.'],question:['무슨 일이 있었는지 내가 아는 것을 정리해요.','궁금한 점을 한 가지 골라요.','믿을 수 있는 어른에게 차분히 물어봐요.','설명을 들은 뒤 더 궁금한 것도 물어봐도 돼요.'],write:['종이나 메모장을 준비해요.','무슨 일이 있었는지 기억나는 대로 적어요.','사실과 내 느낌을 나눠 써봐요.','도움이 필요하면 쓴 내용을 어른과 함께 읽어요.']};let steps=actions[type]||actions.talk;let detail=document.getElementById('detail');detail.style.gridTemplateColumns='';detail.innerHTML=`<div class="detail-art">${sceneSVG(type,currentMood,true)}</div><div class="detail-copy"><div class="detail-kicker">${m.face} ${m.label}한 마음 돌보기 · 방법 ${index+1}</div><h3>${title}</h3><p class="intro">${sub}</p><ol class="steps">${steps.map((s,i)=>`<li><span class="step-no">${i+1}</span><span>${s}</span></li>`).join('')}</ol><div class="say-box">💬 ${tip}</div><div id="donePanel" class="done-panel">🌷 잘했어요! 내 마음을 돌보는 멋진 연습을 했어요.</div><div class="detail-actions"><button class="action primary" onclick="markDone()">이 방법 해봤어요 ✓</button><button class="action secondary" onclick="closeDetail()">다른 방법 보기</button></div></div>`;detail.classList.add('open');document.getElementById('p3').className='dot active';setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'start'}),50)}
-function markDone(){document.getElementById('donePanel').classList.add('show');document.getElementById('p3').className='dot done'}function closeDetail(){document.getElementById('detail').className='detail';document.getElementById('p3').className='dot';document.getElementById('methodCards').scrollIntoView({behavior:'smooth',block:'start'})}function goHome(){document.getElementById('methodStage').classList.remove('visible');document.getElementById('homeStage').classList.add('visible');document.getElementById('p1').className='dot active';document.getElementById('p2').className='dot';document.getElementById('p3').className='dot';window.scrollTo({top:0,behavior:'smooth'})}
+let currentMood='';function chooseMood(key){disposeTablet();currentMood=key;let m=moods[key];document.getElementById('homeStage').classList.remove('visible');document.getElementById('methodStage').classList.add('visible');let banner=document.getElementById('chosenBanner');banner.style.background=m.color;banner.innerHTML=`${faceSvg(key)}<div><h2>나는 지금 ${m.adj} 마음이에요</h2><p>${m.tagline} ${m.moodLine}</p></div><span class="badge">${m.face} ${m.label} 마음 날씨</span>`;let cards=document.getElementById('methodCards');cards.innerHTML='';document.getElementById('detail').className='detail';m.methods.forEach((item,i)=>{let [type,title,sub]=item;let b=document.createElement('button');b.className='method-card';b.dataset.type=type;b.dataset.mood=key;b.setAttribute('aria-label',title+' — 태블릿 활동 열기');b.style.setProperty('--wash',m.color);b.innerHTML=`<div class="method-art"><span class="tap-badge">✋ 태블릿</span>${sceneSVG(type,key)}</div><div class="method-title">${title}</div><p class="method-sub">${sub}</p><div class="go">태블릿 활동 열기 →</div>`;b.onclick=()=>showDetail(item,i);cards.append(b)});document.getElementById('p1').className='dot done';document.getElementById('p2').className='dot active';document.getElementById('p3').className='dot';window.scrollTo({top:0,behavior:'smooth'})}
+function showDetail(item,index){let [type,title,sub,tip]=item,m=moods[currentMood];let actions={breathe:['편안한 자세로 앉거나 서서 발바닥을 바닥에 느껴요.','코로 하나, 둘, 셋 천천히 숨을 들이쉬어요.','입으로 하나, 둘, 셋, 넷 길게 내쉬어요.','마음이 조금 편안해질 때까지 반복해요.'],music:['내가 좋아하거나 편안하게 느끼는 노래를 골라요.','소리가 잘 들리는 편안한 자리에 앉아요.','노래의 악기나 리듬에 귀를 기울여요.','몸의 힘이 빠지는 느낌을 천천히 살펴봐요.'],walk:['선생님이나 보호자에게 산책하고 싶다고 알려요.','안전한 길에서 천천히 발걸음을 옮겨요.','바람, 나뭇잎, 하늘 중 하나를 찾아봐요.','돌아와서 몸과 마음이 어떻게 달라졌는지 느껴요.'],read:['지금 읽고 싶은 책 한 권을 골라요.','편안한 자리를 찾아 천천히 책장을 넘겨요.','마음에 남는 문장이나 그림을 찾아봐요.','다 읽지 않아도 괜찮아요. 잠시 쉬어도 좋아요.'],water:['물컵을 준비해 천천히 한 모금 마셔요.','물이 입안에 닿는 느낌을 알아차려요.','목을 지나가는 시원한 느낌을 느껴봐요.','잠깐 멈추고 몸이 보내는 신호를 살펴요.'],talk:['이야기하고 싶은 믿을 수 있는 어른을 떠올려요.','“지금 나는 ___한 기분이에요”라고 시작해요.','무슨 일이 있었는지 천천히 말해요.','말하기 어려우면 그림이나 쪽지로 전해도 돼요.'],draw:['종이와 색연필을 준비해요.','지금 마음과 닮은 색을 하나 골라요.','선, 모양, 그림으로 마음을 표현해요.','그림에 제목을 붙이거나 설명해봐요.'],cozy:['조용하고 편안한 자리를 찾아요.','담요나 인형을 안고 몸을 포근하게 해요.','어깨에 힘을 빼고 천천히 숨 쉬어요.','“나는 소중해. 조금씩 괜찮아질 거야”라고 말해요.'],friend:['기쁜 일을 함께 나누고 싶은 친구를 떠올려요.','“오늘 기분 좋은 일이 있었어!”라고 이야기해요.','친구의 기쁨도 함께 들어줘요.','함께 웃으며 좋은 순간을 기억해요.'],jar:['작은 종이나 마음 항아리를 준비해요.','오늘 고마웠던 일을 하나 떠올려요.','고마운 일을 적거나 그림으로 그려 넣어요.','마음이 힘든 날 항아리를 열어 읽어봐요.'],dance:['좋아하는 노래를 골라 안전한 공간을 만들어요.','음악을 틀고 편한 만큼 몸을 움직여요.','춤추면서 내 몸이 보내는 느낌을 살펴봐요.','즐거운 마음을 충분히 느껴봐요.'],trophy:['오늘 내가 해낸 작은 일을 떠올려요.','그 일을 해내기 위해 노력한 점을 찾아봐요.','스스로에게 “참 잘했어!”라고 말해줘요.','작은 축하 표시를 하거나 누군가와 나눠요.'],question:['무슨 일이 있었는지 내가 아는 것을 정리해요.','궁금한 점을 한 가지 골라요.','믿을 수 있는 어른에게 차분히 물어봐요.','설명을 들은 뒤 더 궁금한 것도 물어봐도 돼요.'],write:['종이나 메모장을 준비해요.','무슨 일이 있었는지 기억나는 대로 적어요.','사실과 내 느낌을 나눠 써봐요.','도움이 필요하면 쓴 내용을 어른과 함께 읽어요.']};let steps=actions[type]||actions.talk;let detail=document.getElementById('detail');detail.style.gridTemplateColumns='';detail.innerHTML=`<div class="detail-art">${sceneSVG(type,currentMood,true)}</div><div class="detail-copy"><div class="detail-kicker">${m.face} ${m.adj} 마음 돌보기 · 방법 ${index+1}</div><h3>${title}</h3><p class="intro">${sub}</p><ol class="steps">${steps.map((s,i)=>`<li><span class="step-no">${i+1}</span><span>${s}</span></li>`).join('')}</ol><div class="say-box">💬 ${tip}</div><div id="donePanel" class="done-panel">🌷 잘했어요! 내 마음을 돌보는 멋진 연습을 했어요.</div><div class="detail-actions"><button class="action primary" onclick="markDone()">이 방법 해봤어요 ✓</button><button class="action secondary" onclick="closeDetail()">다른 방법 보기</button></div></div><div class="tablet-activity"><div class="ta-head"><span class="ta-badge">✋ 태블릿 활동</span><strong>${(TABLET_ACT[type]||TABLET_ACT.talk).name}</strong><span class="ta-hint">☝️ 손가락으로 직접 해봐요</span></div><div class="ta-stage" id="taStage"></div></div>`;detail.classList.add('open');disposeTablet();initTablet(type);document.getElementById('p3').className='dot active';setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'start'}),50)}
+function markDone(){document.getElementById('donePanel').classList.add('show');document.getElementById('p3').className='dot done';taConfetti()}function closeDetail(){disposeTablet();document.getElementById('detail').className='detail';document.getElementById('p3').className='dot';document.getElementById('methodCards').scrollIntoView({behavior:'smooth',block:'start'})}function goHome(){disposeTablet();document.getElementById('methodStage').classList.remove('visible');document.getElementById('homeStage').classList.add('visible');document.getElementById('p1').className='dot active';document.getElementById('p2').className='dot';document.getElementById('p3').className='dot';window.scrollTo({top:0,behavior:'smooth'})}
 </script>
 </body>
 </html>
