@@ -150,6 +150,8 @@ const state = {
   recipeKey: 'hot_americano',
   stepIndex: 0,
   guidedMode: true,
+  autoCamera: true,
+  cameraViewMode: 'step', // 'step' | 'overview'
   voiceEnabled: false,
   soundEnabled: true,
   busy: false,
@@ -361,7 +363,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4ede3);
 
 const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 50);
-camera.position.set(0, 2.02, 2.42);
+camera.position.set(0, 1.82, 2.15);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -376,10 +378,136 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 1.02, 0.05);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
-controls.minDistance = 1.8;
-controls.maxDistance = 5.2;
+controls.minDistance = 0.45;
+controls.maxDistance = 4.8;
 controls.maxPolarAngle = Math.PI / 2 - 0.08; // 바닥 아래로 내려가지 않도록 제한
 controls.minPolarAngle = 0.25;
+
+// 카메라 워킹 애니메이션 상태
+let camAnimRaf = null;
+function cancelCameraAnim() {
+  if (camAnimRaf !== null) {
+    cancelAnimationFrame(camAnimRaf);
+    camAnimRaf = null;
+  }
+}
+
+controls.addEventListener('start', cancelCameraAnim);
+
+function getAspectMultiplier() {
+  const aspect = container.clientWidth / Math.max(container.clientHeight, 1);
+  if (aspect < 0.65) return 1.32;
+  if (aspect < 0.9) return 1.18;
+  if (aspect < 1.15) return 1.06;
+  return 1.0;
+}
+
+function animateCameraTo(toPos, toTarget, duration = 520) {
+  cancelCameraAnim();
+  const fromPos = camera.position.clone();
+  const fromTarget = controls.target.clone();
+  const start = performance.now();
+
+  const tick = (now) => {
+    const t = Math.min((now - start) / duration, 1);
+    const k = 1 - Math.pow(1 - t, 3);
+    camera.position.lerpVectors(fromPos, toPos, k);
+    controls.target.lerpVectors(fromTarget, toTarget, k);
+    if (t < 1) {
+      camAnimRaf = requestAnimationFrame(tick);
+    } else {
+      camAnimRaf = null;
+    }
+  };
+  camAnimRaf = requestAnimationFrame(tick);
+}
+
+function getOverviewPreset() {
+  const mult = getAspectMultiplier();
+  return {
+    target: new THREE.Vector3(0, 1.02, 0.05),
+    pos: new THREE.Vector3(0, 1.02 + 0.85 * mult, 2.25 * mult)
+  };
+}
+
+function focusOverviewCamera(duration = 480) {
+  state.cameraViewMode = 'overview';
+  updateCameraModeButtons();
+  const preset = getOverviewPreset();
+  animateCameraTo(preset.pos, preset.target, duration);
+}
+
+function getStepCameraPreset(targetId) {
+  const mult = getAspectMultiplier();
+  const isSmoothie = state.recipeKey === 'strawberry_smoothie';
+
+  // 각 단계별 클로즈업 카메라 프리셋 (작은 모바일 화면에서도 오브젝트가 크게 보이도록)
+  const presets = {
+    grinder: { target: [-1.06, COUNTER_Y + 0.19, -0.08], offset: [0.18, 0.44, 0.82] },
+    tamper: { target: [-0.88, COUNTER_Y + 0.1, 0.22], offset: [0.16, 0.42, 0.78] },
+    machine: { target: [-0.58, COUNTER_Y + 0.22, -0.04], offset: [0.22, 0.44, 0.92] },
+    cup: { target: [-0.98, COUNTER_Y + 0.12, 0.15], offset: [0.22, 0.42, 0.86] },
+    water: { target: [-0.15, COUNTER_Y + 0.16, 0.0], offset: [0.06, 0.46, 0.95] },
+    shot: { target: [-0.16, COUNTER_Y + 0.12, 0.16], offset: [0.08, 0.42, 0.88] },
+    ice: isSmoothie
+      ? { target: [0.49, COUNTER_Y + 0.18, 0.04], offset: [0.04, 0.48, 0.98] }
+      : { target: [0.18, COUNTER_Y + 0.14, 0.15], offset: [0.04, 0.44, 0.92] },
+    milk: isSmoothie
+      ? { target: [0.48, COUNTER_Y + 0.18, -0.1], offset: [0.04, 0.48, 0.98] }
+      : { target: [0.17, COUNTER_Y + 0.16, 0.02], offset: [0.05, 0.46, 0.95] },
+    blender: { target: [0.62, COUNTER_Y + 0.22, -0.08], offset: [0.0, 0.46, 0.86] },
+    pour_blender: { target: [0.31, COUNTER_Y + 0.18, 0.03], offset: [0.02, 0.48, 1.05] },
+    strawberry: isSmoothie
+      ? { target: [0.77, COUNTER_Y + 0.16, 0.0], offset: [0.04, 0.44, 0.88] }
+      : { target: [0.88, COUNTER_Y + 0.12, 0.06], offset: [-0.08, 0.4, 0.78] },
+    lemon: { target: [0.88, COUNTER_Y + 0.11, 0.22], offset: [-0.08, 0.38, 0.76] },
+    choco: { target: [0.68, COUNTER_Y + 0.09, 0.22], offset: [-0.06, 0.36, 0.74] },
+    tea: { target: [-0.62, COUNTER_Y + 0.12, 0.22], offset: [0.08, 0.38, 0.76] },
+    serve: { target: [0.0, COUNTER_Y + 0.15, 0.24], offset: [0.0, 0.42, 0.85] }
+  };
+
+  const p = presets[targetId];
+  if (!p) return getOverviewPreset();
+  const target = new THREE.Vector3(...p.target);
+  const pos = new THREE.Vector3(
+    p.target[0] + p.offset[0] * mult,
+    p.target[1] + p.offset[1] * mult,
+    p.target[2] + p.offset[2] * mult
+  );
+  return { pos, target };
+}
+
+function focusStepCamera(targetId, duration = 520) {
+  state.cameraViewMode = 'step';
+  updateCameraModeButtons();
+  const preset = getStepCameraPreset(targetId);
+  animateCameraTo(preset.pos, preset.target, duration);
+}
+
+function focusPrepActionCamera(isBlender = false) {
+  if (!state.autoCamera || state.cameraViewMode === 'overview') return;
+  const mult = getAspectMultiplier();
+  if (isBlender) {
+    animateCameraTo(
+      new THREE.Vector3(0.62, COUNTER_Y + 0.22 + 0.42 * mult, -0.08 + 0.86 * mult),
+      new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08),
+      380
+    );
+  } else {
+    animateCameraTo(
+      new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.14 + 0.38 * mult, PREP_POS.z + 0.78 * mult),
+      new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.14, PREP_POS.z),
+      380
+    );
+  }
+}
+
+function updateCameraModeButtons() {
+  const focusBtn = document.getElementById('focusStepBtn');
+  const resetBtn = document.getElementById('resetCamBtn');
+  if (focusBtn) focusBtn.classList.toggle('active', state.cameraViewMode === 'step');
+  if (resetBtn) resetBtn.classList.toggle('active', state.cameraViewMode === 'overview');
+}
 
 // 차분하고 따뜻한 조명 (과도한 대비/번쩍임 배제)
 scene.add(new THREE.HemisphereLight(0xfffaf2, 0xd7c7b5, 1.35));
@@ -487,14 +615,22 @@ function registerInteractive(object3D, targetId, label, ringPos) {
 const COUNTER_Y = 0.92;
 const PREP_POS = new THREE.Vector3(0, COUNTER_Y, 0.14);
 
-// 안내 모드 강조 링
+// 안내 모드 강조 링 + 상단 부유 포인터 비콘
 const highlightRing = new THREE.Mesh(
-  new THREE.RingGeometry(0.14, 0.19, 32),
-  new THREE.MeshBasicMaterial({ color: 0xd9822b, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+  new THREE.RingGeometry(0.15, 0.21, 32),
+  new THREE.MeshBasicMaterial({ color: 0xd9822b, side: THREE.DoubleSide, transparent: true, opacity: 0.92 })
 );
 highlightRing.rotation.x = -Math.PI / 2;
 highlightRing.visible = false;
 scene.add(highlightRing);
+
+const highlightBeacon = new THREE.Mesh(
+  new THREE.ConeGeometry(0.045, 0.09, 16),
+  new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xd97706, emissiveIntensity: 0.45, roughness: 0.3 })
+);
+highlightBeacon.rotation.x = Math.PI; // 아래를 가리키는 화살표 콘
+highlightBeacon.visible = false;
+scene.add(highlightBeacon);
 
 // 작업 쟁반 (음료를 만드는 중앙 위치)
 const tray = new THREE.Mesh(
@@ -542,10 +678,10 @@ fallingItemGroup.visible = false;
 scene.add(fallingItemGroup);
 
 const liquidMesh = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.056, 0.048, 0.14, 24),
+  new THREE.CylinderGeometry(0.068, 0.056, 0.17, 24),
   new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.25, transparent: true, opacity: 0.92 })
 );
-liquidMesh.position.y = 0.02;
+liquidMesh.position.y = 0.025;
 liquidMesh.scale.y = 0.01;
 liquidMesh.visible = false;
 drinkGroup.add(liquidMesh);
@@ -553,10 +689,10 @@ drinkGroup.add(liquidMesh);
 const iceGroup = new THREE.Group();
 for (let i = 0; i < 4; i++) {
   const ice = new THREE.Mesh(
-    new THREE.BoxGeometry(0.032, 0.032, 0.032),
+    new THREE.BoxGeometry(0.038, 0.038, 0.038),
     new THREE.MeshStandardMaterial({ color: 0xdff6ff, roughness: 0.1, transparent: true, opacity: 0.78 })
   );
-  ice.position.set((i % 2 === 0 ? -0.018 : 0.018), 0.045 + Math.floor(i / 2) * 0.032, (i % 3 === 0 ? 0.014 : -0.014));
+  ice.position.set((i % 2 === 0 ? -0.02 : 0.02), 0.055 + Math.floor(i / 2) * 0.038, (i % 3 === 0 ? 0.016 : -0.016));
   ice.rotation.set(i * 0.4, i * 0.6, 0.2);
   iceGroup.add(ice);
 }
@@ -653,21 +789,21 @@ async function initCafeScene() {
     // 원두 그라인더 (본체 + 투명 원두 호퍼 + 원두)
     grinderModel = new THREE.Group();
     const grinderBody = new THREE.Mesh(
-      new THREE.BoxGeometry(0.16, 0.24, 0.18),
+      new THREE.BoxGeometry(0.18, 0.26, 0.2),
       new THREE.MeshStandardMaterial({ color: 0x3b3532, roughness: 0.4, metalness: 0.3 })
     );
-    grinderBody.position.y = 0.12;
+    grinderBody.position.y = 0.13;
     grinderBody.castShadow = true;
     const hopper = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.04, 0.14, 20),
+      new THREE.CylinderGeometry(0.09, 0.045, 0.16, 20),
       new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.3, transparent: true, opacity: 0.82 })
     );
-    hopper.position.y = 0.31;
+    hopper.position.y = 0.34;
     const chute = new THREE.Mesh(
-      new THREE.BoxGeometry(0.05, 0.06, 0.07),
+      new THREE.BoxGeometry(0.055, 0.065, 0.08),
       new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.6, roughness: 0.25 })
     );
-    chute.position.set(0, 0.16, 0.1);
+    chute.position.set(0, 0.18, 0.11);
     grinderModel.add(grinderBody, hopper, chute);
     grinderModel.position.set(-1.12, COUNTER_Y, -0.14);
     scene.add(grinderModel);
@@ -676,40 +812,40 @@ async function initCafeScene() {
     // 탬핑 매트 + 포터필터 + 탬퍼
     const tamperStation = new THREE.Group();
     const mat = new THREE.Mesh(
-      new THREE.BoxGeometry(0.24, 0.015, 0.18),
+      new THREE.BoxGeometry(0.26, 0.016, 0.2),
       new THREE.MeshStandardMaterial({ color: 0x2a2725, roughness: 0.85 })
     );
     mat.position.y = 0.008;
     const pfBasket = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.045, 0.04, 0.045, 20),
+      new THREE.CylinderGeometry(0.052, 0.046, 0.05, 20),
       new THREE.MeshStandardMaterial({ color: 0xb0b5b9, metalness: 0.75, roughness: 0.25 })
     );
-    pfBasket.position.set(-0.04, 0.038, 0);
+    pfBasket.position.set(-0.045, 0.042, 0);
     const pfHandle = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.014, 0.018, 0.14, 12),
+      new THREE.CylinderGeometry(0.016, 0.02, 0.16, 12),
       new THREE.MeshStandardMaterial({ color: 0x2c241e, roughness: 0.6 })
     );
     pfHandle.rotation.x = Math.PI / 2;
-    pfHandle.position.set(-0.04, 0.038, 0.09);
+    pfHandle.position.set(-0.045, 0.042, 0.1);
     portafilterCoffee = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.04, 0.04, 0.012, 20),
+      new THREE.CylinderGeometry(0.046, 0.046, 0.014, 20),
       new THREE.MeshStandardMaterial({ color: 0x4b2e1e, roughness: 0.9 })
     );
-    portafilterCoffee.position.set(-0.04, 0.056, 0);
+    portafilterCoffee.position.set(-0.045, 0.062, 0);
     portafilterCoffee.visible = false;
 
     tamperMesh = new THREE.Group();
     const tamperBase = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.038, 0.038, 0.018, 20),
+      new THREE.CylinderGeometry(0.044, 0.044, 0.02, 20),
       new THREE.MeshStandardMaterial({ color: 0xcfd4d8, metalness: 0.8, roughness: 0.2 })
     );
     const tamperGrip = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.025, 0.018, 0.065, 16),
+      new THREE.CylinderGeometry(0.028, 0.02, 0.075, 16),
       new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.5 })
     );
-    tamperGrip.position.y = 0.04;
+    tamperGrip.position.y = 0.045;
     tamperMesh.add(tamperBase, tamperGrip);
-    tamperMesh.position.set(0.06, 0.025, 0);
+    tamperMesh.position.set(0.065, 0.028, 0);
 
     tamperStation.add(mat, pfBasket, pfHandle, portafilterCoffee, tamperMesh);
     tamperStation.position.set(-0.88, COUNTER_Y, 0.24);
@@ -719,15 +855,15 @@ async function initCafeScene() {
     // 에스프레소 샷잔
     shotGlassGroup = new THREE.Group();
     const shotCup = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.032, 0.025, 0.07, 18),
-      new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, roughness: 0.1 })
+      new THREE.CylinderGeometry(0.04, 0.032, 0.088, 18),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, roughness: 0.1 })
     );
-    shotCup.position.y = 0.035;
+    shotCup.position.y = 0.044;
     shotLiquidMesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.028, 0.023, 0.048, 18),
+      new THREE.CylinderGeometry(0.035, 0.029, 0.06, 18),
       new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.25 })
     );
-    shotLiquidMesh.position.y = 0.028;
+    shotLiquidMesh.position.y = 0.034;
     shotLiquidMesh.visible = false;
     shotGlassGroup.add(shotCup, shotLiquidMesh);
     shotGlassGroup.position.set(-0.36, COUNTER_Y, 0.18);
@@ -748,39 +884,39 @@ async function initCafeScene() {
     placeModel(water, 0.26, -0.32, COUNTER_Y, -0.16);
     registerInteractive(water, 'water', '깨끗한 물', new THREE.Vector3(-0.32, COUNTER_Y + 0.01, -0.16));
 
-    // 딸기, 레몬, 초콜릿 3D 모델
-    placeModel(strawberry, 0.13, 0.92, COUNTER_Y, 0.06);
+    // 딸기, 레몬, 초콜릿 3D 모델 (작은 화면에서도 잘 보이도록 크기 확대)
+    placeModel(strawberry, 0.19, 0.92, COUNTER_Y, 0.06);
     registerInteractive(strawberry, 'strawberry', '신선한 딸기', new THREE.Vector3(0.92, COUNTER_Y + 0.01, 0.06));
 
-    placeModel(lemon, 0.12, 0.92, COUNTER_Y, 0.24);
+    placeModel(lemon, 0.18, 0.92, COUNTER_Y, 0.24);
     registerInteractive(lemon, 'lemon', '상큼한 레몬', new THREE.Vector3(0.92, COUNTER_Y + 0.01, 0.24));
 
-    placeModel(choco, 0.03, 0.68, COUNTER_Y, 0.24);
+    placeModel(choco, 0.095, 0.68, COUNTER_Y, 0.24);
     registerInteractive(choco, 'choco', '달콤한 초콜릿', new THREE.Vector3(0.68, COUNTER_Y + 0.01, 0.24));
 
     // 녹차 티백 상자
     const teaBox = new THREE.Mesh(
-      new THREE.BoxGeometry(0.16, 0.11, 0.12),
+      new THREE.BoxGeometry(0.18, 0.13, 0.14),
       new THREE.MeshStandardMaterial({ color: 0x6b9e78, roughness: 0.5 })
     );
-    teaBox.position.set(-0.62, COUNTER_Y + 0.055, 0.24);
+    teaBox.position.set(-0.62, COUNTER_Y + 0.065, 0.24);
     teaBox.castShadow = true;
     scene.add(teaBox);
     registerInteractive(teaBox, 'tea', '녹차 티백 상자', new THREE.Vector3(-0.62, COUNTER_Y + 0.01, 0.24));
 
     // 대기 중인 컵들 (클릭해서 쟁반에 올리기)
-    placeModel(standCup, 0.14, -1.08, COUNTER_Y, 0.14);
-    placeModel(standGlass, 0.17, -0.92, COUNTER_Y, 0.16);
+    placeModel(standCup, 0.19, -1.08, COUNTER_Y, 0.14);
+    placeModel(standGlass, 0.22, -0.92, COUNTER_Y, 0.16);
     registerInteractive(standCup, 'cup', '컵 올리기', new THREE.Vector3(-1.0, COUNTER_Y + 0.01, 0.15));
     registerInteractive(standGlass, 'cup', '컵 올리기', new THREE.Vector3(-1.0, COUNTER_Y + 0.01, 0.15));
 
     // 얼음 통 (시각적으로 명확한 하늘색 아이스박스)
     const iceBox = new THREE.Group();
     const boxMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(0.22, 0.16, 0.18),
+      new THREE.BoxGeometry(0.24, 0.18, 0.2),
       new THREE.MeshStandardMaterial({ color: 0x7ec8e3, roughness: 0.35 })
     );
-    boxMesh.position.y = 0.08;
+    boxMesh.position.y = 0.09;
     boxMesh.castShadow = true;
     iceBox.add(boxMesh);
     iceBox.position.set(0.36, COUNTER_Y, 0.16);
@@ -789,19 +925,19 @@ async function initCafeScene() {
 
     // 손님께 드리기 벨 (초록색 서빙 존)
     const serveBell = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.09, 0.04, 24),
+      new THREE.CylinderGeometry(0.095, 0.105, 0.045, 24),
       new THREE.MeshStandardMaterial({ color: 0x487555, roughness: 0.3 })
     );
-    serveBell.position.set(0, COUNTER_Y + 0.02, 0.38);
+    serveBell.position.set(0, COUNTER_Y + 0.022, 0.38);
     serveBell.castShadow = true;
     scene.add(serveBell);
     serveBellMesh = serveBell;
     registerInteractive(serveBell, 'serve', '손님께 드리기', new THREE.Vector3(0, COUNTER_Y + 0.01, 0.38));
 
     // 쟁반 위 동적 컵 모델 준비 (drinkGroup 내부에 배치)
-    prepDynamicCup(cupMug, 0.15);
-    prepDynamicCup(cupGlass, 0.18);
-    prepDynamicCup(cupTea, 0.14);
+    prepDynamicCup(cupMug, 0.20);
+    prepDynamicCup(cupGlass, 0.23);
+    prepDynamicCup(cupTea, 0.19);
     activeCupModels.mug = cupMug;
     activeCupModels.glass = cupGlass;
     activeCupModels.tea = cupTea;
@@ -1083,6 +1219,7 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animExtract);
   } else if (actionId === 'shot') {
+    focusPrepActionCamera(false);
     playPourSound(0.7, 500, 960);
     const originPos = shotGlassGroup.position.clone();
     const overCupPos = new THREE.Vector3(PREP_POS.x - 0.06, COUNTER_Y + 0.28, PREP_POS.z);
@@ -1116,6 +1253,7 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(moveShot);
   } else if (actionId === 'cup') {
+    focusPrepActionCamera(false);
     playCupPlaceSound(recipe.cupType);
     drinkGroup.visible = true;
     drinkGroup.position.set(PREP_POS.x, COUNTER_Y + 0.02, PREP_POS.z);
@@ -1145,6 +1283,7 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animCup);
   } else if (actionId === 'ice') {
+    focusPrepActionCamera(state.recipeKey === 'strawberry_smoothie');
     playIceSound();
     if (state.recipeKey === 'strawberry_smoothie') {
       animateDropIntoTarget('ice', new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08), () => {
@@ -1169,6 +1308,7 @@ function executeStep(actionId) {
       requestAnimationFrame(animIce);
     }
   } else if (actionId === 'strawberry') {
+    focusPrepActionCamera(state.recipeKey === 'strawberry_smoothie');
     playIngredientSound('strawberry');
     if (state.recipeKey === 'strawberry_smoothie') {
       animateDropIntoTarget('strawberry', new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08), () => {
@@ -1181,24 +1321,28 @@ function executeStep(actionId) {
       });
     }
   } else if (actionId === 'lemon') {
+    focusPrepActionCamera(false);
     playIngredientSound('lemon');
     animateDropIntoTarget('lemon', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
       addCupTopping('lemon');
       animatePour(0xf4d03f, 0.28, () => finishStep(), true);
     });
   } else if (actionId === 'choco') {
+    focusPrepActionCamera(false);
     playIngredientSound('choco');
     animateDropIntoTarget('choco', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
       addCupTopping('choco');
       animatePour(0x4e2a14, 0.3, () => finishStep(), true);
     });
   } else if (actionId === 'tea') {
+    focusPrepActionCamera(false);
     playIngredientSound('tea');
     animateDropIntoTarget('tea', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
       addCupTopping('tea');
       animatePour(0x7fb069, 0.22, () => finishStep(), true);
     });
   } else if (actionId === 'milk') {
+    focusPrepActionCamera(state.recipeKey === 'strawberry_smoothie');
     playPourSound(0.66, 480, 920);
     if (state.recipeKey === 'strawberry_smoothie') {
       animateBlenderFill(0xfaf6ee, 0.38, finishStep);
@@ -1214,6 +1358,7 @@ function executeStep(actionId) {
       }, true);
     }
   } else if (actionId === 'water') {
+    focusPrepActionCamera(false);
     playPourSound(0.7, 560, 1120);
     const waterColors = {
       iced_lemonade: 0xf7e98e,
@@ -1249,6 +1394,7 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animBlend);
   } else if (actionId === 'pour_blender') {
+    focusPrepActionCamera(false);
     playPourSound(0.72, 420, 820);
     const startBlenderScale = blenderMixMesh.scale.y || 0.85;
     const startTime = performance.now();
@@ -1321,16 +1467,20 @@ function renderUI() {
   const recipe = getCurrentRecipe();
   const currentStep = getCurrentStep();
 
-  document.getElementById('scoreBadge').textContent = `★ 만든 음료: ${state.completedCount}잔`;
+  document.getElementById('scoreBadge').textContent = `★ ${state.completedCount}잔`;
 
   // 시각적 과제 분석표 (상단 순서 카드)
   const strip = document.getElementById('scheduleStrip');
   strip.innerHTML = '';
+  let currentCardEl = null;
   recipe.steps.forEach((step, idx) => {
     const card = document.createElement('div');
     card.className = 'step-card';
     if (idx < state.stepIndex) card.classList.add('done');
-    else if (idx === state.stepIndex) card.classList.add('current');
+    else if (idx === state.stepIndex) {
+      card.classList.add('current');
+      currentCardEl = card;
+    }
     card.innerHTML = `<span class="step-num">${idx < state.stepIndex ? '✓' : idx + 1}</span><span>${step.emoji} ${step.label}</span>`;
     strip.appendChild(card);
 
@@ -1341,6 +1491,9 @@ function renderUI() {
       strip.appendChild(arrow);
     }
   });
+  if (currentCardEl) {
+    currentCardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
 
   // 현재 단계 배너
   if (currentStep) {
@@ -1352,23 +1505,37 @@ function renderUI() {
   const neededIds = [...new Set(recipe.steps.map((s) => s.target))];
   const actionBar = document.getElementById('actionBar');
   actionBar.innerHTML = '';
+  let highlightedBtnEl = null;
   TOOL_BUTTONS.filter((b) => neededIds.includes(b.id)).forEach((btnInfo) => {
     const btn = document.createElement('button');
     btn.className = 'tool-btn';
     if (state.guidedMode && currentStep && currentStep.target === btnInfo.id) {
       btn.classList.add('highlighted');
+      highlightedBtnEl = btn;
     }
     btn.innerHTML = `<span>${btnInfo.emoji}</span><span>${btnInfo.label}</span>`;
     btn.addEventListener('click', () => handleAction(btnInfo.id));
     actionBar.appendChild(btn);
   });
+  if (highlightedBtnEl) {
+    highlightedBtnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
 
-  // 3D 강조 링 위치 업데이트
+  // 3D 강조 링 & 부유 비콘 위치 업데이트
   if (state.guidedMode && currentStep && targetAnchors[currentStep.target]) {
-    highlightRing.position.copy(targetAnchors[currentStep.target]);
+    const anchor = targetAnchors[currentStep.target];
+    highlightRing.position.copy(anchor);
     highlightRing.visible = true;
+    highlightBeacon.position.set(anchor.x, anchor.y + 0.44, anchor.z);
+    highlightBeacon.visible = true;
   } else {
     highlightRing.visible = false;
+    highlightBeacon.visible = false;
+  }
+
+  // 단계별 자동 카메라 워킹 (작은 화면에서도 대상 오브젝트를 크게 클로즈업)
+  if (state.autoCamera && currentStep) {
+    focusStepCamera(currentStep.target, 540);
   }
 }
 
@@ -1460,6 +1627,31 @@ document.querySelectorAll('.recipe-btn').forEach((btn) => {
   });
 });
 
+// 설정 팝오버 토글
+const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+const settingsPopover = document.getElementById('settingsPopover');
+settingsToggleBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isHidden = settingsPopover.classList.toggle('hidden');
+  settingsToggleBtn.setAttribute('aria-expanded', String(!isHidden));
+});
+document.addEventListener('pointerdown', (e) => {
+  if (!settingsPopover.classList.contains('hidden') && !settingsPopover.contains(e.target) && e.target !== settingsToggleBtn) {
+    settingsPopover.classList.add('hidden');
+    settingsToggleBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+
+document.getElementById('autoCamBtn').addEventListener('click', (e) => {
+  state.autoCamera = !state.autoCamera;
+  e.target.textContent = `🎬 자동 카메라: ${state.autoCamera ? '켜짐' : '꺼짐'}`;
+  e.target.classList.toggle('active', state.autoCamera);
+  if (state.autoCamera) {
+    const step = getCurrentStep();
+    if (step) focusStepCamera(step.target, 500);
+  }
+});
+
 document.getElementById('modeBtn').addEventListener('click', (e) => {
   state.guidedMode = !state.guidedMode;
   e.target.textContent = `🧭 안내 모드: ${state.guidedMode ? '켜짐' : '꺼짐'}`;
@@ -1483,28 +1675,31 @@ document.getElementById('soundBtn').addEventListener('click', (e) => {
   e.target.classList.toggle('active', state.soundEnabled);
 });
 
+document.getElementById('focusStepBtn').addEventListener('click', () => {
+  const step = getCurrentStep();
+  if (step) {
+    focusStepCamera(step.target, 480);
+  } else {
+    focusOverviewCamera(480);
+  }
+});
+
 document.getElementById('resetCamBtn').addEventListener('click', () => {
-  const fromPos = camera.position.clone();
-  const toPos = new THREE.Vector3(0, 2.02, 2.42);
-  const fromTarget = controls.target.clone();
-  const toTarget = new THREE.Vector3(0, 1.02, 0.05);
-  const start = performance.now();
-  const animCam = (now) => {
-    const t = Math.min((now - start) / 420, 1);
-    const k = 1 - Math.pow(1 - t, 3);
-    camera.position.lerpVectors(fromPos, toPos, k);
-    controls.target.lerpVectors(fromTarget, toTarget, k);
-    if (t < 1) requestAnimationFrame(animCam);
-  };
-  requestAnimationFrame(animCam);
+  focusOverviewCamera(480);
 });
 
 document.getElementById('nextDrinkBtn').addEventListener('click', resetDrink);
 
 window.addEventListener('resize', () => {
-  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.aspect = container.clientWidth / Math.max(container.clientHeight, 1);
   camera.updateProjectionMatrix();
   renderer.setSize(container.clientWidth, container.clientHeight);
+  if (state.cameraViewMode === 'overview') {
+    focusOverviewCamera(250);
+  } else {
+    const step = getCurrentStep();
+    if (step) focusStepCamera(step.target, 250);
+  }
 });
 
 // 렌더 루프
@@ -1514,13 +1709,18 @@ function animate() {
   const t = clock.getElapsedTime();
 
   if (highlightRing.visible) {
-    const pulse = 1 + Math.sin(t * 3.2) * 0.1;
+    const pulse = 1 + Math.sin(t * 3.2) * 0.12;
     highlightRing.scale.set(pulse, pulse, 1);
+  }
+
+  if (highlightBeacon.visible && highlightRing.visible) {
+    highlightBeacon.position.y = highlightRing.position.y + 0.44 + Math.sin(t * 3.6) * 0.045;
+    highlightBeacon.rotation.y = t * 1.8;
   }
 
   if (steamGroup.visible) {
     steamPuffs.forEach((puff, i) => {
-      puff.position.y = 0.18 + ((t * 0.12 + i * 0.15) % 0.25);
+      puff.position.y = 0.22 + ((t * 0.12 + i * 0.15) % 0.25);
       puff.material.opacity = 0.45 * (1 - ((t * 0.12 + i * 0.15) % 0.25) / 0.25);
     });
   }
