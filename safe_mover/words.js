@@ -1,12 +1,13 @@
 "use strict";
 
 /* ============================================================
-   맞춤법 단어 데이터 (12단계 난이도별)
-   - correct: 맞춤법에 맞는 바른 단어 (터치해서 수집)
+   읽걷이의 맞춤법 모험 - 단어 데이터 (12단계 난이도별 + 교사 사용자 단어)
+   - correct: 맞춤법에 맞는 바른 단어 (캐릭터가 이동해서 잡기)
    - wrong: 틀린 맞춤법 단어 (적이 들고 나타남 → 피하기)
    - tip: 왜 맞는지/틀리는지 짧은 설명
    ============================================================ */
 window.SafeMoverWords = {
+  CUSTOM_KEY: "safe_mover.custom_words.v1",
   // 1~3단계: 기초 낱말과 받침
   tier1: [
     { correct: "가방", wrong: "가빵", tip: "'가방'이 바른 말이에요." },
@@ -59,10 +60,26 @@ window.SafeMoverWords = {
     { correct: "뒤풀이", wrong: "뒷풀이", tip: "거센소리 앞이라 '뒤풀이'가 맞아요." },
     { correct: "고마워요", wrong: "고마와요", tip: "'고마워요'가 바른 말이에요." }
   ],
+  getCustomWords() {
+    try {
+      const raw = localStorage.getItem(this.CUSTOM_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter((x) => x && x.correct && x.wrong) : [];
+    } catch (_) {
+      return [];
+    }
+  },
   getForStage(stageIdx) {
-    if (stageIdx < 3) return this.tier1;
-    if (stageIdx < 6) return this.tier2;
-    if (stageIdx < 9) return this.tier3;
-    return this.tier4;
+    let base = this.tier4;
+    let tierKey = "tier4";
+    if (stageIdx < 3) { base = this.tier1; tierKey = "tier1"; }
+    else if (stageIdx < 6) { base = this.tier2; tierKey = "tier2"; }
+    else if (stageIdx < 9) { base = this.tier3; tierKey = "tier3"; }
+
+    const custom = this.getCustomWords().filter((w) => !w.tier || w.tier === "all" || w.tier === tierKey);
+    if (!custom.length) return base;
+    // 교사 입력 단어가 자주 등장하도록 가중치 부여
+    return custom.concat(custom, base);
   }
 };

@@ -5,13 +5,20 @@
    ============================================================ */
 const PLACE_COLORS = ['#2563eb', '#16a34a', '#d97706', '#7c3aed'];
 const PLACE_NAMES = ['일의 자리', '십의 자리', '백의 자리', '천의 자리'];
-const STAGE_ICONS = { 1: '🧺', 2: '🔢', 3: '⚖️', 4: '➕', 5: '🔟', 6: '🛣️', 7: '🧱', 8: '✖️', 9: '🍕', 10: '📏', 11: '🔺', 12: '📊' };
+const STAGE_ICONS = {
+  1: '🧺', 2: '🖐️', 3: '🔟', 4: '🧱', 5: '⚖️',
+  6: '➕', 7: '➖', 8: '🌟', 9: '🐇', 10: '🛣️',
+  11: '🔟', 12: '💯', 13: '✖️', 14: '➗', 15: '🍕', 16: '💧',
+  17: '📏', 18: '🕒', 19: '🪙', 20: '🔺', 21: '📊'
+};
 
 function renderNav() {
   const nav = $('stageNav');
   nav.innerHTML = '';
   const courseStages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
-  ['num', 'shape', 'data'].forEach((domain) => {
+  Object.keys(DOMAIN_META).forEach((domain) => {
+    const list = STAGES.filter((s) => s.domain === domain && courseStages.includes(s.id));
+    if (!list.length) return;
     const meta = DOMAIN_META[domain];
     const group = document.createElement('div');
     group.className = 'domain ' + meta.className;
@@ -20,7 +27,7 @@ function renderNav() {
     label.textContent = meta.label;
     const chips = document.createElement('div');
     chips.className = 'stage-chips';
-    STAGES.filter((s) => s.domain === domain && courseStages.includes(s.id)).forEach((stage) => {
+    list.forEach((stage) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'stage-chip' + (stage.id === state.stage ? ' active' : '');
@@ -126,6 +133,8 @@ function selectStage(id) {
   state.stage = stage.id;
   state.courseComplete = false;
   state.lessonStep = 0;
+  state.exampleIdx = 0;
+  if (stage.measureTab) state.measure.tab = stage.measureTab;
   state.promptLevel = 0;
   state.practice.activeKey = '';
   state.practice.selected = null;

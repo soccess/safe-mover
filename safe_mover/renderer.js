@@ -239,50 +239,88 @@ window.SafeMoverRenderer = (() => {
   function drawCorrectWordCard(ctx, entity, sc, animT) {
     const pulse = 1 + Math.sin(animT * 7 + entity.ph) * 0.06;
     const floatY = Math.sin(animT * 5 + entity.ph) * 8;
-    const wingAngle = Math.sin(animT * 14 + entity.ph) * 0.32;
+    const wingAngle = Math.sin(animT * 14 + entity.ph) * 0.34;
+    const popIn = Math.min(1, Math.max(0.45, (entity.z || 0.1) * 7));
     ctx.save();
     ctx.translate(0, -34 + floatY);
-    ctx.scale(pulse, pulse);
+    ctx.scale(pulse * popIn, pulse * popIn);
 
-    // 반짝이는 후광
-    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 72);
-    aura.addColorStop(0, "rgba(74, 222, 128, 0.62)");
+    // 반짝이는 후광 + 회전 광선
+    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 78);
+    aura.addColorStop(0, "rgba(74, 222, 128, 0.72)");
+    aura.addColorStop(0.55, "rgba(253, 224, 71, 0.28)");
     aura.addColorStop(1, "rgba(74, 222, 128, 0)");
     ctx.fillStyle = aura;
-    ctx.beginPath(); ctx.arc(0, 0, 72, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 78, 0, Math.PI * 2); ctx.fill();
+
+    ctx.save();
+    ctx.rotate(animT * 1.6 + entity.ph);
+    ctx.strokeStyle = "rgba(253, 224, 71, 0.48)";
+    ctx.lineWidth = 3;
+    for (let r = 0; r < 6; r++) {
+      const ang = (Math.PI / 3) * r;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(ang) * 44, Math.sin(ang) * 44);
+      ctx.lineTo(Math.cos(ang) * 68, Math.sin(ang) * 68);
+      ctx.stroke();
+    }
+    ctx.restore();
 
     // 펄럭이는 귀여운 날개
     ctx.fillStyle = "#FEF08A";
-    ctx.beginPath(); ctx.ellipse(-62, -4, 17, 9, -0.35 + wingAngle, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(62, -4, 17, 9, 0.35 - wingAngle, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-62, -4, 18, 9, -0.35 + wingAngle, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(62, -4, 18, 9, 0.35 - wingAngle, 0, Math.PI * 2); ctx.fill();
 
     // 공전 반짝이 별
-    for (let i = 0; i < 2; i++) {
-      const a = animT * 3.5 + entity.ph + i * Math.PI;
-      const sx = Math.cos(a) * 68;
-      const sy = Math.sin(a) * 24 - 6;
-      ctx.fillStyle = "#FDE047";
-      ctx.beginPath(); ctx.arc(sx, sy, 3.2, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 3; i++) {
+      const a = animT * 3.8 + entity.ph + i * (Math.PI * 2 / 3);
+      const sx = Math.cos(a) * 70;
+      const sy = Math.sin(a) * 26 - 6;
+      ctx.fillStyle = i % 2 ? "#FDE047" : "#6EE7B7";
+      ctx.beginPath(); ctx.arc(sx, sy, 3.6, 0, Math.PI * 2); ctx.fill();
     }
 
     // 단어 카드 본체
-    const cardW = Math.max(116, entity.word.length * 24 + 34);
-    const cardH = 54;
+    const cardW = Math.max(122, entity.word.length * 25 + 36);
+    const cardH = 56;
     ctx.fillStyle = "#FFFFFF";
     ctx.strokeStyle = "#16A34A";
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 4.5;
     rr(ctx, -cardW / 2, -cardH / 2, cardW, cardH, 16);
     ctx.fill();
     ctx.stroke();
 
     // 상단 배지
     ctx.fillStyle = "#16A34A";
-    rr(ctx, -44, -cardH / 2 - 14, 88, 22, 11);
+    rr(ctx, -46, -cardH / 2 - 14, 92, 22, 11);
     ctx.fill();
-    txt(ctx, "👆 터치!", 0, -cardH / 2 - 3, 12, "#FFFFFF");
+    txt(ctx, "⭕ 바른 말!", 0, -cardH / 2 - 3, 12, "#FFFFFF");
 
     // 바른 단어 텍스트
-    txt(ctx, entity.word, 0, 2, 23, "#14532D");
+    txt(ctx, entity.word, 0, 2, 24, "#14532D");
+
+    // 멀리서도 집중할 수 있는 바운싱 가이드 화살표 (위쪽에서 아래로 가리킴)
+    const arrowBob = Math.sin(animT * 9 + entity.ph) * 7;
+    const arrowScale = 1 + Math.sin(animT * 6 + entity.ph) * 0.1;
+    ctx.save();
+    ctx.translate(0, -cardH / 2 - 42 + arrowBob);
+    ctx.scale(arrowScale, arrowScale);
+    ctx.fillStyle = "#FACC15";
+    ctx.strokeStyle = "#15803D";
+    ctx.lineWidth = 3.5;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(-10, -24);
+    ctx.lineTo(10, -24);
+    ctx.lineTo(10, -6);
+    ctx.lineTo(22, -6);
+    ctx.lineTo(0, 16);
+    ctx.lineTo(-22, -6);
+    ctx.lineTo(-10, -6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
 
     ctx.restore();
   }
@@ -327,20 +365,45 @@ window.SafeMoverRenderer = (() => {
     ctx.beginPath(); ctx.moveTo(22, -45); ctx.lineTo(6, -40); ctx.stroke();
 
     // 틀린 단어 경고 표지판
-    const signW = Math.max(114, entity.word.length * 23 + 32);
-    const signH = 44;
+    const signW = Math.max(118, entity.word.length * 24 + 34);
+    const signH = 46;
     ctx.fillStyle = "#FEF2F2";
     ctx.strokeStyle = "#DC2626";
     ctx.lineWidth = 3.5;
-    rr(ctx, -signW / 2, -108, signW, signH, 12);
+    rr(ctx, -signW / 2, -110, signW, signH, 12);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = "#DC2626";
-    rr(ctx, -40, -122, 80, 19, 9);
+    rr(ctx, -44, -124, 88, 19, 9);
     ctx.fill();
-    txt(ctx, "❌ 오타 피하기", 0, -112, 11, "#FFFFFF");
-    txt(ctx, entity.word, 0, -86, 21, "#991B1B");
+    txt(ctx, "❌ 피하세요!", 0, -114, 11, "#FFFFFF");
+    txt(ctx, entity.word, 0, -87, 21, "#991B1B");
+
+    // 틀린 단어 위 X 표시 나타났다 사라지며 깜빡거리는 애니메이션
+    const blinkVal = (Math.sin(animT * 8 + entity.ph) + 1) * 0.5; // 0..1
+    if (blinkVal > 0.28) {
+      const alpha = Math.min(1, (blinkVal - 0.28) / 0.45);
+      const xScale = 0.85 + alpha * 0.25;
+      ctx.save();
+      ctx.translate(0, -87);
+      ctx.scale(xScale, xScale);
+      ctx.globalAlpha = alpha * 0.92;
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 10;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-24, -18); ctx.lineTo(24, 18);
+      ctx.moveTo(24, -18); ctx.lineTo(-24, 18);
+      ctx.stroke();
+      ctx.strokeStyle = "#EF4444";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(-24, -18); ctx.lineTo(24, 18);
+      ctx.moveTo(24, -18); ctx.lineTo(-24, 18);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     ctx.restore();
   }
@@ -376,7 +439,50 @@ window.SafeMoverRenderer = (() => {
     }
   }
 
-  function drawPlayer(ctx, W, H, S, lanePos, laneFlash, stumble, animT) {
+  function drawLaneGuides(ctx, W, H, S, entities, animT) {
+    const hy = H * 0.36, cx = W * 0.5, nw = S.narrow || 1;
+    const topW = W * 0.1 * nw, botW = W * 0.44 * nw;
+    for (const o of entities) {
+      if (o.collected || o.hit) continue;
+      if (o.kind === "correct" && o.z >= 0.02 && o.z < 0.92) {
+        const pulse = 0.18 + 0.14 * Math.sin(animT * 8 + o.ph);
+        const oLane = o.lane + (o.off || 0);
+        const pz = Math.pow(Math.min(1, Math.max(0.02, o.z)), 2);
+        const yEnd = hy + (H * 0.86 - hy) * pz;
+        const hwEnd = topW + (botW - topW) * pz;
+        const xTop = cx + oLane * (topW * 0.62);
+        const xBot = cx + oLane * (botW * 0.62);
+        const xNow = cx + oLane * (hwEnd * 0.62);
+        ctx.save();
+        ctx.strokeStyle = "rgba(74, 222, 128, " + pulse.toFixed(2) + ")";
+        ctx.lineWidth = 10 + 10 * pz;
+        ctx.lineCap = "round";
+        ctx.setLineDash([12, 10]);
+        ctx.lineDashOffset = -animT * 80;
+        ctx.beginPath();
+        ctx.moveTo(xTop, hy + 4);
+        ctx.lineTo(xNow, yEnd);
+        ctx.lineTo(xBot, H * 0.92);
+        ctx.stroke();
+        ctx.restore();
+      } else if (o.kind === "enemy" && o.z > 0.52 && o.z < 0.92) {
+        const oLane = o.lane + (o.off || 0);
+        const pz = Math.pow(Math.min(1, o.z), 2);
+        const hwEnd = topW + (botW - topW) * pz;
+        const xNow = cx + oLane * (hwEnd * 0.62);
+        const yNow = hy + (H * 0.84 - hy) * pz;
+        ctx.save();
+        ctx.fillStyle = "rgba(239, 68, 68, " + (0.15 + 0.15 * Math.sin(animT * 14)).toFixed(2) + ")";
+        ctx.beginPath();
+        ctx.ellipse(xNow, yNow + 4, 46 * pz + 16, 14 * pz + 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+
+  function drawPlayer(ctx, W, H, S, state) {
+    const { lanePos, laneFlash, stumble, catchAnim, animT, entities } = state;
     const hy = H * 0.36, cx = W * 0.5, nw = S.narrow || 1;
     const topW = W * 0.1 * nw, botW = W * 0.44 * nw;
     const hw = topW + (botW - topW) * 0.86;
@@ -386,10 +492,11 @@ window.SafeMoverRenderer = (() => {
     ctx.save();
     ctx.translate(x, y);
     const bounce = Math.sin(animT * 14 * S.speed);
+    const jumpY = catchAnim > 0 ? Math.sin((catchAnim / 0.45) * Math.PI) * -28 : 0;
     const tilt = stumble > 0 ? Math.sin(animT * 28) * 0.28 : bounce * 0.06;
 
     if (laneFlash > 0) {
-      ctx.globalAlpha = (laneFlash / 0.24) * 0.5;
+      ctx.globalAlpha = (laneFlash / 0.24) * 0.55;
       ctx.strokeStyle = "#7DD3FC";
       ctx.lineWidth = 5;
       for (let i = 0; i < 3; i++) {
@@ -399,11 +506,24 @@ window.SafeMoverRenderer = (() => {
       ctx.globalAlpha = 1;
     }
 
+    // 잡기 성공 시 반짝 원형 후광
+    if (catchAnim > 0) {
+      const ratio = catchAnim / 0.45;
+      ctx.save();
+      ctx.globalAlpha = ratio * 0.6;
+      ctx.strokeStyle = "#FACC15";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(0, -64 + jumpY, 54 + (1 - ratio) * 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     // 그림자
     ctx.fillStyle = "rgba(0,0,0,0.3)";
     ctx.beginPath(); ctx.ellipse(0, 12, 44, 11, 0, 0, Math.PI * 2); ctx.fill();
 
-    ctx.translate(0, Math.abs(bounce) * -9);
+    ctx.translate(0, Math.abs(bounce) * -9 + jumpY);
     ctx.rotate(tilt);
 
     // 망토
@@ -424,18 +544,20 @@ window.SafeMoverRenderer = (() => {
     ctx.beginPath(); ctx.ellipse(-15, bounce > 0 ? -8 : 4, 13, 7, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(15, bounce < 0 ? -8 : 4, 13, 7, 0, 0, Math.PI * 2); ctx.fill();
 
-    // 몸통 (맞춤법 수호대 조끼)
+    // 몸통 (읽걷이 조끼)
     ctx.fillStyle = "#10B981";
     rr(ctx, -30, -86, 60, 60, 16);
     ctx.fill();
     ctx.fillStyle = "#FEF08A";
     ctx.fillRect(-26, -60, 52, 8);
-    txt(ctx, "🛡️", 0, -56, 22, "#fff");
+    txt(ctx, "📖", 0, -56, 20, "#fff");
 
-    // 팔
+    // 팔 (잡기 성공 시 만세!)
+    const armL = catchAnim > 0 ? -2.3 : bounce * 0.35;
+    const armR = catchAnim > 0 ? 2.3 : -bounce * 0.35;
     ctx.fillStyle = "#34D399";
-    ctx.save(); ctx.translate(-38, -76); ctx.rotate(bounce * 0.35); rr(ctx, -9, 0, 18, 32, 9); ctx.fill(); ctx.restore();
-    ctx.save(); ctx.translate(38, -76); ctx.rotate(-bounce * 0.35); rr(ctx, -9, 0, 18, 32, 9); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.translate(-38, -76); ctx.rotate(armL); rr(ctx, -9, 0, 18, 32, 9); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.translate(38, -76); ctx.rotate(armR); rr(ctx, -9, 0, 18, 32, 9); ctx.fill(); ctx.restore();
 
     // 머리 & 헬멧
     ctx.fillStyle = "#FDE68A";
@@ -445,10 +567,16 @@ window.SafeMoverRenderer = (() => {
     ctx.fillStyle = "#38BDF8";
     rr(ctx, -18, -112, 36, 9, 4); ctx.fill();
 
-    // 눈
+    // 눈 & 웃는 입
     ctx.fillStyle = "#1E293B";
     ctx.beginPath(); ctx.arc(-8, -101, 3, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(8, -101, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#B45309";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    if (stumble > 0) ctx.arc(0, -90, 5, Math.PI, 0);
+    else ctx.arc(0, -95, 6, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
 
     if (stumble > 0) {
       for (let i = 0; i < 3; i++) {
@@ -457,7 +585,47 @@ window.SafeMoverRenderer = (() => {
       }
     }
     ctx.restore();
+
+    // 가장 가까운 바른 단어가 다른 레인에 있으면 방향 가이드 화살표 표시
+    let nextCorrect = null;
+    for (const o of entities) {
+      if (o.kind === "correct" && !o.collected && o.z >= 0.05 && o.z < 0.84) {
+        if (!nextCorrect || o.z > nextCorrect.z) nextCorrect = o;
+      }
+    }
+    if (nextCorrect && Math.abs(nextCorrect.lane - lanePos) > 0.45) {
+      const dir = nextCorrect.lane < lanePos ? -1 : 1;
+      const pulse = Math.sin(animT * 10) * 6;
+      const gx = x + dir * (66 + pulse);
+      const gy = y - 62;
+      ctx.save();
+      ctx.fillStyle = "#FACC15";
+      ctx.strokeStyle = "#15803D";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(gx + dir * 18, gy);
+      ctx.lineTo(gx - dir * 8, gy - 15);
+      ctx.lineTo(gx - dir * 8, gy + 15);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
     return { x, y: y - 70 };
+  }
+
+  function drawRings(ctx, rings) {
+    for (const r of rings) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, r.life);
+      ctx.strokeStyle = r.c || "#4ADE80";
+      ctx.lineWidth = 6 * r.life;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.rad + (1 - r.life) * 58, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   function drawBeams(ctx, beams) {
@@ -508,14 +676,21 @@ window.SafeMoverRenderer = (() => {
   return {
     render(ctx, W, H, state) {
       ctx.clearRect(0, 0, W, H);
+      ctx.save();
+      if (state.shake > 0) {
+        const mag = state.shake * 16;
+        ctx.translate((Math.random() - 0.5) * mag, (Math.random() - 0.5) * mag);
+      }
       const STAGES = window.SafeMoverStages;
       const S = STAGES[state.stageIdx] || STAGES[0];
       drawStageBG(ctx, W, H, S, state.stageIdx, state.animT);
       drawRoad(ctx, W, H, S, state.stageIdx, STAGES.length, state.stageTime, state.roadScroll, state.finished);
       if (!state.finished) {
+        drawLaneGuides(ctx, W, H, S, state.entities, state.animT);
         drawEntities(ctx, W, H, S, state.entities, state.animT);
       }
-      drawPlayer(ctx, W, H, S, state.lanePos, state.laneFlash, state.stumble, state.animT);
+      drawPlayer(ctx, W, H, S, state);
+      drawRings(ctx, state.rings || []);
       drawBeams(ctx, state.beams);
       drawParts(ctx, state.parts);
       drawConfetti(ctx, state.confetti);
@@ -523,6 +698,7 @@ window.SafeMoverRenderer = (() => {
         ctx.fillStyle = "rgba(176,190,197," + S.fog + ")";
         ctx.fillRect(0, 0, W, H);
       }
+      ctx.restore();
     }
   };
 })();

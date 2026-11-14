@@ -1,8 +1,8 @@
 "use strict";
 
 /* ============================================================
-   맞춤법 수호대 게임 컨트롤러
-   - 바른 맞춤법 단어: 직접 터치(클릭)해서 수집!
+   읽걷이의 맞춤법 모험 게임 컨트롤러
+   - 바른 맞춤법 단어: 캐릭터를 좌/우로 움직여 잡아내기!
    - 틀린 맞춤법 적: 좌/우 이동으로 피하기!
    ============================================================ */
 (() => {
@@ -34,8 +34,11 @@
     lanePos: 0,
     laneFlash: 0,
     stumble: 0,
+    catchAnim: 0,
+    shake: 0,
     entities: [],
     beams: [],
+    rings: [],
     parts: [],
     confetti: [],
     animT: 0,
@@ -129,9 +132,12 @@
     state.stageTime = 0;
     state.entities = [];
     state.beams = [];
+    state.rings = [];
     state.lane = 0;
     state.lanePos = 0;
     state.stumble = 0;
+    state.catchAnim = 0;
+    state.shake = 0;
     state.finished = false;
     state.collected = 0;
     state.dodged = 0;
@@ -190,7 +196,7 @@
     const tx = (clientX - r.left) * (W / r.width);
     const ty = (clientY - r.top) * (H / r.height);
 
-    // 1. 바른 맞춤법 단어 터치 수집 확인 (가장 가까운 것 우선)
+    // 1. 바른 맞춤법 단어를 누르면 해당 레인으로 캐릭터를 이동 (단어 노출 시간을 유지해 끝까지 읽고 잡도록 함)
     let bestWord = null;
     let bestDist = Infinity;
     for (const o of state.entities) {
@@ -203,16 +209,14 @@
     }
 
     if (bestWord) {
-      bestWord.collected = true;
-      state.collected++;
-      state.totalCollected++;
-      recordLearned(bestWord.pair);
-      AUDIO.collect();
-      const anchor = getPlayerAnchor();
-      state.beams.push({ x1: anchor.x, y1: anchor.y, x2: bestWord.screenX, y2: bestWord.screenY, life: 1 });
-      spawnParts(bestWord.screenX, bestWord.screenY, 20, ["#4ADE80", "#FDE047", "#FFFFFF", "#38BDF8"]);
-      showFloat("⭕ '" + bestWord.word + "' 획득! +1", "#4ADE80");
-      setBanner("잘했어요! '" + bestWord.word + "' — " + bestWord.pair.tip, "good");
+      if (state.lane !== bestWord.lane) {
+        state.lane = bestWord.lane;
+        state.laneFlash = 0.24;
+        AUDIO.lane();
+      } else {
+        AUDIO.tap();
+      }
+      showFloat("➡️ '" + bestWord.word + "' 잡으러 이동!", "#4ADE80");
       return;
     }
 
@@ -266,6 +270,7 @@
         ph: Math.random() * 6.28,
         off: 0
       });
+      AUDIO.spawnCorrect();
     } else if (roll < 0.78) {
       // 틀린 단어 적 등장 (일부 스테이지는 2명 동시)
       const eLane = state.entities.length % 2 === 0 ? state.lane : lanes[Math.floor(Math.random() * 3)];
@@ -308,6 +313,8 @@
         ph: Math.random() * 6.28,
         off: 0
       });
+      AUDIO.spawnCorrect();
+      AUDIO.spawnCorrect();
     }
   }
 
@@ -322,6 +329,10 @@
     state.beams = state.beams.filter((b) => {
       b.life -= dt * 3.5;
       return b.life > 0;
+    });
+    state.rings = state.rings.filter((r) => {
+      r.life -= dt * 2.4;
+      return r.life > 0;
     });
     state.confetti.forEach((p) => {
       p.x += p.vx * dt;
@@ -353,14 +364,14 @@
     state.finished = true;
     AUDIO.fanfare();
     burstConfetti(120);
-    AUDIO.speak("미션 완료! 바른 맞춤법 단어를 정말 많이 모았어요!");
-    setBanner("미션 완료! 맞춤법 수호대 대성공!", "good");
+    AUDIO.speak("미션 완료! 읽걷이의 맞춤법 모험 대성공! 바른 맞춤법 단어를 정말 많이 잡았어요!");
+    setBanner("미션 완료! 읽걷이의 맞춤법 모험 대성공!", "good");
     document.getElementById("totalBar").style.width = "100%";
     document.getElementById("stageBar").style.width = "100%";
 
     const reviewHtml = state.learnedWords.slice(0, 8).map((p) =>
       '<div class="reviewItem">⭕ <b>' + p.correct + '</b> (❌ ' + p.wrong + ') — ' + p.tip + '</div>'
-    ).join("") || '<div class="reviewItem">바른 단어를 터치해 맞춤법을 익혀 보세요!</div>';
+    ).join("") || '<div class="reviewItem">바른 단어를 잡아 맞춤법을 익혀 보세요!</div>';
 
     document.getElementById("card").innerHTML =
       '<div class="result-trophy-wrap">' +
@@ -372,10 +383,10 @@
           '<path d="M48 31l3 7 7.5.8-5.5 5 1.6 7.4L48 47.4l-6.6 3.8 1.6-7.4-5.5-5 7.5-.8z" fill="#fffbeb"/>' +
         '</svg>' +
       '</div>' +
-      '<div style="background:#16A34A;color:#fff;display:inline-block;border-radius:8px;padding:4px 12px;font-weight:900;font-size:13px">💮 맞춤법 수호대 마스터 스탬프!</div>' +
-      "<h1>맞춤법 대작전 성공!</h1>" +
+      '<div style="background:#16A34A;color:#fff;display:inline-block;border-radius:8px;padding:4px 12px;font-weight:900;font-size:13px">💮 읽걷이의 맞춤법 마스터 스탬프!</div>' +
+      "<h1>읽걷이의 맞춤법 모험 성공!</h1>" +
       '<div style="font-weight:800;color:#0D47A1;margin:6px 0">' + STAGES.length + "개 테마 코스 완주!</div>" +
-      '<div class="row"><span>⭕ 터치해서 모은 바른 단어</span><span>' + state.totalCollected + "개</span></div>" +
+      '<div class="row"><span>⭕ 캐릭터가 잡은 바른 단어</span><span>' + state.totalCollected + "개</span></div>" +
       '<div class="row"><span>✨ 오타 적 안전 회피</span><span>' + state.totalDodged + "회</span></div>" +
       '<div class="row"><span>💫 오타 적과 부딪힘</span><span>' + state.totalHit + "회</span></div>" +
       '<div class="reviewBox"><h3>📖 오늘 익힌 맞춤법 복습</h3>' + reviewHtml + "</div>" +
@@ -409,11 +420,13 @@
 
     const S = STAGES[state.stageIdx];
     state.laneFlash = Math.max(0, state.laneFlash - dt);
+    state.catchAnim = Math.max(0, state.catchAnim - dt);
+    state.shake = Math.max(0, state.shake - dt);
     const sf = state.stumble > 0 ? 0.5 : 1;
     if (state.stumble > 0) {
       state.stumble -= dt;
       if (state.stumble <= 0) {
-        setBanner("전방 주시! 바른 단어는 터치하고, 오타 적은 피해요!", "");
+        setBanner("전방 주시! 바른 단어는 잡아가고, 틀린 단어 적은 피해요!", "");
       }
     }
 
@@ -467,7 +480,27 @@
         o.off = Math.sin(o.ph) * (S.sway || 0.3);
       }
 
-      if (o.kind === "enemy") {
+      if (o.kind === "correct") {
+        const oLane = o.lane + (o.off || 0);
+        if (!o.collected && o.z >= 0.76 && o.z <= 0.96) {
+          if (Math.abs(state.lanePos - oLane) < 0.56) {
+            o.collected = true;
+            state.collected++;
+            state.totalCollected++;
+            state.catchAnim = 0.45;
+            recordLearned(o.pair);
+            AUDIO.collect(o.word);
+            const anchor = getPlayerAnchor();
+            const sx = o.screenX != null ? o.screenX : anchor.x;
+            const sy = o.screenY != null ? o.screenY : anchor.y;
+            state.beams.push({ x1: anchor.x, y1: anchor.y, x2: sx, y2: sy, life: 1 });
+            state.rings.push({ x: anchor.x, y: anchor.y, rad: 22, life: 1, c: "#4ADE80" });
+            spawnParts(sx, sy, 26, ["#4ADE80", "#FDE047", "#FFFFFF", "#38BDF8", "#F472B6"]);
+            showFloat("⭕ '" + o.word + "' 잡았다! +1", "#4ADE80");
+            setBanner("잘했어요! '" + o.word + "' — " + o.pair.tip, "good");
+          }
+        }
+      } else if (o.kind === "enemy") {
         const oLane = o.lane + (o.off || 0);
         if (!o.hit && !o.passed && o.z >= 0.80 && o.z <= 0.91) {
           if (Math.abs(state.lanePos - oLane) < 0.5) {
@@ -475,8 +508,10 @@
             state.hit++;
             state.totalHit++;
             state.stumble = 1.2;
+            state.shake = 0.35;
             recordLearned(o.pair);
             AUDIO.hit();
+            spawnParts(o.screenX || W * 0.5, o.screenY || H * 0.75, 18, ["#EF4444", "#FCA5A5", "#FDE047"]);
             setBanner("앗! '" + o.word + "'은 틀린 말! (" + o.pair.tip + ")", "warn");
             AUDIO.speak("조심! " + o.pair.tip);
             showFloat("💫 '" + o.pair.correct + "'이 맞아요!", "#FF5252");
@@ -556,6 +591,6 @@
   resize();
   startStage(0, false);
   setTimeout(resize, 100);
-  AUDIO.speak("1단계! 바른 맞춤법 단어는 터치해서 모으고, 틀린 단어를 든 적은 피하세요!");
+  AUDIO.speak("1단계! 읽걷이의 맞춤법 모험! 캐릭터를 움직여 바른 맞춤법 단어를 잡고, 틀린 단어를 든 적은 피하세요!");
   requestAnimationFrame(loop);
 })();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>수학 공책 — 18단계 세분화 · 터치 구체물 활동</title>
+  <title>수학 공책 — 21단계 세분화 · 터치 구체물 활동</title>
   <link rel="stylesheet" href="./stepmath/styles.css">
 </head>
 <body>
@@ -27,23 +27,59 @@
   </div>
    <h2 class="course-prompt">선생님, 수업할 코스를 골라 주세요</h2>
    <div class="course-grid" role="list" aria-label="선생님이 고르는 학습 코스">
-    <button type="button" class="course-card" data-course="number">
-      <span class="course-icon" aria-hidden="true">🔢</span>
-       <h2>숫자 놀이</h2>
-       <p>같은 것을 찾고, 하나씩 세고, 더하고 빼고, 여러 개씩 묶어 봐요.</p>
-       <span class="course-meta">활동 14개 · 1~14단계 세분화</span>
+    <button type="button" class="course-card" data-course="count">
+      <span class="course-icon" aria-hidden="true">
+        <svg viewBox="0 0 56 56" width="48" height="48">
+          <rect x="6" y="10" width="44" height="36" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+          <circle cx="18" cy="24" r="4.5" fill="#2563eb" class="svg-bounce-1"/>
+          <circle cx="28" cy="24" r="4.5" fill="#2563eb" class="svg-bounce-2"/>
+          <circle cx="38" cy="24" r="4.5" fill="#16a34a" class="svg-bounce-1"/>
+          <text x="28" y="40" text-anchor="middle" font-size="11" font-weight="900" fill="#1e40af">1·2·3~20</text>
+        </svg>
+      </span>
+       <h2>하나둘 숫자 세기</h2>
+       <p>같은 것을 모으고, 1부터 20까지 하나씩 세고, 크기를 비교해요.</p>
+       <span class="course-meta">활동 5개 · 1~5단계</span>
     </button>
-    <button type="button" class="course-card" data-course="daily">
-      <span class="course-icon" aria-hidden="true">🕒</span>
-       <h2>도형과 생활 놀이</h2>
-       <p>도형을 놓아 보고, 길이·물의 양·무게·시계·돈을 살펴봐요.</p>
-       <span class="course-meta">활동 3개 · 15~17단계 측정·시계·도형</span>
+    <button type="button" class="course-card" data-course="calc">
+      <span class="course-icon" aria-hidden="true">
+        <svg viewBox="0 0 56 56" width="48" height="48">
+          <rect x="6" y="10" width="44" height="36" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+          <text x="19" y="29" text-anchor="middle" font-size="18" font-weight="900" fill="#d97706" class="svg-bounce-1">＋</text>
+          <text x="37" y="29" text-anchor="middle" font-size="18" font-weight="900" fill="#2563eb" class="svg-bounce-2">－</text>
+          <text x="19" y="42" text-anchor="middle" font-size="14" font-weight="900" fill="#16a34a">×</text>
+          <text x="37" y="42" text-anchor="middle" font-size="14" font-weight="900" fill="#7c3aed">÷</text>
+        </svg>
+      </span>
+       <h2>더하기·빼기·곱하기·나누기</h2>
+       <p>모으고 가르고, 10 만들고, 뛰어 세고, 분수·소수까지 해 봐요.</p>
+       <span class="course-meta">활동 11개 · 6~16단계</span>
+    </button>
+    <button type="button" class="course-card" data-course="life">
+      <span class="course-icon" aria-hidden="true">
+        <svg viewBox="0 0 56 56" width="48" height="48">
+          <circle cx="28" cy="28" r="20" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/>
+          <line x1="28" y1="28" x2="28" y2="15" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="28" x2="38" y2="28" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" class="svg-pulse-x"/>
+          <circle cx="28" cy="28" r="2.8" fill="#0f172a"/>
+        </svg>
+      </span>
+       <h2>시계·돈·길이·도형 놀이</h2>
+       <p>길이·무게를 재고, 시계와 동전을 세고, 도형 무늬를 맞춰요.</p>
+       <span class="course-meta">활동 4개 · 17~20단계</span>
     </button>
     <button type="button" class="course-card" data-course="data">
-      <span class="course-icon" aria-hidden="true">📊</span>
-       <h2>그래프 놀이</h2>
+      <span class="course-icon" aria-hidden="true">
+        <svg viewBox="0 0 56 56" width="48" height="48">
+          <rect x="6" y="10" width="44" height="36" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2.5"/>
+          <rect x="14" y="20" width="7" height="20" rx="2" fill="#ef4444" class="svg-bounce-1"/>
+          <rect x="25" y="26" width="7" height="14" rx="2" fill="#facc15" class="svg-bounce-2"/>
+          <rect x="36" y="17" width="7" height="23" rx="2" fill="#22c55e" class="svg-bounce-1"/>
+        </svg>
+      </span>
+       <h2>그림 그래프 놀이</h2>
        <p>과일을 그래프에 놓고, 무엇이 가장 많은지 찾아봐요.</p>
-       <span class="course-meta">활동 1개 · 18단계 그래프·문장제</span>
+       <span class="course-meta">활동 1개 · 21단계</span>
     </button>
   </div>
    <p class="gate-note">💡 활동은 <b>먼저 보기 → 같이 해보기 → 혼자 해보기</b> 순서예요. 그림을 눌러도 되고 손가락으로 끌어 놓아도 돼요. 틀려도 괜찮아요. 다시 해 볼 수 있어요.</p>
@@ -273,33 +309,22 @@
       </div>
     </div>
     <div class="modal-note">
-      수학과의 <b>수와 연산 · 도형 · 측정 · 규칙성 · 자료와 가능성</b> 영역을 12단계로 묶었습니다.
+      수학의 <b>하나둘 숫자 세기 · 사칙연산 · 시계·돈·길이·도형 · 그림 그래프</b> 영역을 21단계로 세분화했습니다.
       모든 단계는 <b>구체물 → 그림 → 숫자·기호</b> 순서(CRA)로 이어지고, 각 활동은 <b>손가락으로 끌어다 놓는 터치 조작</b>으로 설계했습니다.
       계산기 화면은 활동을 보조하는 확인 도구로 남겨 두었습니다.
     </div>
     <div class="modal-note" style="background:#f0fdf4;border-color:#86efac">
-      <b>이 화면에 적용된 미국 특수교육 지침</b><br>
-      • <b>NCAEP/AFIRM (2020, 28개 근거기반 실제)</b>: 시각적 지원, 촉진(prompting), 강화(reinforcement), 과제분석(task analysis), 기다림 시간(time delay), 모델링, 자기관리, AAC, 테크놀로지 기반 교수를 화면 구조에 반영했습니다.<br>
-      • <b>CEC High-Leverage Practices</b>: 명시적·체계적 교수, 비계(scaffolding), 보조공학, 진행 점검을 활동 하단의 ‘도움 수준’과 기록으로 구현했습니다.<br>
-      • <b>WWC (2021) 수학 중재 권고</b>: 체계적 교수, 시각적 표상, 수직선, 문제 유형별 언어 안내를 반영했습니다.<br>
-      • <b>CRA (Concrete–Representational–Abstract)</b>: 구체물 끌기 → 그림·10칸 판 → 식과 기호 순서로 연결했습니다.<br>
-      • <b>UDL 3.0</b>: 선택, 흥미, 노력의 지속, 여러 표상, 여러 행동·표현 수단을 제공합니다.<br>
-      • <b>WCAG 2.2 / WAI-ARIA</b>: 큰 터치 영역, 키보드 조작, 포커스 표시, 고대비, 음성·자막, 실시간 알림을 적용했습니다.<br>
-      • <b>TEACCH 구조화 교수</b>: 시각적 일정, 먼저-다음 보드, 작업 체계, 예측 가능한 순서, 감각 친화적 쉬는 시간을 넣었습니다.<br>
-      • <b>NCII 데이터 기반 개별화</b>: 시도·독립 수행·도움 수준을 자동 기록하고 CSV로 내려받을 수 있습니다.
+      <b>이 화면에 적용된 기초 수학 학습 원리</b><br>
+      • <b>시각적·체계적 단계 교수</b>: 먼저 보기 → 같이 해보기 → 혼자 해보기의 예측 가능한 순서로 한 번에 한 가지씩 배웁니다.<br>
+      • <b>CRA (구체물 → 그림 → 숫자·기호)</b>: 실제로 만지고 끄는 점·수모형·10칸 판·분수 조각에서 출발해 그림과 식으로 자연스럽게 연결합니다.<br>
+      • <b>다양한 표현과 접근성 (UDL)</b>: 큰 터치 영역, 키보드 조작, 고대비, 쉬운 말 보기, 음성 안내, 쉬는 시간을 제공합니다.<br>
+      • <b>성장 기록</b>: 활동별 수행 기록을 저장하고 살펴볼 수 있습니다.
     </div>
     <div class="modal-note" style="background:#fff7ed;border-color:#fdba74">
-      <b>지적장애 학생을 위한 조정</b><br>
-      • 과제분석: 활동을 ‘살펴보기 → 함께 → 혼자’의 작은 단계로 나누고, 한 번에 한 가지 지시만 제공합니다.<br>
-      • 구체물·반구체물: 실제로 끌 수 있는 점·수모형·10칸 판·분수 조각을 먼저 제공하고, 그림과 식으로 천천히 이동합니다.<br>
-      • 체계적 촉진과 즉각적 피드백: 시각 힌트 → 언어 힌트 → 모방 → 신체적 도움 순서로 지원하고, 성공을 바로 칭찬합니다.<br>
-      • 반복과 일반화: 같은 개념을 여러 활동(세기·묶기·측정·자료)에서 반복하고, 생활 속 상황(돈·시계·길이)과 연결합니다.<br><br>
-      <b>자폐성장애 학생을 위한 조정</b><br>
-      • 예측 가능한 구조: 시각적 일정, 먼저-다음 보드, 동일한 화면 순서, 활동 종료를 미리 알리는 신호를 제공합니다.<br>
-      • 명확하고 구체적인 언어: 짧은 문장, 한 단계씩, 은유보다 직접적인 표현을 사용합니다.<br>
-      • 선택과 흥미: 구체물 종류, 보상, 쉬는 시간을 학생이 고를 수 있게 합니다.<br>
-      • 감각·전환 지원: 동작 줄이기, 고대비, 큰 터치, 쉬는 시간, 소리 끄기를 제공합니다.<br>
-      • 오류 없는 학습과 강화: 정답 자리를 미리 보여 주고, 잘못 놓아도 중립적으로 다시 안내하며, 성공을 즉시 강화합니다.
+      <b>학생 눈높이 맞춤 학습 지원</b><br>
+      • 작은 단계 나누기: 한 번에 한 가지 지시만 제공하고, 여러 개의 쉬운 예시와 힌트를 바로 볼 수 있어요.<br>
+      • 구체물과 생활 연결: 수모형, 10칸 판, 수직선뿐만 아니라 시계·동전·길이·무게 등 생활 속 수학을 함께 익혀요.<br>
+      • 편안한 화면과 격려: 틀려도 괜찮아요! 따뜻한 안내와 칭찬 별 보상으로 자신감을 키워요.
     </div>
     <div class="modal-note" style="background:#f7faff;border-color:#bfdbfe">
       ⌨️ 키보드: 숫자 <span class="kbd">0</span>~<span class="kbd">9</span>,
@@ -308,29 +333,14 @@
       <span class="kbd">Esc</span> 처음으로 · 끌기 조작은 마우스·펜·터치 모두 지원합니다.
     </div>
     <div class="research-card">
-      <b>설계 참고 자료와 바로가기</b><br>
-      • National Clearinghouse on Autism Evidence and Practice (NCAEP), <i>Evidence-Based Practices for Children, Youth, and Young Adults with Autism</i> (2020) ·
-        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8510990/" target="_blank" rel="noopener noreferrer">Hume et al. (2021) 논문</a><br>
-      • AFIRM Modules (UNC Frank Porter Graham), 28개 근거기반 실제 모듈 ·
-        <a href="https://afirm.fpg.unc.edu/afirm-modules/" target="_blank" rel="noopener noreferrer">AFIRM 모듈 보기</a><br>
-      • CEC, <i>High-Leverage Practices for Students with Disabilities</i> ·
-        <a href="https://highleveragepractices.org/" target="_blank" rel="noopener noreferrer">HLP 안내 보기</a><br>
+      <b>교육 설계 참고 자료</b><br>
       • IES What Works Clearinghouse (2021), <i>Assisting Students Struggling with Mathematics</i> ·
         <a href="https://ies.ed.gov/ncee/wwc/practiceguide/26" target="_blank" rel="noopener noreferrer">WWC 실천 안내</a><br>
-      • NCTM/CEC, <i>Position Statement on Teaching Mathematics to Students with Disabilities</i> ·
-        <a href="https://www.nctm.org/Standards-and-Positions/Position-Statements/" target="_blank" rel="noopener noreferrer">NCTM 입장문</a><br>
       • CAST (2024), <i>UDL Guidelines 3.0</i> ·
-        <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer">UDL 지침 보기</a> ·
-        <a href="https://udlguidelines.cast.org/action-expression/interaction/response-navigation-movement/" target="_blank" rel="noopener noreferrer">다양한 반응·이동 방법</a><br>
+        <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer">UDL 지침 보기</a><br>
       • W3C, <i>Web Content Accessibility Guidelines (WCAG) 2.2</i> ·
         <a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener noreferrer">WCAG 2.2</a><br>
-      • TEACCH Autism Program, 구조화 교수 ·
-        <a href="https://teacch.com/" target="_blank" rel="noopener noreferrer">TEACCH</a> ·
-        National Center on Intensive Intervention ·
-        <a href="https://intensiveintervention.org/" target="_blank" rel="noopener noreferrer">NCII</a><br>
-      • Browder et al. (2014), <i>Evidence-Based Practices for Students With Severe Disabilities</i> ·
-        <a href="https://ceedar.education.ufl.edu/wp-content/uploads/2014/03/Evidence-based-Practices-for-Students-with-Severe-Disabilities.pdf" target="_blank" rel="noopener noreferrer">PDF 보기</a><br>
-      <small>이 코스웨어는 교사의 개별화된 교육계획(IEP)과 관찰을 대신하지 않으며, 학생의 속도·지원 수준·감각 선호에 맞게 활동을 조정해 주세요. 의학적·진단적 판단에 사용하지 마세요.</small>
+      <small>학생의 속도·지원 수준·감각 선호에 맞게 활동을 조정해 주세요.</small>
     </div>
   </div>
 </dialog>

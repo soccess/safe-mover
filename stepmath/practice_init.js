@@ -25,7 +25,7 @@ function resetStageActivity() {
 }
 function preparePracticeProblem(stageId) {
   if (state.lessonStep === 0) return;
-  const cur = STAGE_CURRICULUM[stageId];
+  const cur = typeof getStageCurriculum === 'function' ? getStageCurriculum(stageId) : STAGE_CURRICULUM[stageId];
   if (!cur || !cur.problems || !cur.problems.length) return;
   const idx = clamp(state.practice.idxByStage[stageId] ?? 0, 0, cur.problems.length - 1);
   state.practice.idxByStage[stageId] = idx;
@@ -40,8 +40,110 @@ function preparePracticeProblem(stageId) {
   }
 }
 
+function renderExampleAnimatedSvg(stageId, exIdx) {
+  const s = Number(stageId);
+  if (s === 1) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <rect x="8" y="10" width="84" height="54" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+      <text x="50" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#b91c1c">사과 바구니</text>
+      <circle cx="36" cy="48" r="10" fill="#ef4444" class="svg-bounce-1"/>
+      <circle cx="64" cy="48" r="10" fill="#ef4444" class="svg-bounce-2"/>
+      <path d="M98 37h24m-6-6l6 6-6 6" stroke="#2563eb" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" class="svg-pulse-x"/>
+      <rect x="128" y="10" width="84" height="54" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+      <text x="170" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#b45309">레몬 바구니</text>
+      <ellipse cx="170" cy="48" rx="12" ry="9" fill="#facc15" class="svg-bounce-1"/>
+    </svg>`;
+  }
+  if (s >= 2 && s <= 4) {
+    const count = s === 2 ? 4 : (s === 3 ? 7 : 10);
+    let dots = '';
+    for (let i = 0; i < 10; i++) {
+      const cx = 24 + (i % 5) * 32;
+      const cy = i < 5 ? 24 : 50;
+      const on = i < count;
+      dots += `<circle cx="${cx}" cy="${cy}" r="10" fill="${on ? '#2563eb' : '#e2e8f0'}" class="${on ? 'svg-pop-delay-' + (i % 4) : ''}"/>`;
+    }
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <rect x="6" y="6" width="166" height="62" rx="10" fill="#fff" stroke="#93c5fd" stroke-width="2.5"/>
+      ${dots}
+      <text x="196" y="43" text-anchor="middle" font-size="20" font-weight="900" fill="#1d4ed8" class="svg-bounce-1">${s === 4 ? '10+' : count}</text>
+    </svg>`;
+  }
+  if (s === 5) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <rect x="10" y="14" width="76" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2.2"/>
+      <text x="48" y="44" text-anchor="middle" font-size="22" font-weight="900" fill="#1e40af" class="svg-bounce-1">6</text>
+      <text x="110" y="45" text-anchor="middle" font-size="24" font-weight="900" fill="#d97706" class="svg-pulse-x">${exIdx ? '=' : '>'}</text>
+      <rect x="134" y="14" width="76" height="46" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2.2"/>
+      <text x="172" y="44" text-anchor="middle" font-size="22" font-weight="900" fill="#166534" class="svg-bounce-2">${exIdx ? '6' : '4'}</text>
+    </svg>`;
+  }
+  if (s >= 6 && s <= 10) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <line x1="16" y1="52" x2="204" y2="52" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="36" cy="52" r="5" fill="#2563eb"/>
+      <circle cx="110" cy="52" r="5" fill="#7c3aed"/>
+      <circle cx="184" cy="52" r="5" fill="#16a34a"/>
+      <path d="M36 48 Q73 10 110 48" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="5 3" class="svg-dash-flow"/>
+      <path d="M110 48 Q147 10 184 48" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="5 3" class="svg-dash-flow"/>
+      <circle cx="184" cy="36" r="8" fill="#facc15" class="svg-bounce-1"/>
+    </svg>`;
+  }
+  if (s >= 11 && s <= 14) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <rect x="14" y="14" width="38" height="46" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" class="svg-bounce-1"/>
+      <rect x="58" y="14" width="38" height="46" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" class="svg-bounce-2"/>
+      <rect x="102" y="14" width="38" height="46" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" class="svg-bounce-1"/>
+      <text x="168" y="45" text-anchor="middle" font-size="16" font-weight="900" fill="#7c3aed" class="svg-pulse-x">묶음 쏙!</text>
+    </svg>`;
+  }
+  if (s === 15 || s === 16) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <circle cx="62" cy="37" r="28" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+      <path d="M62 37 L62 9 A28 28 0 0 1 90 37 Z" fill="#f97316" class="svg-bounce-1"/>
+      <path d="M62 37 L90 37 A28 28 0 0 1 62 65 Z" fill="#fb923c" class="svg-bounce-2"/>
+      <line x1="34" y1="37" x2="90" y2="37" stroke="#b45309" stroke-width="1.5"/>
+      <line x1="62" y1="9" x2="62" y2="65" stroke="#b45309" stroke-width="1.5"/>
+      <text x="152" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#ea580c" class="svg-pulse-x">${s === 15 ? '1/4 + 2/4' : '0.4 + 0.3'}</text>
+    </svg>`;
+  }
+  if (s === 18) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <circle cx="66" cy="37" r="28" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+      <line x1="66" y1="37" x2="66" y2="16" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="svg-clock-min"/>
+      <line x1="66" y1="37" x2="82" y2="37" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="66" cy="37" r="3.5" fill="#1e293b"/>
+      <text x="150" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="#1d4ed8" class="svg-bounce-1">${exIdx ? '2시 30분' : '9시 00분'}</text>
+    </svg>`;
+  }
+  if (s === 19) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <circle cx="48" cy="37" r="22" fill="#fde047" stroke="#ca8a04" stroke-width="3" class="svg-bounce-1"/>
+      <text x="48" y="42" text-anchor="middle" font-size="12" font-weight="900" fill="#854d0e">100</text>
+      <text x="84" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="#1e293b">+</text>
+      <circle cx="118" cy="37" r="19" fill="#fed7aa" stroke="#ea580c" stroke-width="3" class="svg-bounce-2"/>
+      <text x="118" y="42" text-anchor="middle" font-size="12" font-weight="900" fill="#9a3412">50</text>
+      <text x="176" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="#15803d" class="svg-pulse-x">=150원</text>
+    </svg>`;
+  }
+  if (s === 20) {
+    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+      <circle cx="38" cy="37" r="16" fill="#ef4444" class="svg-bounce-1"/>
+      <rect x="74" y="21" width="32" height="32" rx="4" fill="#3b82f6" class="svg-bounce-2"/>
+      <polygon points="146,20 128,53 164,53" fill="#eab308" class="svg-bounce-1"/>
+      <text x="192" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#7c3aed" class="svg-pulse-x">?</text>
+    </svg>`;
+  }
+  return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
+    <rect x="28" y="16" width="30" height="46" rx="6" fill="#ef4444" class="svg-bounce-1"/>
+    <rect x="74" y="32" width="30" height="30" rx="6" fill="#facc15" class="svg-bounce-2"/>
+    <rect x="120" y="22" width="30" height="40" rx="6" fill="#a855f7" class="svg-bounce-1"/>
+    <text x="184" y="43" text-anchor="middle" font-size="14" font-weight="900" fill="#0f766e">차곡차곡!</text>
+  </svg>`;
+}
+
 function renderLessonStageOverlay(stageId) {
-  const cur = STAGE_CURRICULUM[stageId];
+  const cur = typeof getStageCurriculum === 'function' ? getStageCurriculum(stageId) : STAGE_CURRICULUM[stageId];
   const body = $('toolBody');
   if (!cur || !body) return;
 
@@ -50,6 +152,10 @@ function renderLessonStageOverlay(stageId) {
   const prob = cur.problems[pIdx];
   const key = `${stageId}:${pIdx}`;
   const isSolved = Boolean(state.practice.solved[key]);
+  const examples = Array.isArray(cur.examples) && cur.examples.length ? cur.examples : [cur.example];
+  const exIdx = clamp(state.exampleIdx || 0, 0, examples.length - 1);
+  state.exampleIdx = exIdx;
+  const ex = examples[exIdx];
 
   const wrapper = document.createElement('div');
   wrapper.style.display = 'flex';
@@ -58,18 +164,26 @@ function renderLessonStageOverlay(stageId) {
 
   const modeBarHTML = `
     <div class="lesson-mode-bar" role="tablist" aria-label="학습 순서 선택">
-      <button type="button" class="lesson-mode-tab example${isExample ? ' active' : ''}" data-lmode="example" role="tab" aria-selected="${isExample}">👀 1. 예시 문제 보기</button>
+      <button type="button" class="lesson-mode-tab example${isExample ? ' active' : ''}" data-lmode="example" role="tab" aria-selected="${isExample}">👀 1. 예시 문제 보기 (${exIdx + 1}/${examples.length})</button>
       <button type="button" class="lesson-mode-tab practice${!isExample ? ' active' : ''}" data-lmode="practice" role="tab" aria-selected="${!isExample}">✏️ 2. 직접 문제 풀기 (${pIdx + 1}/${cur.problems.length})</button>
     </div>`;
 
   if (isExample) {
-    const ex = cur.example;
+    const exTabsHTML = examples.length > 1
+      ? `<div class="ex-tabs" role="tablist" aria-label="예시 선택">${examples.map((item, i) =>
+          `<button type="button" class="ex-tab${i === exIdx ? ' active' : ''}" data-ex-tab="${i}">예시 ${i + 1}</button>`
+        ).join('')}</div>`
+      : '';
     wrapper.innerHTML = `${modeBarHTML}
       <section class="example-card" aria-label="선생님 예시 문제">
-        <span class="example-badge">👩‍🏫 먼저 예시를 보아요 · I Do</span>
+        <div class="example-top-row">
+          <span class="example-badge">👩‍🏫 먼저 예시를 보아요 · ${ex.title || `예시 ${exIdx + 1}`}</span>
+          ${exTabsHTML}
+        </div>
         <div class="example-problem">${ex.problem}</div>
+        <div class="example-anim-wrap">${renderExampleAnimatedSvg(stageId, exIdx)}</div>
         <div class="example-visual">${ex.visual}</div>
-        <div class="example-steps">${ex.steps.map((st, i) => `<div class="example-step"><span class="step-num">${i + 1}</span><span>${st}</span></div>`).join('')}</div>
+        <div class="example-steps">${(ex.steps || []).map((st, i) => `<div class="example-step"><span class="step-num">${i + 1}</span><span>${st}</span></div>`).join('')}</div>
         <div class="example-actions">
           <button type="button" class="btn amber" data-ex-speak>🔊 예시 설명 듣기</button>
           <button type="button" class="btn green" data-go-practice>✏️ 이제 내가 풀어볼까요? →</button>
@@ -136,8 +250,17 @@ function renderLessonStageOverlay(stageId) {
     };
   });
 
+  wrapper.querySelectorAll('[data-ex-tab]').forEach((btn) => {
+    btn.onclick = () => {
+      state.exampleIdx = Number(btn.dataset.exTab) || 0;
+      renderTool();
+      const chosen = examples[state.exampleIdx];
+      if (chosen) speak(chosen.speakText || chosen.problem);
+    };
+  });
+
   const exSpeak = wrapper.querySelector('[data-ex-speak]');
-  if (exSpeak) exSpeak.onclick = () => speak(cur.example.speakText);
+  if (exSpeak) exSpeak.onclick = () => speak(ex.speakText || ex.problem);
 
   const goPractice = wrapper.querySelector('[data-go-practice]');
   if (goPractice) {

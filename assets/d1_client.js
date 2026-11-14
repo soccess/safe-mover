@@ -28,11 +28,14 @@
   ];
 
   const GAME_LABELS = {
-    safe_mover: "맞춤법 수호대",
+    safe_mover: "읽걷이의 맞춤법 모험",
     stepmath: "수학 공책",
     emotion: "마음 날씨 연구소",
     cafe: "마음카페 3D"
   };
+
+  const SAFE_MOVER_CUSTOM_KEY = "safe_mover.custom_words.v1";
+  const STEPMATH_CUSTOM_KEY = "stepmath.custom_content.v1";
 
   function detectCurrentGame() {
     const p = (location.pathname || "").toLowerCase();
@@ -295,6 +298,69 @@
     return clean;
   }
 
+  function loadCustomWordsLocal() {
+    try {
+      const raw = localStorage.getItem(SAFE_MOVER_CUSTOM_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  }
+
+  async function saveCustomWords(list) {
+    const clean = Array.isArray(list) ? list : [];
+    try { localStorage.setItem(SAFE_MOVER_CUSTOM_KEY, JSON.stringify(clean)); } catch {}
+    await apiFetch("/api/kv", {
+      method: "POST",
+      body: JSON.stringify({ key: SAFE_MOVER_CUSTOM_KEY, value: clean })
+    });
+    return clean;
+  }
+
+  function loadCustomMathLocal() {
+    try {
+      const raw = localStorage.getItem(STEPMATH_CUSTOM_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      return {
+        examples: obj && obj.examples ? obj.examples : {},
+        problems: obj && obj.problems ? obj.problems : {}
+      };
+    } catch { return { examples: {}, problems: {} }; }
+  }
+
+  async function saveCustomMath(obj) {
+    const clean = {
+      examples: obj && obj.examples ? obj.examples : {},
+      problems: obj && obj.problems ? obj.problems : {}
+    };
+    try { localStorage.setItem(STEPMATH_CUSTOM_KEY, JSON.stringify(clean)); } catch {}
+    await apiFetch("/api/kv", {
+      method: "POST",
+      body: JSON.stringify({ key: STEPMATH_CUSTOM_KEY, value: clean })
+    });
+    if (typeof window.applyCurriculumToApp === "function") {
+      window.applyCurriculumToApp();
+    }
+    return clean;
+  }
+
+  async function syncCustomContentFromD1() {
+    try {
+      const w = await apiFetch("/api/kv?key=" + encodeURIComponent(SAFE_MOVER_CUSTOM_KEY), { method: "GET" });
+      if (w && w.found && w.item && w.item.v) {
+        const parsed = typeof w.item.v === "string" ? JSON.parse(w.item.v) : w.item.v;
+        if (Array.isArray(parsed)) localStorage.setItem(SAFE_MOVER_CUSTOM_KEY, JSON.stringify(parsed));
+      }
+      const m = await apiFetch("/api/kv?key=" + encodeURIComponent(STEPMATH_CUSTOM_KEY), { method: "GET" });
+      if (m && m.found && m.item && m.item.v) {
+        const parsed = typeof m.item.v === "string" ? JSON.parse(m.item.v) : m.item.v;
+        if (parsed && typeof parsed === "object") {
+          localStorage.setItem(STEPMATH_CUSTOM_KEY, JSON.stringify(parsed));
+          if (typeof window.applyCurriculumToApp === "function") window.applyCurriculumToApp();
+        }
+      }
+    } catch (_) {}
+  }
+
   // ============================================================
   // 공용 UI: 학생 캐릭터 로그인 모달 + 교사 모드(D1 DB 조작) 모달
   // ============================================================
@@ -404,7 +470,7 @@
               <div class="d1-class-row">
                 <select id="d1FilterGame" class="d1-input">
                   <option value="">전체 앱</option>
-                  <option value="safe_mover">맞춤법 수호대</option>
+                  <option value="safe_mover">읽걷이의 맞춤법 모험</option>
                   <option value="stepmath">수학 공책</option>
                   <option value="emotion">마음 날씨 연구소</option>
                   <option value="cafe">마음카페 3D</option>
@@ -432,6 +498,82 @@
                 <input type="password" id="d1ChangePinInput" class="d1-input" placeholder="새 PIN (4자리 이상)" maxlength="12" />
                 <button type="button" class="d1-btn-sm" id="d1ChangePinBtn">PIN 변경</button>
               </div>
+            </div>
+
+            <div class="d1-t-section">
+              <h3>4. 수업 자료 직접 입력 · 적용 (맞춤법 단어 / 수학 공책 예제·문제)</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+                <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px">
+                  <div style="font-weight:800;font-size:13px;color:#0f172a;margin-bottom:6px">📖 1번: 읽걷이의 맞춤법 모험 단어 추가</div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <input type="text" id="d1CwCorrect" class="d1-input" placeholder="바른 단어 (예: 고구마)" style="flex:1;min-width:110px" />
+                    <input type="text" id="d1CwWrong" class="d1-input" placeholder="틀린 단어 (예: 고꾸마)" style="flex:1;min-width:110px" />
+                  </div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <input type="text" id="d1CwTip" class="d1-input" placeholder="짧은 설명 (예: '고구마'가 맞아요)" style="flex:1;min-width:140px" />
+                    <select id="d1CwTier" class="d1-input">
+                      <option value="all">전체 단계</option>
+                      <option value="tier1">1~3단계</option>
+                      <option value="tier2">4~6단계</option>
+                      <option value="tier3">7~9단계</option>
+                      <option value="tier4">10~12단계</option>
+                    </select>
+                  </div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <button type="button" class="d1-btn-sm primary" id="d1CwAddBtn">단어 추가 및 적용</button>
+                    <button type="button" class="d1-btn-sm danger" id="d1CwClearBtn">모두 지우기</button>
+                  </div>
+                  <div id="d1CwList" style="max-height:130px;overflow:auto;font-size:12px;display:flex;flex-direction:column;gap:4px"></div>
+                </div>
+
+                <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:10px">
+                  <div style="font-weight:800;font-size:13px;color:#0f172a;margin-bottom:6px">🧮 2번: 수학 공책 예제 · 문제 추가</div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <select id="d1CmStage" class="d1-input" style="flex:1"></select>
+                    <select id="d1CmType" class="d1-input">
+                      <option value="problem">문제 추가</option>
+                      <option value="example">예제 추가</option>
+                    </select>
+                  </div>
+                  <div id="d1CmProblemBox">
+                    <div class="d1-class-row" style="margin-bottom:5px">
+                      <input type="text" id="d1CmPrompt" class="d1-input" placeholder="문제 내용 (예: 사과 4개와 3개를 모으면?)" style="width:100%" />
+                    </div>
+                    <div class="d1-class-row" style="margin-bottom:5px">
+                      <input type="text" id="d1CmC1" class="d1-input" placeholder="보기 1" style="flex:1;min-width:70px" />
+                      <input type="text" id="d1CmC2" class="d1-input" placeholder="보기 2" style="flex:1;min-width:70px" />
+                      <input type="text" id="d1CmC3" class="d1-input" placeholder="보기 3" style="flex:1;min-width:70px" />
+                      <select id="d1CmAns" class="d1-input">
+                        <option value="0">정답: 보기1</option>
+                        <option value="1">정답: 보기2</option>
+                        <option value="2">정답: 보기3</option>
+                      </select>
+                    </div>
+                    <div class="d1-class-row" style="margin-bottom:6px">
+                      <input type="text" id="d1CmHint" class="d1-input" placeholder="힌트 (선택)" style="flex:1" />
+                      <input type="text" id="d1CmOk" class="d1-input" placeholder="정답 칭찬 말 (선택)" style="flex:1" />
+                    </div>
+                  </div>
+                  <div id="d1CmExampleBox" style="display:none">
+                    <div class="d1-class-row" style="margin-bottom:5px">
+                      <input type="text" id="d1CmExTitle" class="d1-input" placeholder="예제 제목 (예: 사탕 모으기)" style="flex:1" />
+                      <input type="text" id="d1CmExVisual" class="d1-input" placeholder="식/그림 (예: 3 + 2 = 5)" style="flex:1" />
+                    </div>
+                    <div class="d1-class-row" style="margin-bottom:5px">
+                      <input type="text" id="d1CmExProblem" class="d1-input" placeholder="예제 문제 설명" style="width:100%" />
+                    </div>
+                    <div class="d1-class-row" style="margin-bottom:6px">
+                      <input type="text" id="d1CmExSteps" class="d1-input" placeholder="풀이 순서 (쉼표 , 로 구분)" style="width:100%" />
+                    </div>
+                  </div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <button type="button" class="d1-btn-sm primary" id="d1CmAddBtn">추가 및 적용</button>
+                    <button type="button" class="d1-btn-sm danger" id="d1CmClearBtn">모두 지우기</button>
+                  </div>
+                  <div id="d1CmList" style="max-height:130px;overflow:auto;font-size:12px;display:flex;flex-direction:column;gap:4px"></div>
+                </div>
+              </div>
+              <div class="d1-msg" id="d1CustomMsg"></div>
             </div>
           </div>
         </div>
@@ -566,6 +708,170 @@
       document.getElementById("d1ChangePinInput").value = "";
       document.getElementById("d1TeacherMsg").textContent = "교사 PIN이 D1 DB에 저장되었습니다.";
     });
+
+    // 4. 교사 직접 입력 자료 (맞춤법 단어 / 수학 공책 예제·문제)
+    const stageSel = document.getElementById("d1CmStage");
+    if (stageSel && stageSel.options.length === 0) {
+      const stageNames = [
+        "1. 같은 것끼리 모으기", "2. 1부터 5까지 세기", "3. 6부터 10까지 세기", "4. 11부터 20까지 세기",
+        "5. 어느 쪽이 더 많을까", "6. 두 수 모으기 (더하기)", "7. 수 가르기 (빼기)", "8. 10 만들어 더하기",
+        "9. 2·5·10씩 뛰어 세기", "10. 수직선 점프 계산", "11. 십과 일 묶어 계산", "12. 백·십·일 세 자리 수",
+        "13. 같은 수씩 묶어 곱하기", "14. 똑같이 나누기", "15. 분수 조각", "16. 소수 알아보기",
+        "17. 길이·들이·무게", "18. 시계 읽기", "19. 돈 세기와 물건 사기", "20. 도형과 무늬", "21. 그림 그래프"
+      ];
+      stageSel.innerHTML = stageNames.map((n, idx) => `<option value="${idx + 1}">${n}</option>`).join("");
+    }
+
+    document.getElementById("d1CmType").addEventListener("change", (e) => {
+      const isEx = e.target.value === "example";
+      document.getElementById("d1CmProblemBox").style.display = isEx ? "none" : "block";
+      document.getElementById("d1CmExampleBox").style.display = isEx ? "block" : "none";
+    });
+
+    document.getElementById("d1CwAddBtn").addEventListener("click", async () => {
+      const correct = document.getElementById("d1CwCorrect").value.trim();
+      const wrong = document.getElementById("d1CwWrong").value.trim();
+      const tip = document.getElementById("d1CwTip").value.trim() || `'${correct}'이(가) 바른 말이에요.`;
+      const tier = document.getElementById("d1CwTier").value;
+      if (!correct || !wrong) {
+        document.getElementById("d1CustomMsg").textContent = "바른 단어와 틀린 단어를 모두 입력해주세요.";
+        return;
+      }
+      const list = loadCustomWordsLocal();
+      list.unshift({ correct, wrong, tip, tier });
+      await saveCustomWords(list);
+      document.getElementById("d1CwCorrect").value = "";
+      document.getElementById("d1CwWrong").value = "";
+      document.getElementById("d1CwTip").value = "";
+      document.getElementById("d1CustomMsg").textContent = `맞춤법 단어 '${correct} / ${wrong}'이(가) 저장·적용되었습니다!`;
+      renderCustomWordsList();
+    });
+
+    document.getElementById("d1CwClearBtn").addEventListener("click", async () => {
+      if (!confirm("교사가 추가한 맞춤법 단어를 모두 삭제할까요?")) return;
+      await saveCustomWords([]);
+      document.getElementById("d1CustomMsg").textContent = "추가한 맞춤법 단어를 모두 삭제했습니다.";
+      renderCustomWordsList();
+    });
+
+    document.getElementById("d1CmAddBtn").addEventListener("click", async () => {
+      const stg = document.getElementById("d1CmStage").value;
+      const mode = document.getElementById("d1CmType").value;
+      const data = loadCustomMathLocal();
+      if (mode === "example") {
+        const title = document.getElementById("d1CmExTitle").value.trim() || "선생님 예시";
+        const visual = document.getElementById("d1CmExVisual").value.trim() || "함께 살펴보아요!";
+        const problem = document.getElementById("d1CmExProblem").value.trim();
+        const stepsRaw = document.getElementById("d1CmExSteps").value.trim();
+        if (!problem) {
+          document.getElementById("d1CustomMsg").textContent = "예제 문제 설명을 입력해주세요.";
+          return;
+        }
+        const steps = stepsRaw ? stepsRaw.split(",").map((s) => s.trim()).filter(Boolean) : ["문제를 천천히 읽어요.", "정답을 확인해요."];
+        if (!Array.isArray(data.examples[stg])) data.examples[stg] = [];
+        data.examples[stg].unshift({ title, problem, visual: `<span>${esc(visual)}</span>`, steps, speakText: problem });
+        await saveCustomMath(data);
+        document.getElementById("d1CmExTitle").value = "";
+        document.getElementById("d1CmExVisual").value = "";
+        document.getElementById("d1CmExProblem").value = "";
+        document.getElementById("d1CmExSteps").value = "";
+        document.getElementById("d1CustomMsg").textContent = `${stg}단계에 새 예제가 저장·적용되었습니다!`;
+      } else {
+        const prompt = document.getElementById("d1CmPrompt").value.trim();
+        const c1 = document.getElementById("d1CmC1").value.trim();
+        const c2 = document.getElementById("d1CmC2").value.trim();
+        const c3 = document.getElementById("d1CmC3").value.trim();
+        const ansIdx = Number(document.getElementById("d1CmAns").value || 0);
+        const hint = document.getElementById("d1CmHint").value.trim() || "문제를 다시 천천히 읽어 보세요.";
+        const okMsg = document.getElementById("d1CmOk").value.trim() || "정답이에요! 정말 잘했어요!";
+        if (!prompt || !c1 || !c2) {
+          document.getElementById("d1CustomMsg").textContent = "문제 내용과 보기 1, 보기 2를 입력해주세요.";
+          return;
+        }
+        const rawChoices = [c1, c2].concat(c3 ? [c3] : []);
+        const choices = rawChoices.map((label, idx) => ({ label, value: String(idx) }));
+        const answer = String(Math.min(ansIdx, choices.length - 1));
+        if (!Array.isArray(data.problems[stg])) data.problems[stg] = [];
+        data.problems[stg].unshift({ prompt, choices, answer, hint, okMsg });
+        await saveCustomMath(data);
+        document.getElementById("d1CmPrompt").value = "";
+        document.getElementById("d1CmC1").value = "";
+        document.getElementById("d1CmC2").value = "";
+        document.getElementById("d1CmC3").value = "";
+        document.getElementById("d1CmHint").value = "";
+        document.getElementById("d1CmOk").value = "";
+        document.getElementById("d1CustomMsg").textContent = `${stg}단계에 새 문제가 저장·적용되었습니다!`;
+      }
+      renderCustomMathList();
+    });
+
+    document.getElementById("d1CmClearBtn").addEventListener("click", async () => {
+      if (!confirm("교사가 추가한 수학 공책 예제/문제를 모두 삭제할까요?")) return;
+      await saveCustomMath({ examples: {}, problems: {} });
+      document.getElementById("d1CustomMsg").textContent = "추가한 수학 공책 자료를 모두 삭제했습니다.";
+      renderCustomMathList();
+    });
+  }
+
+  function renderCustomWordsList() {
+    const el = document.getElementById("d1CwList");
+    if (!el) return;
+    const list = loadCustomWordsLocal();
+    if (!list.length) {
+      el.innerHTML = `<div style="color:#64748b">추가된 단어가 없습니다. (기본 단어 40쌍 사용 중)</div>`;
+      return;
+    }
+    el.innerHTML = list.map((w, idx) => (
+      `<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px">
+        <span>⭕ <b>${esc(w.correct)}</b> / ❌ ${esc(w.wrong)} <span style="color:#64748b">(${esc(w.tier || "all")})</span></span>
+        <button type="button" class="d1-btn-sm danger" data-del-cw="${idx}" style="padding:2px 6px;font-size:11px">삭제</button>
+      </div>`
+    )).join("");
+    el.querySelectorAll("[data-del-cw]").forEach((b) => {
+      b.addEventListener("click", async () => {
+        const cur = loadCustomWordsLocal();
+        cur.splice(Number(b.dataset.delCw), 1);
+        await saveCustomWords(cur);
+        renderCustomWordsList();
+      });
+    });
+  }
+
+  function renderCustomMathList() {
+    const el = document.getElementById("d1CmList");
+    if (!el) return;
+    const data = loadCustomMathLocal();
+    const items = [];
+    Object.keys(data.examples || {}).forEach((stg) => {
+      (data.examples[stg] || []).forEach((ex, idx) => {
+        items.push({ kind: "example", stg, idx, label: `[${stg}단계 예시] ${ex.title || ex.problem}` });
+      });
+    });
+    Object.keys(data.problems || {}).forEach((stg) => {
+      (data.problems[stg] || []).forEach((pr, idx) => {
+        items.push({ kind: "problem", stg, idx, label: `[${stg}단계 문제] ${pr.prompt}` });
+      });
+    });
+    if (!items.length) {
+      el.innerHTML = `<div style="color:#64748b">추가된 예제·문제가 없습니다.</div>`;
+      return;
+    }
+    el.innerHTML = items.map((it) => (
+      `<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.label)}</span>
+        <button type="button" class="d1-btn-sm danger" data-del-cm="${it.kind}:${it.stg}:${it.idx}" style="padding:2px 6px;font-size:11px;flex-shrink:0">삭제</button>
+      </div>`
+    )).join("");
+    el.querySelectorAll("[data-del-cm]").forEach((b) => {
+      b.addEventListener("click", async () => {
+        const [kind, stg, idx] = b.dataset.delCm.split(":");
+        const cur = loadCustomMathLocal();
+        const bucket = kind === "example" ? cur.examples : cur.problems;
+        if (Array.isArray(bucket[stg])) bucket[stg].splice(Number(idx), 1);
+        await saveCustomMath(cur);
+        renderCustomMathList();
+      });
+    });
   }
 
   async function refreshTeacherDashboard() {
@@ -609,6 +915,8 @@
       fGame.dataset.init = "1";
     }
     await loadTeacherRecords();
+    renderCustomWordsList();
+    renderCustomMathList();
   }
 
   async function loadTeacherRecords() {
@@ -700,9 +1008,13 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", mountFloatingBar);
+    document.addEventListener("DOMContentLoaded", () => {
+      mountFloatingBar();
+      syncCustomContentFromD1();
+    });
   } else {
     mountFloatingBar();
+    syncCustomContentFromD1();
   }
 
   window.D1Bridge = {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>맞춤법 수호대 모험 - 12단계 단어 수집 게임</title>
+  <title>읽걷이의 맞춤법 모험 - 12단계 단어 잡기 게임</title>
   <link rel="stylesheet" href="./safe_mover/styles.css">
 </head>
 <body>
@@ -15,13 +15,13 @@
           <path d="M14 2L24 6v7c0 6.5-4.2 11-10 13C8.2 24 4 19.5 4 13V6z" fill="#38bdf8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
           <path d="M9.5 13.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>맞춤법 수호대 모험</span>
+        <span>읽걷이의 맞춤법 모험</span>
       </div>
       <div id="chips"></div>
       <button class="btn" id="btnSound">🔊 효과음 ON</button>
       <button class="btn" id="btnRestart">↻ 처음부터</button>
     </div>
-    <div id="banner">⭕ 바른 맞춤법 단어는 터치해서 모으고, ❌ 틀린 단어를 든 적은 피하세요!</div>
+    <div id="banner">⭕ 캐릭터를 움직여 바른 맞춤법 단어를 잡고, ❌ 틀린 단어를 든 적은 피하세요!</div>
     <div id="progs">
       <div id="stageProgWrap">
         <span id="stageLabel">1단계 🌱</span>
@@ -36,7 +36,7 @@
     </div>
     <div id="cvWrap">
       <canvas id="cv"></canvas>
-      <div id="hint">👆 바른 단어는 직접 터치! · ⬅️➡️ 빈 화면이나 버튼으로 오타 적 피하기!</div>
+      <div id="hint">⬅️➡️ 좌우로 움직여 바른 단어 잡기! · ❌ 깜빡이는 오타 적은 피하기!</div>
       <button class="padBtn" id="padL">◀ 왼쪽</button>
       <button class="padBtn" id="padR">오른쪽 ▶</button>
       <div id="floatMsg"></div>
