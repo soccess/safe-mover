@@ -362,8 +362,13 @@ const container = document.getElementById('canvasContainer');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4ede3);
 
-const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 50);
-camera.position.set(0, 1.82, 2.15);
+function getResponsiveFov() {
+  const aspect = container.clientWidth / Math.max(container.clientHeight, 1);
+  return aspect < 0.85 ? 48 : 42;
+}
+
+const camera = new THREE.PerspectiveCamera(getResponsiveFov(), container.clientWidth / container.clientHeight, 0.1, 50);
+camera.position.set(0, 1.56, 1.72);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -396,9 +401,8 @@ controls.addEventListener('start', cancelCameraAnim);
 
 function getAspectMultiplier() {
   const aspect = container.clientWidth / Math.max(container.clientHeight, 1);
-  if (aspect < 0.65) return 1.32;
-  if (aspect < 0.9) return 1.18;
-  if (aspect < 1.15) return 1.06;
+  if (aspect < 0.65) return 1.1;
+  if (aspect < 0.9) return 1.05;
   return 1.0;
 }
 
@@ -426,7 +430,7 @@ function getOverviewPreset() {
   const mult = getAspectMultiplier();
   return {
     target: new THREE.Vector3(0, 1.02, 0.05),
-    pos: new THREE.Vector3(0, 1.02 + 0.85 * mult, 2.25 * mult)
+    pos: new THREE.Vector3(0, 1.02 + 0.6 * mult, 1.72 * mult)
   };
 }
 
@@ -441,29 +445,29 @@ function getStepCameraPreset(targetId) {
   const mult = getAspectMultiplier();
   const isSmoothie = state.recipeKey === 'strawberry_smoothie';
 
-  // 각 단계별 클로즈업 카메라 프리셋 (작은 모바일 화면에서도 오브젝트가 크게 보이도록)
+  // 각 단계별 밀착 클로즈업 카메라 프리셋 (전체 화면에서 3D 오브젝트가 크고 자연스럽게 보이도록)
   const presets = {
-    grinder: { target: [-1.06, COUNTER_Y + 0.19, -0.08], offset: [0.18, 0.44, 0.82] },
-    tamper: { target: [-0.88, COUNTER_Y + 0.1, 0.22], offset: [0.16, 0.42, 0.78] },
-    machine: { target: [-0.58, COUNTER_Y + 0.22, -0.04], offset: [0.22, 0.44, 0.92] },
-    cup: { target: [-0.98, COUNTER_Y + 0.12, 0.15], offset: [0.22, 0.42, 0.86] },
-    water: { target: [-0.15, COUNTER_Y + 0.16, 0.0], offset: [0.06, 0.46, 0.95] },
-    shot: { target: [-0.16, COUNTER_Y + 0.12, 0.16], offset: [0.08, 0.42, 0.88] },
+    grinder: { target: [-1.06, COUNTER_Y + 0.19, -0.08], offset: [0.12, 0.28, 0.56] },
+    tamper: { target: [-0.88, COUNTER_Y + 0.1, 0.22], offset: [0.1, 0.26, 0.52] },
+    machine: { target: [-0.58, COUNTER_Y + 0.22, -0.04], offset: [0.14, 0.3, 0.64] },
+    cup: { target: [-0.98, COUNTER_Y + 0.12, 0.15], offset: [0.14, 0.28, 0.58] },
+    water: { target: [-0.15, COUNTER_Y + 0.16, 0.0], offset: [0.04, 0.32, 0.68] },
+    shot: { target: [-0.16, COUNTER_Y + 0.12, 0.16], offset: [0.05, 0.28, 0.62] },
     ice: isSmoothie
-      ? { target: [0.49, COUNTER_Y + 0.18, 0.04], offset: [0.04, 0.48, 0.98] }
-      : { target: [0.18, COUNTER_Y + 0.14, 0.15], offset: [0.04, 0.44, 0.92] },
+      ? { target: [0.49, COUNTER_Y + 0.18, 0.04], offset: [0.03, 0.32, 0.68] }
+      : { target: [0.18, COUNTER_Y + 0.14, 0.15], offset: [0.03, 0.3, 0.64] },
     milk: isSmoothie
-      ? { target: [0.48, COUNTER_Y + 0.18, -0.1], offset: [0.04, 0.48, 0.98] }
-      : { target: [0.17, COUNTER_Y + 0.16, 0.02], offset: [0.05, 0.46, 0.95] },
-    blender: { target: [0.62, COUNTER_Y + 0.22, -0.08], offset: [0.0, 0.46, 0.86] },
-    pour_blender: { target: [0.31, COUNTER_Y + 0.18, 0.03], offset: [0.02, 0.48, 1.05] },
+      ? { target: [0.48, COUNTER_Y + 0.18, -0.1], offset: [0.03, 0.32, 0.68] }
+      : { target: [0.17, COUNTER_Y + 0.16, 0.02], offset: [0.04, 0.32, 0.68] },
+    blender: { target: [0.62, COUNTER_Y + 0.22, -0.08], offset: [0.0, 0.3, 0.6] },
+    pour_blender: { target: [0.31, COUNTER_Y + 0.18, 0.03], offset: [0.02, 0.34, 0.76] },
     strawberry: isSmoothie
-      ? { target: [0.77, COUNTER_Y + 0.16, 0.0], offset: [0.04, 0.44, 0.88] }
-      : { target: [0.88, COUNTER_Y + 0.12, 0.06], offset: [-0.08, 0.4, 0.78] },
-    lemon: { target: [0.88, COUNTER_Y + 0.11, 0.22], offset: [-0.08, 0.38, 0.76] },
-    choco: { target: [0.68, COUNTER_Y + 0.09, 0.22], offset: [-0.06, 0.36, 0.74] },
-    tea: { target: [-0.62, COUNTER_Y + 0.12, 0.22], offset: [0.08, 0.38, 0.76] },
-    serve: { target: [0.0, COUNTER_Y + 0.15, 0.24], offset: [0.0, 0.42, 0.85] }
+      ? { target: [0.77, COUNTER_Y + 0.16, 0.0], offset: [0.03, 0.3, 0.62] }
+      : { target: [0.88, COUNTER_Y + 0.12, 0.06], offset: [-0.05, 0.26, 0.54] },
+    lemon: { target: [0.88, COUNTER_Y + 0.11, 0.22], offset: [-0.05, 0.24, 0.52] },
+    choco: { target: [0.68, COUNTER_Y + 0.09, 0.22], offset: [-0.04, 0.22, 0.5] },
+    tea: { target: [-0.62, COUNTER_Y + 0.12, 0.22], offset: [0.05, 0.25, 0.54] },
+    serve: { target: [0.0, COUNTER_Y + 0.15, 0.24], offset: [0.0, 0.28, 0.58] }
   };
 
   const p = presets[targetId];
@@ -489,15 +493,15 @@ function focusPrepActionCamera(isBlender = false) {
   const mult = getAspectMultiplier();
   if (isBlender) {
     animateCameraTo(
-      new THREE.Vector3(0.62, COUNTER_Y + 0.22 + 0.42 * mult, -0.08 + 0.86 * mult),
+      new THREE.Vector3(0.62, COUNTER_Y + 0.22 + 0.28 * mult, -0.08 + 0.6 * mult),
       new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08),
-      380
+      360
     );
   } else {
     animateCameraTo(
-      new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.14 + 0.38 * mult, PREP_POS.z + 0.78 * mult),
+      new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.14 + 0.26 * mult, PREP_POS.z + 0.56 * mult),
       new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.14, PREP_POS.z),
-      380
+      360
     );
   }
 }
@@ -1467,7 +1471,9 @@ function renderUI() {
   const recipe = getCurrentRecipe();
   const currentStep = getCurrentStep();
 
-  document.getElementById('scoreBadge').textContent = `★ ${state.completedCount}잔`;
+  document.getElementById('scoreBadge').textContent = `★ ${state.completedCount}`;
+  const recipeLabelEl = document.getElementById('currentRecipeLabel');
+  if (recipeLabelEl) recipeLabelEl.textContent = `${recipe.emoji} ${recipe.name}`;
 
   // 시각적 과제 분석표 (상단 순서 카드)
   const strip = document.getElementById('scheduleStrip');
@@ -1617,12 +1623,26 @@ renderer.domElement.addEventListener('pointermove', (e) => {
   }
 });
 
-// 상단 버튼 이벤트 연결
+// 상단 음료 선택 드로어 & 버튼 이벤트 연결
+const recipePickerBtn = document.getElementById('recipePickerBtn');
+const recipeDrawer = document.getElementById('recipeDrawer');
+recipePickerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isHidden = recipeDrawer.classList.toggle('hidden');
+  recipePickerBtn.setAttribute('aria-expanded', String(!isHidden));
+  if (!isHidden) {
+    settingsPopover.classList.add('hidden');
+    settingsToggleBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+
 document.querySelectorAll('.recipe-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.recipe-btn').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     state.recipeKey = btn.dataset.recipe;
+    recipeDrawer.classList.add('hidden');
+    recipePickerBtn.setAttribute('aria-expanded', 'false');
     resetDrink();
   });
 });
@@ -1634,11 +1654,19 @@ settingsToggleBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   const isHidden = settingsPopover.classList.toggle('hidden');
   settingsToggleBtn.setAttribute('aria-expanded', String(!isHidden));
+  if (!isHidden) {
+    recipeDrawer.classList.add('hidden');
+    recipePickerBtn.setAttribute('aria-expanded', 'false');
+  }
 });
 document.addEventListener('pointerdown', (e) => {
   if (!settingsPopover.classList.contains('hidden') && !settingsPopover.contains(e.target) && e.target !== settingsToggleBtn) {
     settingsPopover.classList.add('hidden');
     settingsToggleBtn.setAttribute('aria-expanded', 'false');
+  }
+  if (!recipeDrawer.classList.contains('hidden') && !recipeDrawer.contains(e.target) && !recipePickerBtn.contains(e.target)) {
+    recipeDrawer.classList.add('hidden');
+    recipePickerBtn.setAttribute('aria-expanded', 'false');
   }
 });
 
@@ -1691,6 +1719,7 @@ document.getElementById('resetCamBtn').addEventListener('click', () => {
 document.getElementById('nextDrinkBtn').addEventListener('click', resetDrink);
 
 window.addEventListener('resize', () => {
+  camera.fov = getResponsiveFov();
   camera.aspect = container.clientWidth / Math.max(container.clientHeight, 1);
   camera.updateProjectionMatrix();
   renderer.setSize(container.clientWidth, container.clientHeight);
