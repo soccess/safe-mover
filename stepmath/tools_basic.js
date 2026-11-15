@@ -595,7 +595,7 @@ function renderMakeTen() {
     $('toolBody').innerHTML = `
       <div class="guide">지금 식은 <b>${calc.first ?? ''} ${calc.op} ${calc.second ?? ''}</b>이에요. 10 만들기는 더하기에서 사용하는 전략이에요.</div>
       <div class="row-flex">
-        <button type="button" class="btn primary" data-mt-go="4">4단계 가르기로 확인하기</button>
+        <button type="button" class="btn primary" data-mt-go="7">7단계 가르기로 확인하기</button>
         <button type="button" class="btn green" data-mt="7,5">7 + 5로 연습하기</button>
       </div>`;
     $('toolBody').querySelectorAll('[data-mt]').forEach((btn) => {
@@ -605,7 +605,7 @@ function renderMakeTen() {
       };
     });
     const go = $('toolBody').querySelector('[data-mt-go]');
-    if (go) go.onclick = () => { state.stage = 4; render(); };
+    if (go) go.onclick = () => { state.stage = 7; render(); };
     return;
   }
   const body = $('toolBody');

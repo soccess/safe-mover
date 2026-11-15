@@ -43,13 +43,18 @@
     confetti: [],
     animT: 0,
     finished: false,
+    paused: false,
+    stageClearWait: false,
+    practiceMode: false,
+    easyMode: false,
     collected: 0,
     totalCollected: 0,
     dodged: 0,
     totalDodged: 0,
     hit: 0,
     totalHit: 0,
-    learnedWords: [] // { correct, wrong, tip }
+    learnedWords: [], // { correct, wrong, tip }
+    missedWords: []   // IEP 후속 지도를 위한 헷갈린 단어 목록
   };
 
   function resize() {
@@ -125,6 +130,41 @@
     }
   }
 
+  function recordMissed(pair) {
+    if (!pair || !pair.correct) return;
+    if (!state.missedWords.some((p) => p.correct === pair.correct)) {
+      state.missedWords.push(pair);
+    }
+  }
+
+  function syncModeButtons() {
+    const pBtn = document.getElementById("btnPracticeMode");
+    const vBtn = document.getElementById("btnVoice");
+    const sBtn = document.getElementById("btnSound");
+    if (pBtn) {
+      pBtn.textContent = state.practiceMode ? "🐢 천천히 ON" : "🐢 천천히 OFF";
+      pBtn.classList.toggle("on", state.practiceMode);
+    }
+    if (vBtn) {
+      const on = AUDIO.isVoiceOn();
+      vBtn.textContent = on ? "🗣️ 음성 ON" : "🔇 음성 OFF";
+      vBtn.classList.toggle("off", !on);
+    }
+    if (sBtn) {
+      const on = AUDIO.isOn();
+      sBtn.textContent = on ? "🔔 효과음 ON" : "🔕 효과음 OFF";
+      sBtn.classList.toggle("off", !on);
+    }
+  }
+
+  function applySpedPrefsFromBridge(prefs) {
+    if (!prefs) return;
+    state.practiceMode = Boolean(prefs.slowPace);
+    state.easyMode = Boolean(prefs.easyMode);
+    AUDIO.setSlow(state.practiceMode);
+    syncModeButtons();
+  }
+
   function startStage(i, announce) {
     clearTimeout(stageTransition);
     stageTransition = null;
@@ -139,6 +179,8 @@
     state.catchAnim = 0;
     state.shake = 0;
     state.finished = false;
+    state.paused = false;
+    state.stageClearWait = false;
     state.collected = 0;
     state.dodged = 0;
     state.hit = 0;
@@ -149,8 +191,11 @@
     document.getElementById("overlay").style.display = "none";
     buildChips();
     const s = STAGES[i];
-    setBanner((i + 1) + "단계 " + s.icon + " " + s.name + "! " + s.msg, "");
-    if (announce !== false) AUDIO.speak((i + 1) + "단계! " + s.msg);
+    const startMsg = state.easyMode
+      ? (i + 1) + "단계! 바른 말을 잡아요."
+      : (i + 1) + "단계 " + s.icon + " " + s.name + "! " + s.msg;
+    setBanner(startMsg, "");
+    if (announce !== false) AUDIO.speak(startMsg);
     updateLabels();
   }
 
@@ -160,6 +205,7 @@
     state.totalDodged = 0;
     state.totalHit = 0;
     state.learnedWords = [];
+    state.missedWords = [];
     state.confetti = [];
     startStage(0);
   }
@@ -216,6 +262,7 @@
       } else {
         AUDIO.tap();
       }
+      AUDIO.speak(bestWord.word);
       showFloat("➡️ '" + bestWord.word + "' 잡으러 이동!", "#4ADE80");
       return;
     }
@@ -225,9 +272,15 @@
       if (o.kind !== "enemy" || o.hit || o.screenX == null) continue;
       const d = Math.hypot(tx - o.screenX, ty - o.screenY);
       if (d <= o.screenR + 10) {
-        AUDIO.wrongTap();
-        showFloat("❌ '" + o.word + "'은 틀린 말! 피하세요!", "#FF5252");
-        setBanner("'" + o.word + "'은 틀린 맞춤법! 좌우로 피하세요! (" + o.pair.tip + ")", "warn");
+        if (state.practiceMode) {
+          AUDIO.tap();
+          showFloat("💡 '" + o.pair.correct + "' 단어를 찾아요!", "#FDE047");
+          setBanner("천천히 확인해요: '" + o.word + "' 대신 '" + o.pair.correct + "' (" + o.pair.tip + ")", "info");
+        } else {
+          AUDIO.wrongTap();
+          showFloat("❌ '" + o.word + "'은 틀린 말! 피하세요!", "#FF5252");
+          setBanner("'" + o.word + "'은 틀린 맞춤법! 좌우로 피하세요! (" + o.pair.tip + ")", "warn");
+        }
         return;
       }
     }
@@ -285,7 +338,7 @@
         ph: Math.random() * 6.28,
         off: 0
       });
-      if (S.double && Math.random() < S.double) {
+      if (!state.practiceMode && S.double && Math.random() < S.double) {
         const pair2 = pool[Math.floor(Math.random() * pool.length)];
         const rest = lanes.filter((l) => l !== eLane);
         state.entities.push({
@@ -313,7 +366,6 @@
         ph: Math.random() * 6.28,
         off: 0
       });
-      AUDIO.spawnCorrect();
       AUDIO.spawnCorrect();
     }
   }
@@ -360,10 +412,65 @@
     }
   }
 
+  function enterStageTransition(nextIdx) {
+    state.stageClearWait = true;
+    const curS = STAGES[state.stageIdx];
+    const nextS = STAGES[nextIdx];
+    document.getElementById("card").innerHTML =
+      '<div style="font-size:44px;margin-bottom:6px">🎉</div>' +
+      '<h2 style="margin:0 0 6px">' + (state.stageIdx + 1) + '단계 [' + curS.name + '] 완료!</h2>' +
+      '<p style="margin:0 0 12px;color:#334155;font-size:15px">바른 단어 <b>' + state.collected + '개</b>를 잡았어요! 잠시 숨을 고른 뒤 다음 단계를 시작해요.</p>' +
+      '<div class="reviewBox" style="text-align:left">' +
+        '<h3>➡️ 다음 단계 예고: ' + (nextIdx + 1) + '단계 [' + nextS.name + ']</h3>' +
+        '<div class="reviewItem">' + nextS.msg + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">' +
+        '<button id="btnNextStage" style="background:#16a34a;color:#fff;border:0;border-radius:12px;padding:12px 22px;font-size:16px;font-weight:800;cursor:pointer">▶ 다음 단계 시작</button>' +
+        '<button id="btnRepeatStage" style="background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer">🔁 이 단계 한 번 더</button>' +
+      '</div>';
+    document.getElementById("overlay").style.display = "flex";
+    document.getElementById("btnNextStage").onclick = () => {
+      state.stageClearWait = false;
+      startStage(nextIdx);
+    };
+    document.getElementById("btnRepeatStage").onclick = () => {
+      state.stageClearWait = false;
+      startStage(state.stageIdx);
+    };
+  }
+
+  function togglePause(forcePause) {
+    if (state.finished || state.stageClearWait) return;
+    state.paused = forcePause != null ? !!forcePause : !state.paused;
+    syncModeButtons();
+    const overlay = document.getElementById("overlay");
+    if (state.paused) {
+      document.getElementById("card").innerHTML =
+        '<div style="font-size:44px;margin-bottom:6px">🌿</div>' +
+        '<h2 style="margin:0 0 8px">잠깐 쉬고 있어요</h2>' +
+        '<p style="margin:0 0 14px;color:#334155;font-size:15px;line-height:1.5">숨을 천천히 들이쉬고 내쉬어 보세요.<br>준비가 되면 다시 시작해요!</p>' +
+        '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+          '<button id="btnResumeGame" style="background:#2563eb;color:#fff;border:0;border-radius:12px;padding:12px 22px;font-size:16px;font-weight:800;cursor:pointer">▶ 이어서 하기</button>' +
+          '<button id="btnRetryCur" style="background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer">🔁 이 단계 처음부터</button>' +
+        '</div>';
+      overlay.style.display = "flex";
+      document.getElementById("btnResumeGame").onclick = () => togglePause(false);
+      document.getElementById("btnRetryCur").onclick = () => {
+        state.paused = false;
+        syncModeButtons();
+        startStage(state.stageIdx);
+      };
+    } else {
+      overlay.style.display = "none";
+    }
+  }
+
   function enterResult() {
     state.finished = true;
+    state.paused = false;
+    state.stageClearWait = false;
     AUDIO.fanfare();
-    burstConfetti(120);
+    burstConfetti(140);
     AUDIO.speak("미션 완료! 읽걷이의 맞춤법 모험 대성공! 바른 맞춤법 단어를 정말 많이 잡았어요!");
     setBanner("미션 완료! 읽걷이의 맞춤법 모험 대성공!", "good");
     document.getElementById("totalBar").style.width = "100%";
@@ -372,6 +479,13 @@
     const reviewHtml = state.learnedWords.slice(0, 8).map((p) =>
       '<div class="reviewItem">⭕ <b>' + p.correct + '</b> (❌ ' + p.wrong + ') — ' + p.tip + '</div>'
     ).join("") || '<div class="reviewItem">바른 단어를 잡아 맞춤법을 익혀 보세요!</div>';
+
+    const missedHtml = state.missedWords.length
+      ? '<div class="reviewBox" style="background:#fff7ed;border-color:#fdba74"><h3>📖 다시 살펴볼 맞춤법 (오답 복습)</h3>' +
+        state.missedWords.slice(0, 6).map((p) =>
+          '<div class="reviewItem">💡 <b>' + p.correct + '</b> (헷갈린 말: ' + p.wrong + ') — ' + p.tip + '</div>'
+        ).join("") + '</div>'
+      : "";
 
     document.getElementById("card").innerHTML =
       '<div class="result-trophy-wrap">' +
@@ -389,6 +503,7 @@
       '<div class="row"><span>⭕ 캐릭터가 잡은 바른 단어</span><span>' + state.totalCollected + "개</span></div>" +
       '<div class="row"><span>✨ 오타 적 안전 회피</span><span>' + state.totalDodged + "회</span></div>" +
       '<div class="row"><span>💫 오타 적과 부딪힘</span><span>' + state.totalHit + "회</span></div>" +
+      missedHtml +
       '<div class="reviewBox"><h3>📖 오늘 익힌 맞춤법 복습</h3>' + reviewHtml + "</div>" +
       '<button id="bigBtn">↻ 처음부터 다시 놀기</button>';
 
@@ -400,12 +515,13 @@
         game: "safe_mover",
         stage: STAGES.length + "단계 완주",
         score: state.totalCollected,
-        summary: "바른 단어 " + state.totalCollected + "개 · 회피 " + state.totalDodged + "회 · 부딪힘 " + state.totalHit + "회",
+        summary: "바른 단어 " + state.totalCollected + "개 · 회피 " + state.totalDodged + "회 · 부딪힘 " + state.totalHit + "회 · 복습 " + state.missedWords.length + "개",
         payload: {
           collected: state.totalCollected,
           dodged: state.totalDodged,
           hit: state.totalHit,
-          learnedWords: state.learnedWords.slice(0, 20)
+          learnedWords: state.learnedWords.slice(0, 20),
+          missedWords: state.missedWords.slice(0, 12)
         }
       });
     }
@@ -417,8 +533,16 @@
       updateParticles(dt, STAGES[STAGES.length - 1]);
       return;
     }
+    if (state.paused || state.stageClearWait) {
+      return;
+    }
 
     const S = STAGES[state.stageIdx];
+    const speedMul = state.practiceMode ? 0.55 : 1;
+    const spawnMul = state.practiceMode ? 1.45 : 1;
+    const useSlippery = state.practiceMode ? false : !!S.slippery;
+    const useWind = state.practiceMode ? false : !!S.wind;
+
     state.laneFlash = Math.max(0, state.laneFlash - dt);
     state.catchAnim = Math.max(0, state.catchAnim - dt);
     state.shake = Math.max(0, state.shake - dt);
@@ -431,11 +555,11 @@
     }
 
     state.stageTime += dt * sf;
-    state.roadScroll = (state.roadScroll + dt * 2.4 * sf * S.speed) % 1;
-    const lerpK = S.slippery ? 5.5 : 10;
+    state.roadScroll = (state.roadScroll + dt * 2.4 * sf * S.speed * speedMul) % 1;
+    const lerpK = useSlippery ? 5.5 : 10;
     state.lanePos += (state.lane - state.lanePos) * Math.min(1, dt * lerpK);
 
-    if (S.wind) {
+    if (useWind) {
       windT -= dt * sf;
       if (windT <= 0) {
         windT = 5.5 + Math.random() * 4;
@@ -468,14 +592,14 @@
       spawnT -= dt * sf;
       if (spawnT <= 0) {
         spawnWave(S);
-        spawnT = S.spawn * (0.85 + Math.random() * 0.35);
+        spawnT = S.spawn * spawnMul * (0.85 + Math.random() * 0.35);
       }
     }
 
     for (let i = state.entities.length - 1; i >= 0; i--) {
       const o = state.entities[i];
-      o.z += dt * 0.38 * sf * S.speed;
-      if (S.sway && o.kind === "enemy") {
+      o.z += dt * 0.38 * sf * S.speed * speedMul;
+      if (S.sway && o.kind === "enemy" && !state.practiceMode) {
         o.ph += dt * (1.1 + S.speed * 0.45);
         o.off = Math.sin(o.ph) * (S.sway || 0.3);
       }
@@ -507,14 +631,24 @@
             o.hit = true;
             state.hit++;
             state.totalHit++;
-            state.stumble = 1.2;
-            state.shake = 0.35;
             recordLearned(o.pair);
-            AUDIO.hit();
-            spawnParts(o.screenX || W * 0.5, o.screenY || H * 0.75, 18, ["#EF4444", "#FCA5A5", "#FDE047"]);
-            setBanner("앗! '" + o.word + "'은 틀린 말! (" + o.pair.tip + ")", "warn");
-            AUDIO.speak("조심! " + o.pair.tip);
-            showFloat("💫 '" + o.pair.correct + "'이 맞아요!", "#FF5252");
+            recordMissed(o.pair);
+            if (state.practiceMode) {
+              state.stumble = 0.35;
+              state.shake = 0;
+              AUDIO.tap();
+              setBanner("천천히 확인해요: '" + o.pair.correct + "'이 맞아요 (" + o.pair.tip + ")", "info");
+              AUDIO.speak("괜찮아요. " + o.pair.correct + "이 맞는 말이에요.");
+              showFloat("💡 '" + o.pair.correct + "'이 맞아요!", "#FDE047");
+            } else {
+              state.stumble = 1.2;
+              state.shake = 0.35;
+              AUDIO.hit();
+              spawnParts(o.screenX || W * 0.5, o.screenY || H * 0.75, 18, ["#EF4444", "#FCA5A5", "#FDE047"]);
+              setBanner("앗! '" + o.word + "'은 틀린 말! (" + o.pair.tip + ")", "warn");
+              AUDIO.speak("조심! " + o.pair.tip);
+              showFloat("💫 '" + o.pair.correct + "'이 맞아요!", "#FF5252");
+            }
           }
         }
         if (!o.hit && !o.passed && o.z > 0.92) {
@@ -532,7 +666,7 @@
 
     updateParticles(dt, S);
 
-    if (state.stageTime >= S.dur && !stageTransition) {
+    if (state.stageTime >= S.dur && !stageTransition && !state.stageClearWait) {
       if (state.stageIdx >= STAGES.length - 1) {
         enterResult();
       } else {
@@ -546,11 +680,9 @@
           });
         }
         AUDIO.clear();
-        AUDIO.speak("참 잘했어요! 다음 코스로 갑니다!");
+        AUDIO.speak("참 잘했어요! 버튼을 눌러 다음 코스로 가요!");
         showFloat("🎉 " + (state.stageIdx + 1) + "단계 클리어!", "#FFD600");
-        stageTransition = setTimeout(() => {
-          if (!state.finished) startStage(state.stageIdx + 1);
-        }, 1350);
+        enterStageTransition(state.stageIdx + 1);
       }
     }
 
@@ -573,22 +705,69 @@
   }
 
   // 입력 바인딩
-  document.getElementById("padL").addEventListener("pointerdown", (e) => { e.preventDefault(); goLeft(); });
-  document.getElementById("padR").addEventListener("pointerdown", (e) => { e.preventDefault(); goRight(); });
-  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); handleCanvasTap(e.clientX, e.clientY); });
+  document.getElementById("padL").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (!state.paused && !state.stageClearWait && !state.finished) goLeft();
+  });
+  document.getElementById("padR").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (!state.paused && !state.stageClearWait && !state.finished) goRight();
+  });
+  cv.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (!state.paused && !state.stageClearWait && !state.finished) handleCanvasTap(e.clientX, e.clientY);
+  });
   window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" || e.key === " ") {
+      if (!state.finished && !state.stageClearWait) {
+        e.preventDefault();
+        togglePause();
+      }
+      return;
+    }
+    if (state.paused || state.stageClearWait || state.finished) return;
     if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") goLeft();
     if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") goRight();
     if (e.key === "r" || e.key === "R") restart();
   });
   document.getElementById("btnRestart").onclick = restart;
   document.getElementById("btnSound").onclick = (e) => {
-    const on = AUDIO.toggle();
-    e.target.textContent = on ? "🔊 효과음 ON" : "🔇 효과음 OFF";
+    const on = AUDIO.toggleSfx ? AUDIO.toggleSfx() : AUDIO.toggle();
+    e.target.textContent = on ? "🔔 효과음 ON" : "🔕 효과음 OFF";
+    e.target.classList.toggle("off", !on);
   };
+  const btnVoice = document.getElementById("btnVoice");
+  if (btnVoice) {
+    btnVoice.onclick = () => {
+      const on = AUDIO.toggleVoice ? AUDIO.toggleVoice() : true;
+      syncModeButtons();
+      if (on) AUDIO.speak("음성 안내가 켜졌어요.");
+    };
+  }
+  const btnPractice = document.getElementById("btnPracticeMode");
+  if (btnPractice) {
+    btnPractice.onclick = () => {
+      state.practiceMode = !state.practiceMode;
+      AUDIO.setSlow && AUDIO.setSlow(state.practiceMode);
+      if (window.D1Bridge && window.D1Bridge.setSpedPrefs) {
+        window.D1Bridge.setSpedPrefs({ slowPace: state.practiceMode });
+      }
+      syncModeButtons();
+      showFloat(state.practiceMode ? "🐢 천천히 연습 모드 ON" : "🐢 천천히 모드 OFF", "#38BDF8");
+    };
+  }
+  const btnPause = document.getElementById("btnPause");
+  if (btnPause) {
+    btnPause.onclick = () => togglePause();
+  }
 
   // 시작
   resize();
+  applySpedPrefsFromBridge(window.D1Bridge && window.D1Bridge.getSpedPrefs ? window.D1Bridge.getSpedPrefs() : null);
+  if (window.D1Bridge && window.D1Bridge.onSpedPrefsChange) {
+    window.D1Bridge.onSpedPrefsChange(applySpedPrefsFromBridge);
+  }
+  syncModeButtons();
   startStage(0, false);
   setTimeout(resize, 100);
   AUDIO.speak("1단계! 읽걷이의 맞춤법 모험! 캐릭터를 움직여 바른 맞춤법 단어를 잡고, 틀린 단어를 든 적은 피하세요!");

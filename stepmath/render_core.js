@@ -633,7 +633,7 @@ function renderConcrete() {
     box.innerHTML = `<div class="cgroup first">
       <div class="cgroup-head"><span>입력한 수</span><span class="cbadge first">${first}개 · ${countWord(first)}</span></div>
       <div class="citems">${items || '<span class="guide">0개 (비어 있어요)</span>'}</div>
-      ${first > MAX ? `<div class="cmovehint">화면에는 ${MAX}개까지만 보여요. 큰 수는 7단계 수모형으로 확인해 보세요.</div>` : ''}
+      ${first > MAX ? `<div class="cmovehint">화면에는 ${MAX}개까지만 보여요. 큰 수는 11단계 수모형으로 확인해 보세요.</div>` : ''}
     </div>`;
     bindSpeakItems(box);
     return;
@@ -741,7 +741,7 @@ function renderConcrete() {
       <div class="guide">한 묶음에 <b>${first}개씩 ${second}묶음</b>을 모으면 모두 <b>${result}개 (${countWord(result)})</b>가 됩니다.</div>
       <div class="guide">${Array.from({ length: Math.min(second, 10) }, () => first).join(' + ')} = <b>${result}</b>${second > 10 ? ' …' : ''}</div>
       <div class="bundle-grid">${bundles || '<div class="guide">0묶음입니다</div>'}</div>
-      ${second > 10 || first > 12 ? '<div class="cmovehint">화면에는 일부 묶음만 표시됩니다. 큰 수는 8단계 교구로 확인해 보세요.</div>' : ''}`;
+      ${second > 10 || first > 12 ? '<div class="cmovehint">화면에는 일부 묶음만 표시됩니다. 큰 수는 13단계 묶음 교구로 확인해 보세요.</div>' : ''}`;
     bindSpeakItems(box);
     return;
   }
@@ -767,7 +767,7 @@ function renderConcrete() {
     box.innerHTML = `
       <div class="guide">전체 <b>${first}개</b>를 <b>${second}곳</b>에 똑같이 나누면 한 곳에 <b>${d.q}개씩</b> 들어가고 <b>${d.r}개</b>가 남습니다.</div>
       <div class="bundle-grid">${platesHtml}${remHtml}</div>
-      ${second > 10 || d.q > 12 ? '<div class="cmovehint">화면에는 일부 접시만 표시돼요. 큰 수는 8단계 교구로 확인해 보세요.</div>' : ''}`;
+      ${second > 10 || d.q > 12 ? '<div class="cmovehint">화면에는 일부 접시만 표시돼요. 큰 수는 14단계 나누기 교구로 확인해 보세요.</div>' : ''}`;
     bindSpeakItems(box);
   }
 }

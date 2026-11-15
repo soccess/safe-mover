@@ -41,7 +41,7 @@ button:focus-visible, input:focus-visible{outline:3px solid #93c5fd;outline-offs
 button{touch-action:manipulation}
 button:disabled{cursor:not-allowed}
 .app[hidden],.course-gate[hidden]{display:none!important}
-.course-gate{max-width:1120px;margin:0 auto;padding:clamp(20px,5vw,58px) 18px 50px}
+.course-gate{max-width:1120px;margin:0 auto;padding:clamp(20px,5vw,58px) 18px 82px}
 .gate-brand{display:flex;align-items:center;gap:14px;margin-bottom:26px}
 .gate-mark{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-size:32px;box-shadow:0 10px 22px rgba(37,99,235,.25)}
 .gate-title{font-size:clamp(27px,5vw,42px);font-weight:950;letter-spacing:-1px}
@@ -674,10 +674,6 @@ body.text-xlarge{--text-scale:1.24}
 body.text-large .stage-hint,body.text-large .lesson-instruction,body.text-large .guide,body.text-large .tool-sub,body.text-large .card-sub,body.text-large .course-card p,body.text-large .data-label,body.text-large .bundle-help{font-size:calc(1em * var(--text-scale))}
 body.easy-read{letter-spacing:.015em;word-spacing:.06em}
 body.easy-read .stage-hint,body.easy-read .lesson-instruction,body.easy-read .guide{line-height:1.85}
-body.high-contrast{--bg:#fff;--paper:#fff;--ink:#000;--ink-soft:#111827;--muted:#1f2937;--line:#111827;--line-strong:#000;--blue:#0033cc;--green:#006400;--amber:#8a4b00;--violet:#4c1d95;--rose:#9f1239;--shadow:none;--shadow-sm:none;background:#fff}
-body.high-contrast .card,body.high-contrast .tool-card,body.high-contrast .calc-panel,body.high-contrast .lesson-path,body.high-contrast .stage-nav,body.high-contrast .support-bar{background:#fff;border-color:#000}
-body.high-contrast .stage-chip.active{background:#000;border-color:#000}
-body.reduce-motion *,body.reduce-motion *::before,body.reduce-motion *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 
 /* 보기 전환 */
 .view-switch{display:inline-flex;background:#fff;border:2px solid var(--line);border-radius:14px;padding:3px;gap:3px;box-shadow:var(--shadow-sm)}
@@ -935,10 +931,6 @@ body.is-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
   .chip{font-size:11px}
   .total-badge{font-size:20px}
 }
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
-  .citem,.sorted-item{animation-delay:0ms !important}
-}
 @media print{
   .topbar,.stage-nav,.left-col,.history-card,.card-tools,.foot{display:none !important}
   .layout{display:block}
@@ -1096,3 +1088,24 @@ body {
 .svg-pop-delay-3 { animation: smPopIn 2.2s ease-in-out 0.9s infinite; transform-box: fill-box; transform-origin: center; }
 .svg-dash-flow { animation: smDashFlow 1.4s linear infinite; }
 .svg-clock-min { animation: smClockTick 2.4s ease-in-out infinite; transform-origin: 66px 37px; }
+
+/* ===== 그래픽 · 인터랙션 강화 ===== */
+body{
+  background:
+    radial-gradient(1100px 560px at 12% -8%, #dbeafe 0%, transparent 60%),
+    radial-gradient(900px 520px at 96% 4%, #fde68a88 0%, transparent 55%),
+    radial-gradient(800px 500px at 50% 100%, #e0e7ff88 0%, transparent 60%),
+    var(--bg);
+}
+.app{padding-bottom:78px}
+.card,.tool-card,.calc-panel,.course-card,.stage-chip{
+  transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease;
+}
+.course-card:hover{
+  transform:translateY(-6px) scale(1.015);
+  box-shadow:0 18px 38px rgba(37,99,235,.15);
+}
+.stage-chip:hover{transform:translateY(-2px)}
+.card:hover,.tool-card:hover{box-shadow:0 16px 36px rgba(15,23,42,.10)}
+
+@media (min-width:820px){.course-gate .gate-note{max-width:calc(100% - 400px)}}

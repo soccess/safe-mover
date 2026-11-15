@@ -36,6 +36,73 @@
 
   const SAFE_MOVER_CUSTOM_KEY = "safe_mover.custom_words.v1";
   const STEPMATH_CUSTOM_KEY = "stepmath.custom_content.v1";
+  const SPED_PREFS_KEY = "safe_mover.sped_prefs.v1";
+
+  const DEFAULT_SPED_PREFS = {
+    easyMode: false,     // 쉬운 말 모드 (짧고 구체적인 지시문)
+    ttsAuto: false,      // 자동 음성 읽기
+    slowPace: false      // 천천히 · 무오류 연습 모드
+  };
+
+  function loadSpedPrefs() {
+    const prefs = { ...DEFAULT_SPED_PREFS };
+    try {
+      const raw = localStorage.getItem(SPED_PREFS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          prefs.easyMode = Boolean(parsed.easyMode);
+          prefs.ttsAuto = Boolean(parsed.ttsAuto);
+          prefs.slowPace = Boolean(parsed.slowPace);
+        }
+      }
+    } catch (_) {}
+    return prefs;
+  }
+
+  let spedPrefs = loadSpedPrefs();
+  const spedListeners = new Set();
+
+  function applySpedPrefsToDom() {
+    if (!document.body) return;
+    document.body.classList.remove("sped-calm", "sped-contrast");
+    document.body.classList.toggle("sped-easy", Boolean(spedPrefs.easyMode));
+    document.body.classList.toggle("sped-slow", Boolean(spedPrefs.slowPace));
+  }
+
+  function getSpedPrefs() {
+    return { ...spedPrefs };
+  }
+
+  function setSpedPrefs(patch) {
+    spedPrefs = { ...spedPrefs, ...(patch || {}) };
+    try { localStorage.setItem(SPED_PREFS_KEY, JSON.stringify(spedPrefs)); } catch (_) {}
+    applySpedPrefsToDom();
+    spedListeners.forEach((fn) => {
+      try { fn(getSpedPrefs()); } catch (_) {}
+    });
+    return getSpedPrefs();
+  }
+
+  function onSpedPrefsChange(fn) {
+    spedListeners.add(fn);
+    return () => spedListeners.delete(fn);
+  }
+
+  function speakText(text, rate) {
+    try {
+      if (!text || !("speechSynthesis" in window)) return false;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text));
+      u.lang = "ko-KR";
+      u.rate = rate || (spedPrefs.slowPace ? 0.86 : 0.94);
+      u.pitch = 1.02;
+      window.speechSynthesis.speak(u);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   function detectCurrentGame() {
     const p = (location.pathname || "").toLowerCase();
@@ -410,6 +477,22 @@
       .d1-table th,.d1-table td{padding:8px 8px;border-bottom:1px solid #f1f5f9;text-align:left;vertical-align:middle}
       .d1-table th{background:#f8fafc;position:sticky;top:0;font-weight:800;color:#475569}
       .d1-msg{font-size:12.5px;color:#0369a1;font-weight:700;margin-top:6px;min-height:18px}
+      .d1-float-btn.aac{background:rgba(16,185,129,.28);color:#d1fae5}
+      .d1-float-btn.aac:hover{background:rgba(16,185,129,.44)}
+      .d1-float-btn.sped{background:rgba(56,189,248,.24);color:#e0f2fe}
+      .d1-float-btn.sped:hover{background:rgba(56,189,248,.40)}
+      .d1-aac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:12px 0}
+      .d1-aac-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:92px;padding:12px 8px;border-radius:16px;border:2px solid #cbd5e1;background:#f8fafc;color:#0f172a;font:inherit;font-size:15px;font-weight:800;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
+      .d1-aac-btn:hover{border-color:#0284c7;background:#e0f2fe;transform:translateY(-2px)}
+      .d1-aac-btn:active{transform:scale(.97)}
+      .d1-aac-emoji{font-size:32px;line-height:1}
+      .d1-aac-spoken{background:#eff6ff;border:2px solid #93c5fd;border-radius:14px;padding:12px 14px;font-size:16px;font-weight:800;color:#1e3a8a;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+      .d1-sped-list{display:grid;gap:10px;margin:10px 0}
+      .d1-sped-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid #cbd5e1;background:#f8fafc;cursor:pointer}
+      .d1-sped-item strong{display:block;font-size:15px;color:#0f172a}
+      .d1-sped-item small{display:block;font-size:12.5px;color:#475569;margin-top:2px}
+      .d1-sped-item input[type="checkbox"]{width:24px;height:24px;accent-color:#2563eb;flex-shrink:0;cursor:pointer}
+      @media (max-width:640px){.d1-float-bar{right:8px;bottom:8px;padding:5px 8px;gap:4px;font-size:12px}.d1-float-btn{padding:4px 8px}}
     `;
     document.head.appendChild(st);
   }
@@ -970,6 +1053,134 @@
     });
   }
 
+  const GLOBAL_AAC_ITEMS = [
+    { id: "help", emoji: "🙋", label: "도와주세요", say: "선생님, 도와주세요." },
+    { id: "break", emoji: "🌿", label: "쉬고 싶어요", say: "잠깐 쉬고 싶어요." },
+    { id: "slow", emoji: "🐢", label: "천천히 해주세요", say: "조금 천천히 해주세요." },
+    { id: "repeat", emoji: "🔊", label: "다시 들려주세요", say: "다시 한 번 들려주세요." },
+    { id: "done", emoji: "👍", label: "다 했어요", say: "다 했어요!" },
+    { id: "water", emoji: "💧", label: "물 마실래요", say: "물 한 모금 마시고 싶어요." },
+    { id: "loud", emoji: "👂", label: "소리가 커요", say: "소리가 조금 커요. 조용히 해주세요." },
+    { id: "again", emoji: "🔄", label: "다시 할래요", say: "처음부터 다시 해볼래요." }
+  ];
+
+  function openAacModal() {
+    ensureModals();
+    let modal = document.getElementById("d1AacModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "d1AacModal";
+      modal.className = "d1-modal-backdrop";
+      modal.innerHTML = `
+        <div class="d1-modal-card" role="dialog" aria-modal="true" aria-label="도움 말판 (AAC)">
+          <div class="d1-modal-head">
+            <h2>💬 도움 말판 (눌러서 말해요)</h2>
+            <button type="button" class="d1-close-btn" data-close-modal="d1AacModal">닫기</button>
+          </div>
+          <div style="font-size:13.5px;color:#475569;margin-bottom:10px">말하기 어려울 때 그림을 누르면 소리로 대신 전해드려요.</div>
+          <div class="d1-aac-spoken" id="d1AacSpoken" aria-live="polite">
+            <span>원하는 그림을 눌러보세요.</span>
+          </div>
+          <div class="d1-aac-grid" id="d1AacGrid"></div>
+          <div class="d1-class-row" style="justify-content:space-between;margin-top:8px">
+            <span style="font-size:12.5px;color:#64748b">특수교육 보완대체의사소통(AAC) 공용 말판</span>
+          </div>
+        </div>
+      `;
+      modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("open"); });
+      document.body.appendChild(modal);
+      modal.querySelector("[data-close-modal='d1AacModal']").addEventListener("click", () => modal.classList.remove("open"));
+    }
+
+    const grid = modal.querySelector("#d1AacGrid");
+    const spoken = modal.querySelector("#d1AacSpoken");
+
+    grid.innerHTML = GLOBAL_AAC_ITEMS.map((item) => (
+      `<button type="button" class="d1-aac-btn" data-aac-id="${item.id}">
+        <span class="d1-aac-emoji">${item.emoji}</span>
+        <span>${esc(item.label)}</span>
+      </button>`
+    )).join("");
+
+    grid.querySelectorAll("[data-aac-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const item = GLOBAL_AAC_ITEMS.find((x) => x.id === btn.dataset.aacId);
+        if (!item) return;
+        spoken.innerHTML = `<span>${item.emoji} "${esc(item.say)}"</span><button type="button" class="d1-btn-sm primary" id="d1AacRepeatBtn">🔊 다시 말하기</button>`;
+        spoken.querySelector("#d1AacRepeatBtn").addEventListener("click", () => speakText(item.say));
+        speakText(item.say);
+        if (item.id === "slow" && !spedPrefs.slowPace) {
+          setSpedPrefs({ slowPace: true });
+        }
+      });
+    });
+
+    modal.classList.add("open");
+  }
+
+  function openSpedSettingsModal() {
+    ensureModals();
+    let modal = document.getElementById("d1SpedModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "d1SpedModal";
+      modal.className = "d1-modal-backdrop";
+      modal.innerHTML = `
+        <div class="d1-modal-card" role="dialog" aria-modal="true" aria-label="맞춤 학습 지원 설정">
+          <div class="d1-modal-head">
+            <h2>🛡️ 맞춤 학습 지원 설정 (지적·자폐성장애 지원)</h2>
+            <button type="button" class="d1-close-btn" data-close-modal="d1SpedModal">닫기</button>
+          </div>
+          <div style="font-size:13px;color:#475569;margin-bottom:8px">여기서 설정한 내용은 4개 학습 활동 전체에 바로 적용됩니다.</div>
+          <div class="d1-sped-list">
+            <label class="d1-sped-item">
+              <div>
+                <strong>📖 쉬운 말 모드</strong>
+                <small>어려운 낱말을 짧고 쉬운 생활 말로 바꾸어 보여줘요.</small>
+              </div>
+              <input type="checkbox" id="d1PrefEasy" />
+            </label>
+            <label class="d1-sped-item">
+              <div>
+                <strong>🔊 화면 자동 읽어주기 (음성 안내)</strong>
+                <small>안내 문장과 단계 설명을 또박또박 소리 내어 읽어줘요.</small>
+              </div>
+              <input type="checkbox" id="d1PrefTts" />
+            </label>
+            <label class="d1-sped-item">
+              <div>
+                <strong>🐢 천천히 · 무오류 연습 모드</strong>
+                <small>빠른 시간 제한과 방해 요소(강풍·빙판·감점 흔들림)를 줄이고 차분히 연습해요.</small>
+              </div>
+              <input type="checkbox" id="d1PrefSlow" />
+            </label>
+          </div>
+          <div class="d1-msg" id="d1SpedMsg"></div>
+        </div>
+      `;
+      modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("open"); });
+      document.body.appendChild(modal);
+      modal.querySelector("[data-close-modal='d1SpedModal']").addEventListener("click", () => modal.classList.remove("open"));
+
+      const bindPref = (id, key, label) => {
+        modal.querySelector(id).addEventListener("change", (e) => {
+          setSpedPrefs({ [key]: e.target.checked });
+          modal.querySelector("#d1SpedMsg").textContent = `${label}: ${e.target.checked ? "켜짐" : "꺼짐"} (전체 앱에 적용됨)`;
+        });
+      };
+      bindPref("#d1PrefEasy", "easyMode", "쉬운 말 모드");
+      bindPref("#d1PrefTts", "ttsAuto", "음성 안내");
+      bindPref("#d1PrefSlow", "slowPace", "천천히·무오류 모드");
+    }
+
+    const p = getSpedPrefs();
+    modal.querySelector("#d1PrefEasy").checked = p.easyMode;
+    modal.querySelector("#d1PrefTts").checked = p.ttsAuto;
+    modal.querySelector("#d1PrefSlow").checked = p.slowPace;
+    modal.querySelector("#d1SpedMsg").textContent = "";
+    modal.classList.add("open");
+  }
+
   function openTeacherModal() {
     ensureModals();
     const modal = document.getElementById("d1TeacherModal");
@@ -992,17 +1203,22 @@
   }
 
   function mountFloatingBar() {
+    applySpedPrefsToDom();
     if (window.D1_HIDE_FLOATING || document.getElementById("d1FloatBar")) return;
     injectSharedStyles();
     const bar = document.createElement("div");
     bar.id = "d1FloatBar";
     bar.className = "d1-float-bar";
     bar.innerHTML = `
+      <button type="button" class="d1-float-btn aac" id="d1FloatingAacBtn" title="도움 말판 (AAC)">💬 말판</button>
+      <button type="button" class="d1-float-btn sped" id="d1FloatingSpedBtn" title="맞춤 학습 지원 설정">🛡️ 지원</button>
       <button type="button" class="d1-float-btn" id="d1FloatingStudentBtn" title="캐릭터 선택 로그인"></button>
       <button type="button" class="d1-float-btn teacher" id="d1FloatingTeacherBtn" title="교사 모드 (D1 DB 관리)">👩‍🏫 교사</button>
     `;
     document.body.appendChild(bar);
     updateFloatingPill();
+    document.getElementById("d1FloatingAacBtn").addEventListener("click", openAacModal);
+    document.getElementById("d1FloatingSpedBtn").addEventListener("click", openSpedSettingsModal);
     document.getElementById("d1FloatingStudentBtn").addEventListener("click", openStudentLoginModal);
     document.getElementById("d1FloatingTeacherBtn").addEventListener("click", openTeacherModal);
   }
@@ -1035,6 +1251,12 @@
     onProfileChange,
     openStudentLoginModal,
     openTeacherModal,
+    openAacModal,
+    openSpedSettingsModal,
+    getSpedPrefs,
+    setSpedPrefs,
+    onSpedPrefsChange,
+    speakText,
     checkHealth,
     saveRecord,
     getRecords,

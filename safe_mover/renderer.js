@@ -36,49 +36,57 @@ window.SafeMoverRenderer = (() => {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, hy);
 
+    const horizonGlow = ctx.createLinearGradient(0, hy * 0.45, 0, hy);
+    horizonGlow.addColorStop(0, "rgba(255,255,255,0)");
+    horizonGlow.addColorStop(1, S.night ? "rgba(139,92,246,0.22)" : "rgba(255,255,255,0.34)");
+    ctx.fillStyle = horizonGlow;
+    ctx.fillRect(0, hy * 0.45, W, hy * 0.55);
+
     if (S.night) {
       // 달/행성 글로우
       const mx = W * 0.84, my = hy * 0.32;
-      const glow = ctx.createRadialGradient(mx, my, 8, mx, my, 64);
-      glow.addColorStop(0, "rgba(255,249,196,0.65)");
+      const glow = ctx.createRadialGradient(mx, my, 8, mx, my, 76);
+      glow.addColorStop(0, "rgba(255,249,196,0.78)");
+      glow.addColorStop(0.5, "rgba(196,181,253,0.25)");
       glow.addColorStop(1, "rgba(255,249,196,0)");
       ctx.fillStyle = glow;
-      ctx.beginPath(); ctx.arc(mx, my, 64, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(mx, my, 76, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = S.stars ? "#EDE9FE" : "#FEF08A";
       ctx.beginPath(); ctx.arc(mx, my, S.stars ? 20 : 26, 0, Math.PI * 2); ctx.fill();
 
       // 반짝이는 별
       ctx.fillStyle = "#FFFFFF";
-      for (let i = 0; i < (S.stars ? 40 : 18); i++) {
+      for (let i = 0; i < (S.stars ? 44 : 22); i++) {
         const x = (i * 197 + animT * (S.stars ? 3 : 8)) % W;
         const y = 10 + (i * 53) % (hy - 22);
-        const tw = 0.35 + 0.65 * Math.abs(Math.sin(animT * 2.2 + i));
+        const tw = 0.35 + 0.65 * Math.abs(Math.sin(animT * 2.4 + i));
         ctx.globalAlpha = tw;
         ctx.beginPath();
-        ctx.arc(x, y, (i % 3 === 0 ? 2.4 : 1.5), 0, Math.PI * 2);
+        ctx.arc(x, y, (i % 3 === 0 ? 2.5 : 1.5), 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
 
       if (S.stars) {
         const pulse = 1 + Math.sin(animT * 2) * 0.08;
-        ctx.fillStyle = "rgba(139,92,246,0.28)";
-        ctx.beginPath(); ctx.arc(W * 0.2, hy * 0.56, 40 * pulse, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "rgba(139,92,246,0.3)";
+        ctx.beginPath(); ctx.arc(W * 0.2, hy * 0.56, 42 * pulse, 0, Math.PI * 2); ctx.fill();
         txt(ctx, "🪐", W * 0.2, hy * 0.56, 38 * pulse, "#fff", "rgba(0,0,0,.3)");
       }
     } else {
       // 태양 광채
       const sx = W * 0.84, sy = hy * 0.34;
-      const sg = ctx.createRadialGradient(sx, sy, 10, sx, sy, 70);
-      sg.addColorStop(0, "rgba(255,235,59,0.75)");
+      const sg = ctx.createRadialGradient(sx, sy, 10, sx, sy, 82);
+      sg.addColorStop(0, "rgba(255,235,59,0.85)");
+      sg.addColorStop(0.55, "rgba(253,186,116,0.28)");
       sg.addColorStop(1, "rgba(255,235,59,0)");
       ctx.fillStyle = sg;
-      ctx.beginPath(); ctx.arc(sx, sy, 70, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sx, sy, 82, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = S.sand ? "#F59E0B" : "#FDE047";
       ctx.beginPath(); ctx.arc(sx, sy, 26, 0, Math.PI * 2); ctx.fill();
 
       // 폭신한 구름
-      ctx.fillStyle = "rgba(255,255,255,0.88)";
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
       for (let i = 0; i < 4; i++) {
         const x = ((i * W / 3.5 + animT * (14 + i * 4)) % (W + 160)) - 80;
         const y = 34 + i * 18;
@@ -122,9 +130,9 @@ window.SafeMoverRenderer = (() => {
     ctx.fillStyle = g;
     ctx.fillRect(0, hy, W, H - hy);
 
-    // 반딧불 / 구름 / 거품 / 파도
+    // 반딧불 / 구름 / 거품 / 파도 / 축하 배경
     if (S.fireflies) {
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 18; i++) {
         const x = (i * 83 + Math.sin(animT * 1.5 + i) * 24 + W) % W;
         const y = hy + 30 + (i * 47) % (H - hy - 45);
         const glow = 0.3 + 0.7 * Math.abs(Math.sin(animT * 3 + i));
@@ -246,22 +254,22 @@ window.SafeMoverRenderer = (() => {
     ctx.scale(pulse * popIn, pulse * popIn);
 
     // 반짝이는 후광 + 회전 광선
-    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 78);
-    aura.addColorStop(0, "rgba(74, 222, 128, 0.72)");
-    aura.addColorStop(0.55, "rgba(253, 224, 71, 0.28)");
+    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, 82);
+    aura.addColorStop(0, "rgba(74, 222, 128, 0.78)");
+    aura.addColorStop(0.55, "rgba(253, 224, 71, 0.32)");
     aura.addColorStop(1, "rgba(74, 222, 128, 0)");
     ctx.fillStyle = aura;
-    ctx.beginPath(); ctx.arc(0, 0, 78, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 82, 0, Math.PI * 2); ctx.fill();
 
     ctx.save();
     ctx.rotate(animT * 1.6 + entity.ph);
-    ctx.strokeStyle = "rgba(253, 224, 71, 0.48)";
+    ctx.strokeStyle = "rgba(253, 224, 71, 0.55)";
     ctx.lineWidth = 3;
     for (let r = 0; r < 6; r++) {
       const ang = (Math.PI / 3) * r;
       ctx.beginPath();
       ctx.moveTo(Math.cos(ang) * 44, Math.sin(ang) * 44);
-      ctx.lineTo(Math.cos(ang) * 68, Math.sin(ang) * 68);
+      ctx.lineTo(Math.cos(ang) * 70, Math.sin(ang) * 70);
       ctx.stroke();
     }
     ctx.restore();
@@ -277,13 +285,16 @@ window.SafeMoverRenderer = (() => {
       const sx = Math.cos(a) * 70;
       const sy = Math.sin(a) * 26 - 6;
       ctx.fillStyle = i % 2 ? "#FDE047" : "#6EE7B7";
-      ctx.beginPath(); ctx.arc(sx, sy, 3.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sx, sy, 3.8, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 단어 카드 본체
+    // 단어 카드 본체 (은은한 광택 그라데이션)
     const cardW = Math.max(122, entity.word.length * 25 + 36);
     const cardH = 56;
-    ctx.fillStyle = "#FFFFFF";
+    const cardGrad = ctx.createLinearGradient(0, -cardH / 2, 0, cardH / 2);
+    cardGrad.addColorStop(0, "#FFFFFF");
+    cardGrad.addColorStop(1, "#ECFDF5");
+    ctx.fillStyle = cardGrad;
     ctx.strokeStyle = "#16A34A";
     ctx.lineWidth = 4.5;
     rr(ctx, -cardW / 2, -cardH / 2, cardW, cardH, 16);
@@ -299,7 +310,7 @@ window.SafeMoverRenderer = (() => {
     // 바른 단어 텍스트
     txt(ctx, entity.word, 0, 2, 24, "#14532D");
 
-    // 멀리서도 집중할 수 있는 바운싱 가이드 화살표 (위쪽에서 아래로 가리킴)
+    // 가이드 화살표
     const arrowBob = Math.sin(animT * 9 + entity.ph) * 7;
     const arrowScale = 1 + Math.sin(animT * 6 + entity.ph) * 0.1;
     ctx.save();
@@ -380,8 +391,8 @@ window.SafeMoverRenderer = (() => {
     txt(ctx, "❌ 피하세요!", 0, -114, 11, "#FFFFFF");
     txt(ctx, entity.word, 0, -87, 21, "#991B1B");
 
-    // 틀린 단어 위 X 표시 나타났다 사라지며 깜빡거리는 애니메이션
-    const blinkVal = (Math.sin(animT * 8 + entity.ph) + 1) * 0.5; // 0..1
+    // 틀린 단어 위 X 표시
+    const blinkVal = (Math.sin(animT * 8 + entity.ph) + 1) * 0.5;
     if (blinkVal > 0.28) {
       const alpha = Math.min(1, (blinkVal - 0.28) / 0.45);
       const xScale = 0.85 + alpha * 0.25;
@@ -445,7 +456,7 @@ window.SafeMoverRenderer = (() => {
     for (const o of entities) {
       if (o.collected || o.hit) continue;
       if (o.kind === "correct" && o.z >= 0.02 && o.z < 0.92) {
-        const pulse = 0.18 + 0.14 * Math.sin(animT * 8 + o.ph);
+        const pulse = 0.2 + 0.16 * Math.sin(animT * 8 + o.ph);
         const oLane = o.lane + (o.off || 0);
         const pz = Math.pow(Math.min(1, Math.max(0.02, o.z)), 2);
         const yEnd = hy + (H * 0.86 - hy) * pz;
@@ -472,7 +483,7 @@ window.SafeMoverRenderer = (() => {
         const xNow = cx + oLane * (hwEnd * 0.62);
         const yNow = hy + (H * 0.84 - hy) * pz;
         ctx.save();
-        ctx.fillStyle = "rgba(239, 68, 68, " + (0.15 + 0.15 * Math.sin(animT * 14)).toFixed(2) + ")";
+        ctx.fillStyle = "rgba(239, 68, 68, " + (0.16 + 0.16 * Math.sin(animT * 14)).toFixed(2) + ")";
         ctx.beginPath();
         ctx.ellipse(xNow, yNow + 4, 46 * pz + 16, 14 * pz + 6, 0, 0, Math.PI * 2);
         ctx.fill();

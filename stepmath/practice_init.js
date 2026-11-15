@@ -495,21 +495,24 @@ const HINTS = {
   1: { text: '같은 과일끼리 모아요. 사과는 사과 바구니에 넣어요.', target: '[data-drop="basket:apple"]' },
   2: { text: '점을 칸 위로 눌러 1부터 5까지 하나씩 채워요.', target: '[data-drop="count-add"]' },
   3: { text: '10칸 판을 6부터 10까지 차례로 채워요.', target: '[data-drop="count-add"]' },
-  4: { text: '점을 양쪽 접시에 나누어 놓고, 더 많은 쪽을 찾아요.', target: '[data-drop="cmp:a"]' },
-  5: { text: '두 묶음을 하나로 모아 모두 몇 개인지 세어요.', target: '[data-cell-fill]' },
-  6: { text: '전체에서 빼는 수만큼 덜어내어 남은 수를 세어요.', target: '[data-cell-fill]' },
-  7: { text: '오른쪽 점을 왼쪽 빈칸으로 끌어 10을 만들어요.', target: '[data-drop="mtLeft:0"]' },
-  8: { text: '보라색 개구리를 끌어 목표 자리에 놓아요.', target: '[data-nl-marker]' },
-  9: { text: '일 모형 10개를 10개 묶기 자리로 끌어요.', target: '[data-drop="place-bundle10"]' },
-  10: { text: '십 모형 10개를 100개 묶기 자리로 끌어요.', target: '[data-drop="place-bundle100"]' },
-  11: { text: '묶음 카드를 빈 자리로 끌어다 놓아요.', target: '[data-drop="mul:0"]' },
-  12: { text: '접시마다 똑같은 개수가 되도록 나누어 담아요.', target: '[data-drop="mul:0"]' },
-  13: { text: '분수 조각을 막대로 끌어다 놓아요.', target: '[data-drop="frac:a"]' },
-  14: { text: '소수점(.) 버튼을 눌러 소수 식을 만들어 보세요.', target: '[data-drop="frac:a"]' },
-  15: { text: '자·비커·저울 눈금을 손가락으로 움직여 보세요.', target: '.ruler-object' },
-  16: { text: '시계 바늘을 돌리거나 동전을 눌러 금액을 맞혀요.', target: '.clock-grab' },
-  17: { text: '도형을 보드로 끌어다 놓아요. 두 번 누르면 돌아가요.', target: '[data-drop="shape-board"]' },
-  18: { text: '과일을 그래프 위로 끌어다 놓아요.', target: '[data-drop="data:apple"]' },
+  4: { text: '십 모형 1개와 일 모형을 눌러 11부터 20까지 만들어요.', target: '[data-drop="place-bundle10"]' },
+  5: { text: '점을 양쪽 접시에 나누어 놓고, 더 많은 쪽을 찾아요.', target: '[data-drop="cmp:a"]' },
+  6: { text: '두 묶음을 하나로 모아 모두 몇 개인지 세어요.', target: '[data-cell-fill]' },
+  7: { text: '전체에서 빼는 수만큼 덜어내어 남은 수를 세어요.', target: '[data-cell-fill]' },
+  8: { text: '오른쪽 점을 왼쪽 빈칸으로 끌어 10을 만들어요.', target: '[data-drop="mtLeft:0"]' },
+  9: { text: '보라색 개구리를 끌어 2씩·5씩·10씩 뛰어 세어 봐요.', target: '[data-nl-marker]' },
+  10: { text: '보라색 개구리를 끌어 수직선에서 점프해 계산해요.', target: '[data-nl-marker]' },
+  11: { text: '일 모형 10개를 10개 묶기 자리로 끌어요.', target: '[data-drop="place-bundle10"]' },
+  12: { text: '십 모형 10개를 100개 묶기 자리로 끌어요.', target: '[data-drop="place-bundle100"]' },
+  13: { text: '묶음 카드를 빈 자리로 끌어다 놓아요.', target: '[data-drop="mul:0"]' },
+  14: { text: '접시마다 똑같은 개수가 되도록 나누어 담아요.', target: '[data-drop="mul:0"]' },
+  15: { text: '분수 조각을 막대로 끌어다 놓아요.', target: '[data-drop="frac:a"]' },
+  16: { text: '소수점(.)과 0.1 조각을 눌러 소수 식을 만들어 보세요.', target: '[data-drop="frac:a"]' },
+  17: { text: '자·비커·저울 눈금을 손가락으로 움직여 보세요.', target: '.ruler-object' },
+  18: { text: '시계 바늘을 돌리거나 버튼을 눌러 시간을 맞혀요.', target: '.clock-grab' },
+  19: { text: '동전을 눌러 알맞은 금액을 만들어 보세요.', target: '[data-mtab="money"]' },
+  20: { text: '도형을 보드로 끌어다 놓아요. 두 번 누르면 돌아가요.', target: '[data-drop="shape-board"]' },
+  21: { text: '과일을 그래프 위로 끌어다 놓아요.', target: '[data-drop="data:apple"]' },
 };
 function giveHint(auto) {
   if (auto && state.promptLevel > 0) { scheduleAutoHint(); return; }
@@ -542,15 +545,22 @@ function modelStep(stageId) {
   let modeled = false;
   switch (stageId) {
     case 1: modeled = click('[data-sort-item]'); break;
-    case 2: modeled = click('[data-count="p1"]'); break;
-    case 3: modeled = click('[data-cmp="a:1"]'); break;
-    case 4: modeled = click('[data-compose="b:1"]'); break;
-    case 5: modeled = click('[data-mt="7,5"]'); break;
-    case 6: modeled = click('[data-st]'); break;
-    case 7: modeled = click('[data-pa="add1"]'); break;
-    case 8: modeled = click('[data-mul-bundle]'); break;
-    case 9: modeled = click('[data-frac-piece="a"]'); break;
-    case 10:
+    case 2:
+    case 3: modeled = click('[data-count="p1"]'); break;
+    case 4: modeled = click('[data-pa="add1"]'); break;
+    case 5: modeled = click('[data-cmp="a:1"]'); break;
+    case 6:
+    case 7: modeled = click('[data-compose="b:1"]'); break;
+    case 8: modeled = click('[data-mt="7,5"]'); break;
+    case 9:
+    case 10: modeled = click('[data-st]'); break;
+    case 11:
+    case 12: modeled = click('[data-pa="add1"]'); break;
+    case 13:
+    case 14: modeled = click('[data-mul-bundle]'); break;
+    case 15:
+    case 16: modeled = click('[data-frac-piece="a"]'); break;
+    case 17:
       modeled = click('[data-mtab="length"]');
       if (modeled) {
         const range = body.querySelector('#lenRange');
@@ -562,8 +572,10 @@ function modelStep(stageId) {
         }
       }
       break;
-    case 11: modeled = click('[data-shape-source]'); break;
-    case 12: modeled = click('[data-data-token]'); break;
+    case 18: modeled = click('[data-mtab="clock"]'); break;
+    case 19: modeled = click('[data-mtab="money"]'); break;
+    case 20: modeled = click('[data-shape-source]'); break;
+    case 21: modeled = click('[data-data-token]'); break;
     default: modeled = false;
   }
   if (modeled) announce('같이 해 보았어요. 이제 직접 해 볼까요?');
@@ -734,8 +746,6 @@ function init() {
   bindSetting('setTouch', 'touch');
   bindSetting('setWait', 'wait', (el) => Number(el.value));
   bindSetting('setTokens', 'tokenMax', (el) => Number(el.value));
-  bindSetting('setMotion', 'motion');
-  bindSetting('setContrast', 'contrast');
   bindSetting('setEasy', 'easy');
   bindSetting('setErrorless', 'errorless');
   bindSetting('setHaptic', 'haptic');
@@ -760,6 +770,15 @@ function init() {
   };
   $('lessonNextBtn').onclick = advanceLesson;
 
+  {
+    const b = $('voiceBtn');
+    if (b) {
+      b.classList.toggle('on', state.voice);
+      b.classList.toggle('off', !state.voice);
+      b.setAttribute('aria-pressed', state.voice ? 'true' : 'false');
+      b.textContent = state.voice ? '🔊 음성 안내' : '🔇 음성 꺼짐';
+    }
+  }
   $('voiceBtn').onclick = () => {
     state.voice = !state.voice;
     const b = $('voiceBtn');
@@ -767,6 +786,9 @@ function init() {
     b.classList.toggle('off', !state.voice);
     b.setAttribute('aria-pressed', state.voice ? 'true' : 'false');
     b.textContent = state.voice ? '🔊 음성 안내' : '🔇 음성 꺼짐';
+    if (window.D1Bridge && window.D1Bridge.setSpedPrefs) {
+      window.D1Bridge.setSpedPrefs({ ttsAuto: state.voice });
+    }
     if (!state.voice) stopSpeech();
   };
   $('resetBtn').onclick = () => clearEntry();
@@ -818,6 +840,23 @@ function init() {
     else if (e.key === 'Backspace') { e.preventDefault(); pressBackspace(); }
     else if (e.key === 'Escape') clearEntry();
   });
+
+  if (window.D1Bridge && window.D1Bridge.onSpedPrefsChange) {
+    window.D1Bridge.onSpedPrefsChange((prefs) => {
+      if (!prefs) return;
+      state.settings.easy = !!prefs.easyMode;
+      state.voice = !!prefs.ttsAuto;
+      const vb = $('voiceBtn');
+      if (vb) {
+        vb.classList.toggle('on', state.voice);
+        vb.classList.toggle('off', !state.voice);
+        vb.setAttribute('aria-pressed', state.voice ? 'true' : 'false');
+        vb.textContent = state.voice ? '🔊 음성 안내' : '🔇 음성 꺼짐';
+      }
+      applySettings();
+      render();
+    });
+  }
 
   render();
 }

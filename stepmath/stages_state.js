@@ -106,8 +106,6 @@ const state = {
     touch: "normal",
     wait: 8,
     tokenMax: 5,
-    motion: false,
-    contrast: false,
     easy: false,
     errorless: true,
     haptic: true

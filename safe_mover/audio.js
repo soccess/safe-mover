@@ -4,7 +4,9 @@
    강화된 효과음 (WebAudio 다중 화음/신디사이저) + 한국어 TTS
    ============================================================ */
 window.SafeMoverAudio = (() => {
-  let soundOn = true;
+  let sfxOn = true;
+  let voiceOn = true;
+  let slowMode = false;
   let AC = null;
 
   function getAC() {
@@ -15,8 +17,12 @@ window.SafeMoverAudio = (() => {
     return AC;
   }
 
+  function volScale(v) {
+    return v || 0.2;
+  }
+
   function tone(f0, f1, dur, type, vol, delay) {
-    if (!soundOn) return;
+    if (!sfxOn) return;
     try {
       const c = getAC();
       if (!c) return;
@@ -27,7 +33,7 @@ window.SafeMoverAudio = (() => {
       o.frequency.setValueAtTime(f0, t);
       o.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t + dur);
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(vol || 0.2, t + 0.012);
+      g.gain.linearRampToValueAtTime(volScale(vol), t + 0.012);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g);
       g.connect(c.destination);
@@ -37,7 +43,7 @@ window.SafeMoverAudio = (() => {
   }
 
   function filteredTone(f0, f1, dur, type, vol, cutoff, delay) {
-    if (!soundOn) return;
+    if (!sfxOn) return;
     try {
       const c = getAC();
       if (!c) return;
@@ -51,7 +57,7 @@ window.SafeMoverAudio = (() => {
       o.frequency.setValueAtTime(f0, t);
       o.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(vol || 0.16, t + 0.015);
+      g.gain.linearRampToValueAtTime(volScale(vol || 0.16), t + 0.015);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(flt);
       flt.connect(g);
@@ -62,7 +68,7 @@ window.SafeMoverAudio = (() => {
   }
 
   function noiseBurst(dur, vol, cutoff, delay) {
-    if (!soundOn) return;
+    if (!sfxOn) return;
     try {
       const c = getAC();
       if (!c) return;
@@ -77,7 +83,7 @@ window.SafeMoverAudio = (() => {
       flt.frequency.value = cutoff || 1200;
       const g = c.createGain();
       const t = c.currentTime + (delay || 0);
-      g.gain.setValueAtTime(vol || 0.08, t);
+      g.gain.setValueAtTime(volScale(vol || 0.08), t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       src.connect(flt);
       flt.connect(g);
@@ -88,79 +94,86 @@ window.SafeMoverAudio = (() => {
 
   function speak(text) {
     try {
-      if (!soundOn || !("speechSynthesis" in window)) return;
+      if (!voiceOn || !("speechSynthesis" in window)) return;
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "ko-KR";
-      u.rate = 1.04;
-      u.pitch = 1.1;
+      u.rate = slowMode ? 0.88 : 0.98;
+      u.pitch = 1.06;
       speechSynthesis.speak(u);
     } catch (_) {}
   }
 
   return {
-    isOn() { return soundOn; },
+    isOn() { return sfxOn; },
+    isVoiceOn() { return voiceOn; },
+    setSlow(v) { slowMode = Boolean(v); },
+    setVoice(v) {
+      voiceOn = Boolean(v);
+      if (!voiceOn) { try { speechSynthesis.cancel(); } catch (_) {} }
+      return voiceOn;
+    },
+    setSfx(v) {
+      sfxOn = Boolean(v);
+      return sfxOn;
+    },
     toggle() {
-      soundOn = !soundOn;
-      if (soundOn) this.tap();
+      sfxOn = !sfxOn;
+      if (sfxOn) this.tap();
+      return sfxOn;
+    },
+    toggleVoice() {
+      voiceOn = !voiceOn;
+      if (voiceOn) this.tap();
       else { try { speechSynthesis.cancel(); } catch (_) {} }
-      return soundOn;
+      return voiceOn;
     },
     speak,
     tone,
     step(n) {
-      tone(n % 2 ? 310 : 250, n % 2 ? 430 : 340, 0.06, "triangle", 0.09);
+      tone(n % 2 ? 310 : 250, n % 2 ? 430 : 340, 0.06, "triangle", 0.07);
       noiseBurst(0.03, 0.02, 900);
     },
     lane() {
-      tone(360, 720, 0.11, "sine", 0.16);
-      tone(540, 1040, 0.09, "triangle", 0.08, 0.02);
+      tone(360, 720, 0.11, "sine", 0.14);
+      tone(540, 1040, 0.09, "triangle", 0.07, 0.02);
       noiseBurst(0.07, 0.04, 1800);
     },
     spawnCorrect() {
-      // 멀리서 바른 단어가 나타날 때 주의 집중 반짝음
-      tone(880, 1174, 0.10, "sine", 0.07);
-      tone(1318, 1567, 0.12, "triangle", 0.05, 0.06);
+      // 멀리서 바른 단어가 나타날 때 부드러운 주의 집중음
+      tone(784, 988, 0.10, "sine", 0.05);
+      tone(1174, 1318, 0.11, "triangle", 0.04, 0.05);
     },
     collect(word) {
-      // 캐릭터가 바른 단어를 잡았을 때 풍성한 화음 + 반짝 멜로디
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-        tone(f, f * 1.02, 0.18, "triangle", 0.19, i * 0.045);
-        tone(f * 2, f * 2, 0.12, "sine", 0.06, i * 0.045 + 0.01);
+        tone(f, f * 1.02, 0.16, "triangle", 0.16, i * 0.045);
       });
-      tone(1567.98, 2093, 0.20, "sine", 0.09, 0.16);
       if (word) {
-        setTimeout(() => speak(word), 180);
+        setTimeout(() => speak(word), 160);
       }
     },
     dodge() {
-      tone(880, 1318, 0.12, "sine", 0.13);
-      tone(1318, 1760, 0.12, "triangle", 0.09, 0.05);
+      tone(784, 1046, 0.10, "sine", 0.10);
     },
     wrongTap() {
-      filteredTone(340, 160, 0.22, "sawtooth", 0.14, 650);
-      filteredTone(250, 120, 0.22, "triangle", 0.10, 500, 0.05);
+      // 부드러운 하강 안내음
+      tone(392, 311, 0.18, "sine", 0.10);
+      tone(330, 262, 0.18, "triangle", 0.08, 0.07);
     },
     hit() {
-      filteredTone(520, 95, 0.36, "sawtooth", 0.22, 540);
-      tone(150, 58, 0.34, "sine", 0.22);
-      tone(220, 110, 0.24, "square", 0.08, 0.04);
-      noiseBurst(0.16, 0.10, 420);
+      filteredTone(420, 140, 0.28, "triangle", 0.16, 540);
+      tone(196, 130, 0.24, "sine", 0.14);
     },
     clear() {
-      [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
-        tone(f, f * 1.01, 0.24, "triangle", 0.2, i * 0.09);
-        tone(f * 1.5, f * 1.5, 0.18, "sine", 0.08, i * 0.09 + 0.02);
-        tone(f * 0.5, f * 0.5, 0.22, "sine", 0.09, i * 0.09);
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        tone(f, f * 1.01, 0.22, "triangle", 0.16, i * 0.09);
       });
     },
     fanfare() {
-      [392, 523.25, 659.25, 783.99, 659.25, 1046.5, 1318.5].forEach((f, i) => {
-        tone(f, f, 0.3, "triangle", 0.2, i * 0.11);
-        tone(f * 0.5, f * 0.5, 0.3, "sine", 0.10, i * 0.11);
-        tone(f * 1.5, f * 1.5, 0.22, "sine", 0.06, i * 0.11 + 0.02);
+      [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        tone(f, f, 0.26, "triangle", 0.16, i * 0.10);
       });
     },
-    tap() { tone(520, 960, 0.08, "sine", 0.16); }
+    tap() { tone(520, 780, 0.07, "sine", 0.12); }
   };
 })();

@@ -227,6 +227,8 @@
         <span id="d1StatusText">Cloudflare D1 DB 연결 상태 확인 중...</span>
       </div>
       <div class="d1-controls">
+        <button type="button" class="d1-btn" id="btnSpedPrefs">🛡️ 맞춤 지원</button>
+        <button type="button" class="d1-btn" id="btnGlobalAac">💬 도움 말판</button>
         <button type="button" class="d1-btn" id="btnStudentLogin">🎨 캐릭터 로그인</button>
         <button type="button" class="d1-btn" id="btnTeacherMode">👩‍🏫 교사 모드</button>
         <button type="button" class="d1-btn" id="btnToggleRecords">📋 D1 학습 기록</button>
@@ -271,6 +273,8 @@
       if (window.D1Bridge) {
         syncProfileBtn();
         window.D1Bridge.onProfileChange(syncProfileBtn);
+        document.getElementById("btnSpedPrefs").addEventListener("click", () => window.D1Bridge.openSpedSettingsModal());
+        document.getElementById("btnGlobalAac").addEventListener("click", () => window.D1Bridge.openAacModal());
         btnStudentLogin.addEventListener("click", () => window.D1Bridge.openStudentLoginModal());
         btnTeacherMode.addEventListener("click", () => window.D1Bridge.openTeacherModal());
       }

@@ -782,3 +782,18 @@ function applyCurriculumToApp() {
   if (typeof renderLessonPath === "function") renderLessonPath();
   if (typeof renderTool === "function") renderTool();
 }
+
+function validateState() {
+  state.stage = clamp(Number(state.stage) || 6, 1, STAGES.length);
+  state.formulaMode = ["both", "horizontal", "vertical"].includes(state.formulaMode) ? state.formulaMode : "both";
+  if (!ITEMS.some((it) => it.id === state.itemTheme)) state.itemTheme = "apple";
+  state.parts = partsFromValue(totalOf(state.parts));
+  state.compare.a = clamp(Number(state.compare.a) || 6, 0, 20);
+  state.compare.b = clamp(Number(state.compare.b) || 4, 0, 20);
+  state.measure.length = clamp(Number(state.measure.length) || 0, 0, 20);
+  state.measure.volume = clamp(Number(state.measure.volume) || 0, 0, 10);
+  state.measure.weight = clamp(Number(state.measure.weight) || 0, 0, 1000);
+  state.measure.minutes = ((Number(state.measure.minutes) || 0) % 1440 + 1440) % 1440;
+  state.tokens = clamp(Number(state.tokens) || 0, 0, state.settings.tokenMax);
+  state.promptLevel = clamp(Number(state.promptLevel) || 0, 0, 4);
+}

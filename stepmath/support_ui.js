@@ -16,13 +16,24 @@ function loadSupportSettings() {
       if (!Array.isArray(state.session.log)) state.session.log = [];
     }
   } catch (e) { /* 저장 불가 환경 무시 */ }
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) state.settings.motion = true;
+  if (window.D1Bridge && window.D1Bridge.getSpedPrefs) {
+    const sp = window.D1Bridge.getSpedPrefs();
+    if (sp) {
+      if (sp.easyMode) state.settings.easy = true;
+      if (typeof sp.ttsAuto === 'boolean') state.voice = sp.ttsAuto;
+    }
+  }
   state.settings.tokenMax = clamp(Number(state.settings.tokenMax) || 5, 3, 10);
   state.settings.wait = [0, 5, 8, 12].includes(Number(state.settings.wait)) ? Number(state.settings.wait) : 8;
 }
 function saveSupportSettings() {
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch (e) { /* 무시 */ }
   if (window.D1Bridge) window.D1Bridge.setKV(SETTINGS_KEY, state.settings);
+  if (window.D1Bridge && window.D1Bridge.setSpedPrefs) {
+    window.D1Bridge.setSpedPrefs({
+      easyMode: Boolean(state.settings.easy)
+    });
+  }
 }
 function saveSession() {
   try {
@@ -36,8 +47,6 @@ function applySettings() {
   document.body.classList.toggle('text-large', s.textSize === 'large');
   document.body.classList.toggle('text-xlarge', s.textSize === 'xlarge');
   document.body.classList.toggle('big-touch', s.touch === 'big');
-  document.body.classList.toggle('reduce-motion', Boolean(s.motion));
-  document.body.classList.toggle('high-contrast', Boolean(s.contrast));
   document.body.classList.toggle('easy-read', Boolean(s.easy));
   const set = (id, value) => { const el = $(id); if (el) el.value = value; };
   const check = (id, value) => { const el = $(id); if (el) el.checked = Boolean(value); };
@@ -45,8 +54,6 @@ function applySettings() {
   set('setTouch', s.touch);
   set('setWait', String(s.wait));
   set('setTokens', String(s.tokenMax));
-  check('setMotion', s.motion);
-  check('setContrast', s.contrast);
   check('setEasy', s.easy);
   check('setErrorless', s.errorless);
   check('setHaptic', s.haptic);

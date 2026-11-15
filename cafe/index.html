@@ -45,6 +45,7 @@
           <div class="controls-group">
             <button id="focusStepBtn" class="pill-btn active" title="현재 단계 크게 보기">🔍 확대</button>
             <button id="resetCamBtn" class="pill-btn" title="카페 전체 보기">🎥 전체</button>
+            <button id="quickBreakBtn" class="pill-btn" title="잠깐 쉬기">🌿 쉼</button>
             <button id="settingsToggleBtn" class="pill-btn" aria-expanded="false" aria-controls="settingsPopover" title="설정 열기">⚙️</button>
             <a class="pill-btn home-pill-link" href="../index.html" title="학습 게임 목록으로 이동">🏠</a>
           </div>
@@ -64,6 +65,8 @@
 
         <!-- 슬림 시각적 과제 분석표 -->
         <section class="schedule-strip" id="scheduleStrip" aria-label="만드는 순서"></section>
+        <!-- 지금 → 다음 시각 안내 -->
+        <div class="first-then-bar" id="firstThenBar" aria-live="polite"></div>
       </div>
 
       <!-- 3D 호버 툴팁 -->
@@ -75,6 +78,7 @@
         <button id="modeBtn" class="pill-btn active" title="안내 모드 전환">🧭 안내 모드: 켜짐</button>
         <button id="voiceBtn" class="pill-btn" title="음성 안내 켜기/끄기">🔊 음성 안내: 꺼짐</button>
         <button id="soundBtn" class="pill-btn active" title="부드러운 효과음 켜기/끄기">🔔 효과음: 켜짐</button>
+        <button id="easyCafeBtn" class="pill-btn" title="쉬운 말 안내 전환">📖 쉬운 말: 꺼짐</button>
       </div>
 
       <!-- 하단 플로팅 안내 + 동작 버튼 도크 (중앙 3D 화면 가림 없음) -->
@@ -82,9 +86,20 @@
         <div class="guidance-banner" id="guidanceBanner" role="status" aria-live="polite">
           <span class="guidance-emoji" id="guidanceEmoji">☕</span>
           <span class="guidance-text" id="guidanceText">3D 카페를 불러오고 있어요...</span>
+          <button type="button" id="speakStepBtn" class="speak-step-btn" title="지금 할 일 다시 듣기">🔊 듣기</button>
         </div>
         <div class="action-bar" id="actionBar" aria-label="동작 버튼"></div>
       </footer>
+
+      <!-- 잠깐 쉬기 오버레이 -->
+      <div id="cafeBreakModal" class="complete-modal hidden" role="dialog" aria-modal="true" aria-label="잠깐 쉬기">
+        <div class="complete-card">
+          <div style="font-size:44px;margin-bottom:6px">🌿</div>
+          <h2>잠깐 숨을 고르고 있어요</h2>
+          <p>코로 천천히 숨을 들이쉬고 입으로 길게 내쉬어 보세요.<br>준비가 되면 다시 음료를 만들어요.</p>
+          <button id="resumeCafeBtn" class="primary-action-btn">▶ 이어서 만들기</button>
+        </div>
+      </div>
 
       <!-- 완성 축하 오버레이 -->
       <div id="completeModal" class="complete-modal hidden" role="dialog" aria-modal="true">
