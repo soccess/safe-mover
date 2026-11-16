@@ -261,17 +261,22 @@ function startDrag(ev, el, payload, onDrop, opts) {
     el.removeEventListener('pointerup', onUp);
     el.removeEventListener('pointercancel', onUp);
     try { el.releasePointerCapture(pointerId); } catch (err) { /* 무시 */ }
-    const dropZone = hot;
+    const underUp = document.elementFromPoint(e.clientX, e.clientY);
+    const dropZone = (underUp ? underUp.closest(opts.zoneSelector || '[data-drop]') : null) || hot;
     if (ghost) ghost.remove();
     document.body.classList.remove('is-dragging');
     el.classList.remove('drag-source-active');
     clearHot();
     if (moved) {
       dragClickGuard = true;
-      setTimeout(() => { dragClickGuard = false; }, 300);
+      setTimeout(() => { dragClickGuard = false; }, 60);
       if (onDrop) onDrop(payload, dropZone, el, e);
     } else if (opts.onTap) {
       opts.onTap(payload, el, e);
+    } else {
+      if (opts.onStart) opts.onStart(payload, el);
+      const hint = typeof opts.dragHint === 'function' ? opts.dragHint(payload, el) : opts.dragHint;
+      announce(hint || '손가락으로 끌어다 놓아 보세요.');
     }
   };
   el.addEventListener('pointermove', onMove);
@@ -288,7 +293,10 @@ function showHintTarget(selector, root) {
   if (el) {
     el.classList.add('hint-target');
     if (!document.body.classList.contains('is-dragging')) {
-      try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* 무시 */ }
+      const r = el.getBoundingClientRect();
+      if (r.top < 0 || r.bottom > window.innerHeight) {
+        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* 무시 */ }
+      }
     }
   }
   return el;

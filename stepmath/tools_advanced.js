@@ -29,6 +29,12 @@ function modifyParts(kind) {
     else if (p.tens > 0) { p.tens -= 1; p.units += 9; }
     else if (p.hundreds > 0) { p.hundreds -= 1; p.tens += 9; p.units += 9; }
     else return;
+  } else if (kind === 'sub10') {
+    if (p.tens > 0) p.tens -= 1;
+    else return;
+  } else if (kind === 'sub100') {
+    if (p.hundreds > 0) p.hundreds -= 1;
+    else return;
   } else if (kind === 'clear') {
     p.hundreds = 0; p.tens = 0; p.units = 0;
   }
@@ -43,9 +49,9 @@ function renderPlace() {
   const p = state.parts;
   const total = totalOf(p);
   const body = $('toolBody');
-  const flats = Array.from({ length: p.hundreds }, () => `<div class="flat" data-place-item="hundreds" role="button" tabindex="0" title="백모형 · 끌어서 풀 수 있어요">${'<span></span>'.repeat(100)}</div>`).join('');
-  const rods = Array.from({ length: p.tens }, () => `<button type="button" class="rod" data-unbundle data-place-item="tens" title="십모형 · 누르거나 끌어서 일모형 10개로 풀 수 있어요">${'<span></span>'.repeat(10)}</button>`).join('');
-  const units = Array.from({ length: p.units }, () => `<button type="button" class="unit" data-remove data-place-item="units" title="일모형 · 누르면 1개 줄어요"></button>`).join('');
+  const flats = Array.from({ length: p.hundreds }, () => `<div class="flat" data-place-item="hundreds" role="button" tabindex="0" title="백모형 · 끌어서 풀거나 뺄 수 있어요">${'<span></span>'.repeat(100)}</div>`).join('');
+  const rods = Array.from({ length: p.tens }, () => `<button type="button" class="rod" data-place-item="tens" title="십모형 · 끌어서 묶거나 풀고 뺄 수 있어요">${'<span></span>'.repeat(10)}</button>`).join('');
+  const units = Array.from({ length: p.units }, () => `<button type="button" class="unit" data-place-item="units" style="cursor:grab;touch-action:none" title="일모형 · 끌어서 묶거나 뺄 수 있어요"></button>`).join('');
   setToolHead('🧱 자릿값 수모형', '수모형을 끌어 자리 칸에 놓고, 10개·100개를 묶어요');
   body.innerHTML = `
     <div class="chips">
@@ -59,6 +65,7 @@ function renderPlace() {
       <div class="place-source one" data-place-source="1" role="button" tabindex="0"><span class="ps-icon">🟦</span>일 1</div>
       <div class="place-source ten" data-place-source="10" role="button" tabindex="0"><span class="ps-icon">🟩</span>십 10</div>
       <div class="place-source hundred" data-place-source="100" role="button" tabindex="0"><span class="ps-icon">🟧</span>백 100</div>
+      <div class="drop-plate" data-drop="place-trash" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2;flex:1"><div class="plate-title" style="margin:0"><span>➖ 여기로 끌면 모형 빼기</span></div></div>
     </div>
     <div class="place-columns">
       <div class="place-col hundreds" data-drop="place:hundreds">
@@ -113,9 +120,6 @@ function renderPlace() {
       else afterModify(b.dataset.pa);
     };
   });
-  body.querySelectorAll('[data-remove]').forEach((b) => { b.onclick = () => afterModify('sub1'); });
-  body.querySelectorAll('[data-unbundle]').forEach((b) => { b.onclick = () => afterModify('unbundle'); });
-
   const placeSource = (value, zone) => {
     const drop = (zone.dataset.drop || '');
     const expected = value === 1 ? 'place:units' : value === 10 ? 'place:tens' : 'place:hundreds';
@@ -129,12 +133,6 @@ function renderPlace() {
     recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `수모형 ${value} 놓기`);
     afterModify(value === 1 ? 'add1' : value === 10 ? 'add10' : 'add100');
   };
-  body.querySelectorAll('[data-place-source]').forEach((t) => {
-    t.onclick = () => {
-      const v = Number(t.dataset.placeSource);
-      afterModify(v === 1 ? 'add1' : v === 10 ? 'add10' : 'add100');
-    };
-  });
   bindDrag(body, '[data-place-source]', (el) => ({ value: Number(el.dataset.placeSource) }), (p, zone) => {
     if (!zone) return;
     placeSource(p.value, zone);
@@ -143,12 +141,19 @@ function renderPlace() {
       if (!state.settings.errorless) return;
       showHintTarget(`[data-drop="${p.value === 1 ? 'place:units' : p.value === 10 ? 'place:tens' : 'place:hundreds'}"]`, body);
     },
+    onTap: (p) => {
+      const target = p.value === 1 ? 'place:units' : p.value === 10 ? 'place:tens' : 'place:hundreds';
+      if (state.settings.errorless) showHintTarget(`[data-drop="${target}"]`, body);
+      speak('수모형을 손가락으로 끌어 알맞은 자리 칸에 놓아 보세요.');
+    },
     onActivate: (p) => afterModify(p.value === 1 ? 'add1' : p.value === 10 ? 'add10' : 'add100'),
   });
   bindDrag(body, '[data-place-item]', (el) => ({ from: el.dataset.placeItem }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
-    if (drop === 'place-bundle10' && p.from === 'units') {
+    if (drop === 'place-trash') {
+      afterModify(p.from === 'units' ? 'sub1' : p.from === 'tens' ? 'sub10' : 'sub100');
+    } else if (drop === 'place-bundle10' && p.from === 'units') {
       if (state.parts.units < 10) { speak('일모형이 10개 모이면 묶을 수 있어요.'); return; }
       afterModify('bundle');
     } else if (drop === 'place-bundle100' && p.from === 'tens') {
@@ -167,6 +172,7 @@ function renderPlace() {
       if (p.from === 'units') showHintTarget('[data-drop="place-bundle10"]', body);
       if (p.from === 'tens') showHintTarget('[data-drop="place-bundle100"]', body);
     },
+    onTap: (p) => speak('수모형을 손가락으로 끌어 묶기, 풀기 또는 빼기 칸에 놓아 보세요.'),
   });
 }
 
@@ -189,15 +195,18 @@ function renderMultiply() {
     const platesHtml = Array.from({ length: plateCount }, (_, i) => `
       <div class="plate-slot" data-drop="div:${i}">
         <div class="ps-title">${i + 1}번 접시 · ${state.divPlates[i]}개</div>
-        <div class="ps-dots">${Array.from({ length: state.divPlates[i] }, () => '<span class="ps-dot"></span>').join('') || '<span class="muted" style="font-size:10px">여기에 놓아요</span>'}</div>
+        <div class="ps-dots">${Array.from({ length: state.divPlates[i] }, () => `<span class="ps-dot" data-div-placed="${i}" role="button" tabindex="0" aria-label="${i + 1}번 접시의 점"></span>`).join('') || '<span class="muted" style="font-size:10px">여기에 놓아요</span>'}</div>
       </div>`).join('');
     setToolHead('➗ 똑같이 나누기', `${first}개를 ${second}곳에 똑같이 끌어 나누어요`);
     body.innerHTML = `
-      <div class="guide">전체 <b>${first}개</b>를 <b>${second}곳</b>에 똑같이 나누어요. 점을 접시로 <b>끌어다 놓으세요</b>. 남는 점은 남는 곳에 놓아요.</div>
+      <div class="guide">전체 <b>${first}개</b>를 <b>${second}곳</b>에 똑같이 나누어요. 점을 접시로 <b>손가락으로 끌어다 놓으세요</b>. 남는 점은 남는 곳에 놓아요.</div>
       <div class="drag-tray"><span class="tray-label">점을 끌어서 접시에 나누기</span>
         <div class="drag-token blue" data-div-token role="button" tabindex="0"><span class="big">●</span><span class="tiny">1개</span></div>
         <div class="drop-plate" data-drop="div-rem" style="min-height:52px;padding:7px 10px;border-color:#fcd34d;background:#fffbeb;flex:1">
           <div class="plate-title" style="margin:0"><span>🟡 남는 것 · ${state.divRem}개</span></div>
+        </div>
+        <div class="drop-plate" data-drop="div-minus" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2">
+          <div class="plate-title" style="margin:0"><span>➖ 빼기</span></div>
         </div>
       </div>
       <div class="plate-grid">${platesHtml}</div>
@@ -256,12 +265,34 @@ function renderMultiply() {
       }
     }, {
       onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="div:0"]', body); },
+      onTap: () => {
+        if (state.settings.errorless) showHintTarget('[data-drop="div:0"]', body);
+        speak('파란 점을 손가락으로 끌어 접시 칸에 놓아 보세요.');
+      },
       onActivate: () => {
         const i = state.divPlates.findIndex((v) => v < d.q);
         if (i >= 0) { state.divPlates[i] += 1; afterDivide(); }
         else if (state.divRem < d.r) { state.divRem += 1; afterDivide(); }
       },
     });
+    bindDrag(body, '[data-div-placed]', (el) => ({ from: Number(el.dataset.divPlaced) }), (p, zone) => {
+      if (!zone) return;
+      const drop = zone.dataset.drop || '';
+      if (drop === 'div-minus') {
+        if (state.divPlates[p.from] > 0) {
+          state.divPlates[p.from] -= 1;
+          speak(`${p.from + 1}번 접시에서 1개를 뺐어요.`);
+          renderTool();
+        }
+      } else if (drop.startsWith('div:')) {
+        const to = Number(drop.split(':')[1]);
+        if (to !== p.from && state.divPlates[to] < d.q && state.divPlates[p.from] > 0) {
+          state.divPlates[p.from] -= 1;
+          state.divPlates[to] += 1;
+          afterDivide();
+        }
+      }
+    }, { onTap: () => speak('점을 다른 접시나 빼기 칸으로 끌어 옮길 수 있어요.') });
     return;
   }
 
@@ -307,23 +338,35 @@ function renderMultiply() {
   }
 
   const key = `${a}x${b}`;
-  if (state.mulKey !== key) { state.mulKey = key; state.mulGroups = Array(b).fill(false); }
-  if (state.mulGroups.length !== b) state.mulGroups = Array(b).fill(false);
-  const filled = state.mulGroups.filter(Boolean).length;
-  const groupSlots = Array.from({ length: b }, (_, g) => `
-    <div class="group-slot${state.mulGroups[g] ? ' filled' : ''}" data-drop="mul:${g}">
-      <div class="gs-title"><span>${g + 1}묶음</span><span>${state.mulGroups[g] ? `${a}개` : '비어 있음'}</span></div>
-      <div class="gs-dots">${state.mulGroups[g] ? Array.from({ length: a }, () => '<span class="gs-dot"></span>').join('') : '<span class="muted" style="font-size:10px">묶음 카드를 끌어오세요</span>'}</div>
-    </div>`).join('');
-  setToolHead('✖️ 묶음 곱셈', `${a}개씩 ${b}묶음 · 묶음 카드를 끌어 채워요`);
+  if (state.mulKey !== key || state.mulGroups.length !== b) {
+    state.mulKey = key;
+    state.mulGroups = Array(b).fill(0);
+  }
+  state.mulGroups = state.mulGroups.map((v) => (v === true ? a : v === false ? 0 : clamp(Math.trunc(Number(v) || 0), 0, a)));
+  const filled = state.mulGroups.filter((v) => v >= a).length;
+  const totalDots = state.mulGroups.reduce((s, v) => s + v, 0);
+  const groupSlots = Array.from({ length: b }, (_, g) => {
+    const cnt = state.mulGroups[g];
+    const full = cnt >= a;
+    const emptyCnt = Math.max(0, a - cnt);
+    const filledDots = Array.from({ length: cnt }, () => `<span class="gs-dot filled" data-mul-placed="${g}" role="button" tabindex="0" aria-label="${g + 1}묶음 동그라미">●</span>`).join('');
+    const emptyDots = Array.from({ length: emptyCnt }, () => '<span class="gs-dot empty" aria-hidden="true"></span>').join('');
+    return `<div class="group-slot${full ? ' filled' : ''}" data-drop="mul:${g}">
+      <div class="gs-title"><span>${g + 1}묶음</span><span>${cnt}/${a}개</span></div>
+      <div class="gs-dots">${filledDots}${emptyDots}</div>
+    </div>`;
+  }).join('');
+  const cardDots = Array.from({ length: Math.min(a, 12) }, () => '<i></i>').join('');
+  setToolHead('✖️ 묶음 곱셈', `${a}개씩 ${b}묶음 · 동그라미나 묶음 카드를 끌어 채워요`);
   body.innerHTML = `
-    <div class="guide">한 묶음에 <b>${a}개씩</b> <b>${b}묶음</b>이면 모두 <b>${a * b}개</b>예요. 묶음 카드를 빈 자리로 <b>끌어다 놓으세요</b>.</div>
-    <div class="drag-tray"><span class="tray-label">묶음 카드</span>
-      <div class="drag-token violet" data-mul-bundle role="button" tabindex="0"><span class="big">${a}개</span><span class="tiny">한 묶음</span></div>
-      <span class="bundle-help">카드를 한 번 끌면 ${a}개가 한 묶음으로 들어가요.</span>
+    <div class="guide">한 묶음에 <b>${a}개씩</b> <b>${b}묶음</b>이면 모두 <b>${a * b}개</b>예요. <b>동그라미(●)</b>나 <b>묶음 카드</b>를 손가락으로 끌어 빈 칸에 놓으세요.</div>
+    <div class="drag-tray"><span class="tray-label">끌어서 채우기</span>
+      <div class="drag-token" data-mul-dot role="button" tabindex="0" aria-label="동그라미 1개 끌어서 놓기"><span class="big">●</span><span class="tiny">동그라미 1개</span></div>
+      <div class="drag-token violet" data-mul-bundle role="button" tabindex="0" aria-label="${a}개 한 묶음 카드 끌어서 놓기"><div class="mul-card-dots">${cardDots}</div><span class="tiny">${a}개 한 묶음</span></div>
+      <div class="drop-plate" data-drop="mul-minus" style="min-height:52px;min-width:112px;padding:7px 10px;border-color:#fda4af;background:#fff1f2;flex:1"><div class="plate-title" style="margin:0;white-space:nowrap"><span>➖ 1개 빼기</span></div></div>
     </div>
     <div class="group-grid">${groupSlots}</div>
-    <div class="guide" style="font-size:15px"><b>${a} × ${b} = ${a * b}</b> · 지금 ${filled}묶음 채움 · ${Array.from({ length: filled }, () => a).join(' + ') || '0'} = ${filled * a}</div>
+    <div class="guide" style="font-size:15px"><b>${a} × ${b} = ${a * b}</b> · 지금 <b>${totalDots}개</b> (${filled}/${b}묶음 완성)</div>
     ${filled === b ? `<div class="feedback" style="color:#16a34a">${a}개씩 ${b}묶음은 모두 ${a * b}개예요!</div>` : ''}
     <div class="row-flex" style="margin-top:0">
       <button type="button" class="bundle-big-btn blue" data-mul-bundle-btn="ten">10개 묶기</button>
@@ -337,32 +380,73 @@ function renderMultiply() {
       <button type="button" class="btn primary" data-mul-ex2="3,4">3 × 4로</button>
     </div>`;
 
-  const fillGroup = (index) => {
-    if (state.mulGroups[index]) { speak('이미 채운 묶음이에요. 빈 자리에 놓아 보세요.'); return; }
-    state.mulGroups[index] = true;
-    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${index + 1}묶음 채우기`);
-    const count = state.mulGroups.filter(Boolean).length;
+  const announceMulProgress = (msg) => {
+    const count = state.mulGroups.filter((v) => v >= a).length;
     if (count === b) awardToken(`${a}개씩 ${b}묶음을 모두 채웠어요!`);
-    else speak(`${index + 1}묶음에 ${a}개를 넣었어요. ${b - count}묶음 남았어요.`);
+    else if (msg) speak(msg);
     renderTool();
   };
-  body.querySelectorAll('[data-mul-bundle]').forEach((t) => {
-    t.onclick = () => {
-      const i = state.mulGroups.findIndex((v) => !v);
-      if (i >= 0) fillGroup(i);
-    };
+  const addDot = (index) => {
+    if (index < 0 || index >= b) return;
+    if (state.mulGroups[index] >= a) { speak('이 묶음은 이미 가득 찼어요. 빈 자리에 놓아 보세요.'); return; }
+    state.mulGroups[index] += 1;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${index + 1}묶음 동그라미`);
+    announceMulProgress(`${index + 1}묶음 ${state.mulGroups[index]}개`);
+  };
+  const fillGroup = (index) => {
+    if (index < 0 || index >= b) return;
+    if (state.mulGroups[index] >= a) { speak('이미 채운 묶음이에요. 빈 자리에 놓아 보세요.'); return; }
+    state.mulGroups[index] = a;
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${index + 1}묶음 채우기`);
+    const count = state.mulGroups.filter((v) => v >= a).length;
+    announceMulProgress(`${index + 1}묶음에 ${a}개를 넣었어요. ${b - count}묶음 남았어요.`);
+  };
+  const nextIncompleteSlot = () => {
+    const idx = state.mulGroups.findIndex((v) => v < a);
+    return idx >= 0 ? idx : 0;
+  };
+  bindDrag(body, '[data-mul-dot]', () => ({ dot: 1 }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop.startsWith('mul:')) addDot(Number(drop.split(':')[1]));
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget(`[data-drop="mul:${nextIncompleteSlot()}"]`, body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget(`[data-drop="mul:${nextIncompleteSlot()}"]`, body);
+      speak('동그라미(●)를 손가락으로 끌어 빈 점선 동그라미가 있는 묶음 칸에 놓아 보세요.');
+    },
+    onActivate: () => addDot(nextIncompleteSlot()),
   });
   bindDrag(body, '[data-mul-bundle]', () => ({ a }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
     if (drop.startsWith('mul:')) fillGroup(Number(drop.split(':')[1]));
   }, {
-    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="mul:0"]', body); },
-    onActivate: () => {
-      const i = state.mulGroups.findIndex((v) => !v);
-      if (i >= 0) fillGroup(i);
+    onStart: () => { if (state.settings.errorless) showHintTarget(`[data-drop="mul:${nextIncompleteSlot()}"]`, body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget(`[data-drop="mul:${nextIncompleteSlot()}"]`, body);
+      speak('묶음 카드를 손가락으로 끌어 아래 묶음 칸에 놓아 보세요.');
     },
+    onActivate: () => fillGroup(nextIncompleteSlot()),
   });
+  bindDrag(body, '[data-mul-placed]', (el) => ({ from: Number(el.dataset.mulPlaced) }), (p, zone) => {
+    if (!zone) return;
+    const drop = zone.dataset.drop || '';
+    if (drop === 'mul-minus') {
+      if (state.mulGroups[p.from] > 0) {
+        state.mulGroups[p.from] -= 1;
+        speak(`${p.from + 1}묶음에서 1개를 뺐어요.`);
+        renderTool();
+      }
+    } else if (drop.startsWith('mul:')) {
+      const to = Number(drop.split(':')[1]);
+      if (to !== p.from && state.mulGroups[p.from] > 0 && state.mulGroups[to] < a) {
+        state.mulGroups[p.from] -= 1;
+        state.mulGroups[to] += 1;
+        announceMulProgress(`${to + 1}묶음 ${state.mulGroups[to]}개`);
+      }
+    }
+  }, { onTap: () => speak('동그라미를 다른 묶음이나 빼기 칸(➖)으로 끌어 옮길 수 있어요.') });
   body.querySelectorAll('[data-mul-bundle-btn]').forEach((btn) => {
     btn.onclick = () => {
       if (btn.dataset.mulBundleBtn === 'ten') {
@@ -440,7 +524,6 @@ function renderFraction() {
     else speak(`${cur.d}조각 중 ${countWord(cur.n)}조각`);
     renderTool();
   };
-  body.querySelectorAll('[data-frac-piece]').forEach((t) => { t.onclick = () => addPiece(t.dataset.fracPiece, 1); });
   bindDrag(body, '[data-frac-piece]', (el) => ({ which: el.dataset.fracPiece }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
@@ -448,6 +531,10 @@ function renderFraction() {
     else if (drop === 'frac-minus') addPiece(p.which, -1);
   }, {
     onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="frac:${p.which}"]`, body); },
+    onTap: (p) => {
+      if (state.settings.errorless) showHintTarget(`[data-drop="frac:${p.which}"]`, body);
+      speak('분수 조각을 손가락으로 끌어 분수 막대에 놓아 보세요.');
+    },
     onActivate: (p) => addPiece(p.which, 1),
   });
   body.querySelectorAll('[data-frac-bundle]').forEach((btn) => {
@@ -568,30 +655,38 @@ function renderMeasure() {
   let panel = '';
   if (m.tab === 'length') {
     const pct = (m.length / 20) * 100;
-    const ticks = Array.from({ length: 21 }, (_, i) => `<div class="ruler-tick${i % 5 === 0 ? ' major' : ''}"><span>${i % 5 === 0 ? i : ''}</span></div>`).join('');
+    const ticks = Array.from({ length: 21 }, (_, i) => {
+      const edge = i === 0 ? ' edge-start' : i === 20 ? ' edge-end' : '';
+      return `<div class="ruler-tick${i % 5 === 0 ? ' major' : ''}${edge}" style="left:${(i / 20) * 100}%"><span>${i % 5 === 0 ? i : ''}</span></div>`;
+    }).join('');
     panel = `
       <div class="measure-panel">
-        <div class="measure-line"><span class="guide">자를 보고 길이를 재어 보세요.</span><span class="measure-value" id="lenVal">${m.length} cm</span></div>
+        <div class="measure-line"><span class="guide">연필 손잡이를 좌우로 끌어 길이를 재어 보세요.</span><span class="measure-value" id="lenVal">${m.length} cm</span></div>
         <input type="range" id="lenRange" min="0" max="20" step="1" value="${m.length}" aria-label="길이 조절" />
-        <div class="ruler" id="ruler" data-drop="ruler" aria-label="자를 끌어 길이 재기">
-          <div class="ruler-ticks">${ticks}</div>
-          <div class="ruler-fill" id="rulerFill" style="width:${pct}%"></div>
-          <div class="ruler-object" id="rulerObj" style="left:${pct}%" role="button" tabindex="0" aria-label="연필을 끌어 길이 재기">✏️</div>
+        <div class="ruler-wrap">
+          <div class="ruler-stage" id="rulerStage" data-drop="ruler" aria-label="연필 막대를 좌우로 끌어 길이 재기">
+            <div class="ruler-fill" id="rulerFill" style="width:${pct}%"></div>
+            <div class="ruler-object" id="rulerObj" style="left:${pct}%" role="button" tabindex="0" aria-label="연필을 좌우로 끌어 길이 재기">✏️<span>${m.length}cm</span></div>
+          </div>
+          <div class="ruler" id="ruler" aria-label="0부터 20까지 눈금 자">
+            <div class="ruler-ticks">${ticks}</div>
+          </div>
         </div>
-        <div class="guide">연필을 <b>손가락으로 끌어</b> 길이를 재어 보세요. 자는 <b>0 cm</b>부터 시작해요. <b>${m.length} cm = ${m.length}센티미터</b></div>
+        <div class="guide">연필(✏️)을 <b>손가락으로 좌우로 끌어</b> 길이를 재어 보세요. 자는 <b>0 cm</b>부터 시작해요. <b>${m.length} cm = ${m.length}센티미터</b></div>
       </div>`;
   } else if (m.tab === 'volume') {
     const pct = (m.volume / 10) * 100;
     panel = `
       <div class="measure-panel">
-        <div class="measure-line"><span class="guide">컵에 담긴 양을 재어 보세요.</span><span class="measure-value" id="volVal">${m.volume}컵</span></div>
+        <div class="measure-line"><span class="guide">컵 안의 물 손잡이를 위아래로 끌어 양을 맞춰 보세요.</span><span class="measure-value" id="volVal">${m.volume}컵</span></div>
         <input type="range" id="volRange" min="0" max="10" step="1" value="${m.volume}" aria-label="들이 조절" />
         <div class="beaker" id="beaker" data-drop="beaker" aria-label="컵의 물 높이를 끌어 조절">
           <div class="beaker-fill" id="beakerFill" style="height:${pct}%"></div>
+          <div class="beaker-handle" id="beakerHandle" style="bottom:${pct}%">💧 ${m.volume}컵</div>
           <span class="beaker-mark" style="bottom:49%">5</span>
           <span class="beaker-mark" style="bottom:98%">10</span>
         </div>
-        <div class="guide">컵 안의 물을 <b>위아래로 끌어</b> 양을 맞춰 보세요. <b>${m.volume}컵</b>은 눈금으로 <b>${m.volume}</b>만큼 채운 것이에요.</div>
+        <div class="guide">물 높이 손잡이를 <b>손가락으로 위아래로 끌어</b> 양을 맞춰 보세요. <b>${m.volume}컵</b>은 눈금으로 <b>${m.volume}</b>만큼 채운 것이에요.</div>
       </div>`;
   } else if (m.tab === 'weight') {
     panel = `
@@ -608,6 +703,7 @@ function renderMeasure() {
           <div class="drop-plate" data-drop="weight" style="min-height:52px;padding:7px 10px;border-color:#fcd34d;background:#fffbeb;flex:1">
             <div class="plate-title" style="margin:0"><span>⚖️ 저울 접시 · 여기로 끌어요</span></div>
           </div>
+          <button type="button" class="btn soft" data-weight-clear>비우기</button>
         </div>
         <div class="row-flex" style="margin-top:0">
           <button type="button" class="bundle-big-btn blue" data-weight-bundle="ten">100g 10개 묶기 = 1kg</button>
@@ -645,7 +741,7 @@ function renderMeasure() {
     const breakdown = coins.filter((c) => m.coins[c.v] > 0).map((c) => `${c.label} × ${m.coins[c.v]}`).join(' + ');
     panel = `
       <div class="measure-panel">
-        <div class="guide">동전을 <b>손가락으로 끌어 지갑에 넣어</b> 돈을 모아 보세요. 그냥 눌러도 돼요.</div>
+        <div class="guide">동전을 <b>손가락으로 끌어 지갑에 넣어</b> 돈을 모아 보세요.</div>
         <div class="coins">${coins.map((c) => `<button type="button" class="coin ${c.cls}" data-coin="${c.v}" data-coin-drag="${c.v}" aria-label="${c.label} 끌어서 넣기">${c.label}</button>`).join('')}</div>
         <div class="wallet-drop" data-drop="wallet">
           <span class="wd-label">👛 지갑</span>
@@ -673,7 +769,11 @@ function renderMeasure() {
       const pct = (v / 20) * 100;
       $('lenVal').textContent = `${v} cm`;
       $('rulerFill').style.width = `${pct}%`;
-      $('rulerObj').style.left = `${pct}%`;
+      const obj = $('rulerObj');
+      if (obj) {
+        obj.style.left = `${pct}%`;
+        obj.innerHTML = `✏️<span>${v}cm</span>`;
+      }
     };
     len.onchange = () => speak(`${state.measure.length} 센티미터`);
   }
@@ -682,8 +782,11 @@ function renderMeasure() {
     vol.oninput = () => {
       const v = Number(vol.value);
       state.measure.volume = v;
+      const pct = (v / 10) * 100;
       $('volVal').textContent = `${v}컵`;
-      $('beakerFill').style.height = `${(v / 10) * 100}%`;
+      $('beakerFill').style.height = `${pct}%`;
+      const h = $('beakerHandle');
+      if (h) { h.style.bottom = `${pct}%`; h.textContent = `💧 ${v}컵`; }
     };
     vol.onchange = () => speak(`${state.measure.volume}컵`);
   }
@@ -713,12 +816,16 @@ function renderMeasure() {
     speak(`${v}원을 넣었어요. 모두 ${countWord(sum)}원`);
     renderTool();
   };
-  body.querySelectorAll('[data-coin]').forEach((b) => {
-    b.onclick = () => addCoin(Number(b.dataset.coin));
-  });
   bindDrag(body, '[data-coin-drag]', (el) => ({ v: Number(el.dataset.coinDrag) }), (p, zone) => {
     if (zone && zone.dataset.drop === 'wallet') addCoin(p.v);
-  }, { onActivate: (p) => addCoin(p.v) });
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="wallet"]', body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget('[data-drop="wallet"]', body);
+      speak('동전을 손가락으로 끌어 노란 지갑에 넣어 보세요.');
+    },
+    onActivate: (p) => addCoin(p.v),
+  });
   body.querySelectorAll('[data-money-bundle]').forEach((b) => {
     b.onclick = () => {
       if (b.dataset.moneyBundle === 'ten') {
@@ -736,60 +843,113 @@ function renderMeasure() {
 
   /* 길이: 연필 끌기 */
   const ruler = $('ruler');
+  const rulerStage = $('rulerStage');
   const pencil = $('rulerObj');
   if (ruler && pencil) {
-    let dragging = false;
+    const trackEl = rulerStage || ruler;
     const updateLen = (clientX) => {
-      const r = ruler.getBoundingClientRect();
+      const r = rulerStage ? rulerStage.getBoundingClientRect() : ruler.getBoundingClientRect();
       const v = clamp(Math.round(((clientX - r.left) / r.width) * 20), 0, 20);
       state.measure.length = v;
       $('lenVal').textContent = `${v} cm`;
       $('rulerFill').style.width = `${(v / 20) * 100}%`;
       pencil.style.left = `${(v / 20) * 100}%`;
+      pencil.innerHTML = `✏️<span>${v}cm</span>`;
       const range = $('lenRange');
       if (range) range.value = String(v);
     };
-    ruler.addEventListener('pointerdown', (e) => {
-      dragging = true;
-      try { ruler.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
-      updateLen(e.clientX);
-      noteInteraction();
-    });
-    ruler.addEventListener('pointermove', (e) => { if (dragging) updateLen(e.clientX); });
-    ruler.addEventListener('pointerup', (e) => {
-      dragging = false;
-      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `길이 ${state.measure.length}cm`);
-      speak(`${state.measure.length} 센티미터`);
-    });
-    ruler.addEventListener('pointercancel', () => { dragging = false; });
+    const attachLenDrag = (target) => {
+      target.addEventListener('pointerdown', (ev) => {
+        if (ev.button !== undefined && ev.button !== 0) return;
+        const pid = ev.pointerId;
+        const sx = ev.clientX;
+        const sy = ev.clientY;
+        let dragging = false;
+        let moved = false;
+        dragging = true;
+        try { target.setPointerCapture(pid); } catch (err) { /* 무시 */ }
+        noteInteraction();
+        const onMove = (e) => {
+          if (!dragging || e.pointerId !== pid) return;
+          if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 5) return;
+          moved = true;
+          updateLen(e.clientX);
+        };
+        const onUp = (e) => {
+          if (e.pointerId !== pid) return;
+          dragging = false;
+          target.removeEventListener('pointermove', onMove);
+          target.removeEventListener('pointerup', onUp);
+          target.removeEventListener('pointercancel', onUp);
+          try { target.releasePointerCapture(pid); } catch (err) { /* 무시 */ }
+          if (moved) {
+            updateLen(e.clientX);
+            recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `길이 ${state.measure.length}cm`);
+            speak(`${state.measure.length} 센티미터`);
+          } else {
+            speak('연필 손잡이(✏️)를 손가락으로 좌우로 끌어 길이를 재어 보세요.');
+          }
+        };
+        target.addEventListener('pointermove', onMove);
+        target.addEventListener('pointerup', onUp);
+        target.addEventListener('pointercancel', onUp);
+      });
+    };
+    attachLenDrag(trackEl);
+    attachLenDrag(ruler);
+    pencil.onkeydown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); state.measure.length = clamp(state.measure.length + 1, 0, 20); renderTool(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); state.measure.length = clamp(state.measure.length - 1, 0, 20); renderTool(); }
+    };
   }
 
   /* 들이: 물 높이 끌기 */
   const beaker = $('beaker');
   if (beaker) {
-    let dragging = false;
     const updateVol = (clientY) => {
       const r = beaker.getBoundingClientRect();
       const v = clamp(Math.round(((r.bottom - clientY) / r.height) * 10), 0, 10);
       state.measure.volume = v;
+      const pct = (v / 10) * 100;
       $('volVal').textContent = `${v}컵`;
-      $('beakerFill').style.height = `${(v / 10) * 100}%`;
+      $('beakerFill').style.height = `${pct}%`;
+      const handle = $('beakerHandle');
+      if (handle) { handle.style.bottom = `${pct}%`; handle.textContent = `💧 ${v}컵`; }
       const range = $('volRange');
       if (range) range.value = String(v);
     };
-    beaker.addEventListener('pointerdown', (e) => {
-      dragging = true;
-      try { beaker.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
-      updateVol(e.clientY);
+    beaker.addEventListener('pointerdown', (ev) => {
+      if (ev.button !== undefined && ev.button !== 0) return;
+      const pid = ev.pointerId;
+      const sx = ev.clientX;
+      const sy = ev.clientY;
+      let moved = false;
+      try { beaker.setPointerCapture(pid); } catch (err) { /* 무시 */ }
       noteInteraction();
+      const onMove = (e) => {
+        if (e.pointerId !== pid) return;
+        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 5) return;
+        moved = true;
+        updateVol(e.clientY);
+      };
+      const onUp = (e) => {
+        if (e.pointerId !== pid) return;
+        beaker.removeEventListener('pointermove', onMove);
+        beaker.removeEventListener('pointerup', onUp);
+        beaker.removeEventListener('pointercancel', onUp);
+        try { beaker.releasePointerCapture(pid); } catch (err) { /* 무시 */ }
+        if (moved) {
+          updateVol(e.clientY);
+          recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `들이 ${state.measure.volume}컵`);
+          speak(`${state.measure.volume}컵`);
+        } else {
+          speak('물 높이 손잡이를 손가락으로 위아래로 끌어 컵 양을 맞춰 보세요.');
+        }
+      };
+      beaker.addEventListener('pointermove', onMove);
+      beaker.addEventListener('pointerup', onUp);
+      beaker.addEventListener('pointercancel', onUp);
     });
-    beaker.addEventListener('pointermove', (e) => { if (dragging) updateVol(e.clientY); });
-    beaker.addEventListener('pointerup', () => {
-      dragging = false;
-      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `들이 ${state.measure.volume}컵`);
-      speak(`${state.measure.volume}컵`);
-    });
-    beaker.addEventListener('pointercancel', () => { dragging = false; });
   }
 
   /* 무게: 추 끌기 */
@@ -803,10 +963,18 @@ function renderMeasure() {
     if (state.measure.weight >= 1000) awardToken('1킬로그램을 가득 채웠어요!');
     else speak(`${state.measure.weight} 그램`);
   };
-  body.querySelectorAll('[data-weight]').forEach((t) => { t.onclick = () => addWeight(Number(t.dataset.weight)); });
   bindDrag(body, '[data-weight]', (el) => ({ v: Number(el.dataset.weight) }), (p, zone) => {
     if (zone && zone.dataset.drop === 'weight') addWeight(p.v);
-  }, { onActivate: (p) => addWeight(p.v) });
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="weight"]', body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget('[data-drop="weight"]', body);
+      speak('무게 추를 손가락으로 끌어 노란 저울 접시에 놓아 보세요.');
+    },
+    onActivate: (p) => addWeight(p.v),
+  });
+  const wc = body.querySelector('[data-weight-clear]');
+  if (wc) wc.onclick = () => { state.measure.weight = 0; renderTool(); };
   body.querySelectorAll('[data-weight-bundle]').forEach((b) => {
     b.onclick = () => {
       if (b.dataset.weightBundle === 'ten') { state.measure.weight = 1000; awardToken('100g 10개는 1kg이에요!'); }
@@ -842,21 +1010,42 @@ function renderMeasure() {
       const small = body.querySelector('.digital[style]');
       if (small) small.textContent = `${String(Math.floor(state.measure.minutes / 60) % 24).padStart(2, '0')}:${String(state.measure.minutes % 60).padStart(2, '0')}`;
     };
-    clock.addEventListener('pointerdown', (e) => {
-      const grab = e.target.closest('[data-clock-hand]');
+    clock.addEventListener('pointerdown', (ev) => {
+      if (ev.button !== undefined && ev.button !== 0) return;
+      const grab = ev.target.closest('[data-clock-hand]');
       hand = grab ? grab.dataset.clockHand : 'minute';
-      try { clock.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
-      setFromPointer(e);
+      const pid = ev.pointerId;
+      const sx = ev.clientX;
+      const sy = ev.clientY;
+      let moved = false;
+      try { clock.setPointerCapture(pid); } catch (err) { /* 무시 */ }
       noteInteraction();
+      const onMove = (e) => {
+        if (e.pointerId !== pid || !hand) return;
+        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 6) return;
+        moved = true;
+        setFromPointer(e);
+      };
+      const onUp = (e) => {
+        if (e.pointerId !== pid) return;
+        clock.removeEventListener('pointermove', onMove);
+        clock.removeEventListener('pointerup', onUp);
+        clock.removeEventListener('pointercancel', onUp);
+        try { clock.releasePointerCapture(pid); } catch (err) { /* 무시 */ }
+        if (moved) {
+          setFromPointer(e);
+          recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, timeText(state.measure.minutes));
+          speak(timeText(state.measure.minutes));
+          renderTool();
+        } else {
+          speak('시계 바늘을 손가락으로 둥글게 끌어 시간을 맞춰 보세요.');
+        }
+        hand = null;
+      };
+      clock.addEventListener('pointermove', onMove);
+      clock.addEventListener('pointerup', onUp);
+      clock.addEventListener('pointercancel', onUp);
     });
-    clock.addEventListener('pointermove', (e) => { if (hand) setFromPointer(e); });
-    clock.addEventListener('pointerup', () => {
-      hand = null;
-      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, timeText(state.measure.minutes));
-      speak(timeText(state.measure.minutes));
-      renderTool();
-    });
-    clock.addEventListener('pointercancel', () => { hand = null; });
   }
 }
 
@@ -911,7 +1100,7 @@ function renderShape() {
           <div class="shape-fact">${selected.fact}</div>
         </div>
       </div>
-      <div class="guide">도형을 눌러 이름과 특징을 확인해 보세요. 보드에 놓은 도형을 <b>두 번 누르면</b> 돌아가요. 주변에서 같은 모양도 찾아보세요.</div>`;
+      <div class="guide">도형을 누르면 특징을 볼 수 있고, <b>손가락으로 끌어 보드에 놓을</b> 수 있어요. 보드에 놓은 도형을 <b>두 번 누르면</b> 돌아가요.</div>`;
 
     const addShape = (id, x, y) => {
       state.shapeBoard.push({ id, x: clamp(x ?? 50, 8, 92), y: clamp(y ?? 50, 10, 90), rot: 0 });
@@ -923,9 +1112,6 @@ function renderShape() {
       else speak(`${s.name}. 변 ${countWord(s.sides)}개, 꼭짓점 ${countWord(s.corners)}개`);
       renderTool();
     };
-    body.querySelectorAll('[data-shape-source]').forEach((tile) => {
-      tile.onclick = () => addShape(tile.dataset.shapeSource, 50, 50);
-    });
     bindDrag(body, '[data-shape-source]', (el) => ({ id: el.dataset.shapeSource }), (p, zone, el, ev) => {
       if (!zone) return;
       if (zone.dataset.drop === 'shape-board') {
@@ -937,6 +1123,13 @@ function renderShape() {
       }
     }, {
       onStart: (p) => { if (state.settings.errorless) showHintTarget('[data-drop="shape-board"]', body); },
+      onTap: (p) => {
+        state.shapeId = p.id;
+        const s = SHAPES.find((z) => z.id === p.id);
+        renderTool();
+        if (state.settings.errorless) showHintTarget('[data-drop="shape-board"]', body);
+        speak(`${s ? s.name : '도형'}이에요. 보드 위로 손가락으로 끌어 놓아 보세요.`);
+      },
       onActivate: (p) => addShape(p.id, 50, 50),
     });
     bindDrag(body, '[data-shape-instance]', (el) => ({ i: Number(el.dataset.shapeInstance) }), (p, zone, el, ev) => {
@@ -996,19 +1189,14 @@ function renderShape() {
     if (clear) clear.onclick = () => { state.shapeBoard = []; state.shapeSelected = null; renderTool(); };
   } else {
     const p = PATTERNS[state.pattern.index] || PATTERNS[0];
-    const seqHtml = p.seq.map((s) => `<div class="pattern-box">${s}</div>`).join('') + '<div class="pattern-box q" data-drop="pattern-next" aria-label="다음에 올 모양을 놓는 곳">?</div>';
-    const choices = p.choices.map((c) => {
-      const cls = state.pattern.chosen === c ? (state.pattern.solved ? ' good' : ' bad') : '';
-      return `<button type="button" class="choice-btn${cls}" data-choice="${c}">${c}</button>`;
-    }).join('');
+    const seqHtml = p.seq.map((s) => `<div class="pattern-box">${s}</div>`).join('') + `<div class="pattern-box q" data-drop="pattern-next" aria-label="다음에 올 모양을 놓는 곳">${state.pattern.solved && state.pattern.chosen ? state.pattern.chosen : '?'}</div>`;
     setToolHead('🔁 반복 규칙 찾기', '다음에 올 모양을 골라 ? 자리로 끌어다 놓아요');
     body.innerHTML = `${tabs}
-      <div class="guide" style="text-align:center">규칙을 보고 <b>?</b>에 들어갈 모양을 골라 보세요. 모양을 <b>끌어다 놓아도</b> 돼요.</div>
+      <div class="guide" style="text-align:center">규칙을 보고 <b>?</b>에 들어갈 모양을 <b>손가락으로 끌어 ? 자리에 놓아</b> 보세요.</div>
       <div class="pattern-row">${seqHtml}</div>
       <div class="drag-tray" style="justify-content:center">
-        ${p.choices.map((c) => `<div class="drag-token violet" data-pattern-drag="${c}" role="button" tabindex="0"><span class="big">${c}</span><span class="tiny">끌어서 놓기</span></div>`).join('')}
+        ${p.choices.map((c) => `<div class="drag-token violet${state.pattern.chosen === c ? (state.pattern.solved ? ' green' : ' rose') : ''}" data-pattern-drag="${c}" role="button" tabindex="0"><span class="big">${c}</span><span class="tiny">끌어서 ?에 놓기</span></div>`).join('')}
       </div>
-      <div class="pattern-choices">${choices}</div>
       <div class="feedback ${state.pattern.chosen ? (state.pattern.solved ? 'good' : 'bad') : ''}" style="color:${state.pattern.chosen ? (state.pattern.solved ? '#16a34a' : '#e11d48') : '#64748b'}">
         ${state.pattern.chosen ? (state.pattern.solved ? '정답이에요! ' + p.rule : '다시 한 번 규칙을 살펴보세요.') : '차례대로 어떤 모양이 반복되는지 보세요.'}
       </div>
@@ -1023,12 +1211,14 @@ function renderShape() {
       else speak('다시 한 번 규칙을 살펴보세요.');
       renderTool();
     };
-    body.querySelectorAll('[data-choice]').forEach((b) => { b.onclick = () => choose(b.dataset.choice); });
-    body.querySelectorAll('[data-pattern-drag]').forEach((t) => { t.onclick = () => choose(t.dataset.patternDrag); });
     bindDrag(body, '[data-pattern-drag]', (el) => ({ choice: el.dataset.patternDrag }), (p, zone) => {
       if (zone && zone.dataset.drop === 'pattern-next') choose(p.choice);
     }, {
       onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="pattern-next"]', body); },
+      onTap: () => {
+        if (state.settings.errorless) showHintTarget('[data-drop="pattern-next"]', body);
+        speak('모양을 손가락으로 끌어 물음표(?) 자리에 놓아 보세요.');
+      },
       onActivate: (p) => choose(p.choice),
     });
     const next = body.querySelector('[data-next-pattern]');
@@ -1111,7 +1301,6 @@ function renderData() {
       setCount(kind, d[kind] + Number(delta), `${d[kind] + Number(delta)}개`);
     };
   });
-  body.querySelectorAll('[data-data-token]').forEach((t) => { t.onclick = () => setCount(t.dataset.dataToken, d[t.dataset.dataToken] + 1, `${d[t.dataset.dataToken] + 1}개`); });
   bindDrag(body, '[data-data-token]', (el) => ({ kind: el.dataset.dataToken }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
@@ -1121,6 +1310,10 @@ function renderData() {
     }
   }, {
     onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="data:${p.kind}"]`, body); },
+    onTap: (p) => {
+      if (state.settings.errorless) showHintTarget(`[data-drop="data:${p.kind}"]`, body);
+      speak('과일을 손가락으로 끌어 위쪽 그래프 막대에 놓아 보세요.');
+    },
     onActivate: (p) => setCount(p.kind, d[p.kind] + 1, `${d[p.kind] + 1}개`),
   });
   body.querySelectorAll('[data-data-bundle]').forEach((b) => {
@@ -1151,10 +1344,16 @@ function renderData() {
     else speak(`${kind === 'apple' ? '사과' : '귤'} ${state.story[kind]}개`);
     renderTool();
   };
-  body.querySelectorAll('[data-story-token]').forEach((t) => { t.onclick = () => addStory(t.dataset.storyToken); });
   bindDrag(body, '[data-story-token]', (el) => ({ kind: el.dataset.storyToken }), (p, zone) => {
     if (zone && zone.dataset.drop === 'story') addStory(p.kind);
-  }, { onActivate: (p) => addStory(p.kind) });
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="story"]', body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget('[data-drop="story"]', body);
+      speak('사과나 귤을 손가락으로 끌어 바구니에 놓아 보세요.');
+    },
+    onActivate: (p) => addStory(p.kind),
+  });
   const word = body.querySelector('[data-word]');
   if (word) word.onclick = () => loadExpression(3, '+', 5);
   const wordAnswer = body.querySelector('[data-word-answer]');

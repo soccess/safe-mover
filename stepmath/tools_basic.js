@@ -32,7 +32,7 @@ function tenFrameHTML(total, blue, green, highlight, opts) {
   const totalCells = Math.max(10, Math.ceil(Math.max(total, blue + green, 10) / 10) * 10);
   const frames = Math.ceil(totalCells / 10);
   const frameId = o.frameId || 'frame';
-  let html = '<div class="frames">';
+  let html = `<div class="frames" data-drop="${frameId}">`;
   for (let f = 0; f < frames; f++) {
     html += '<div class="frame">';
     for (let r = 0; r < 2; r++) {
@@ -80,11 +80,13 @@ function renderSort() {
       <div class="basket-items">${Array.from({ length: state.sort.counts[kind.id] }, () => `<span class="sorted-item">${kind.emoji}</span>`).join('') || '<span class="muted">여기에 끌어다 놓아요</span>'}</div>
     </div>`).join('');
   const tray = state.sort.items.map((it, i) => {
-    const kind = SORT_KINDS.find((k) => k.id === it.kind);
-    return `<button type="button" class="sort-item" data-sort="${i}" data-sort-item="${i}" data-kind="${it.kind}" aria-label="${kind.label} 끌어서 바구니에 담기" title="${kind.label}">${kind.emoji}</button>`;
+    const kId = typeof it === 'string' ? it : it.kind;
+    const kind = SORT_KINDS.find((k) => k.id === kId);
+    if (!kind) return '';
+    return `<button type="button" class="sort-item" data-sort="${i}" data-sort-item="${i}" data-kind="${kId}" aria-label="${kind.label} 끌어서 바구니에 담기" title="${kind.label}">${kind.emoji}</button>`;
   }).join('');
   body.innerHTML = `
-    <div class="guide">색과 모양을 살펴보고 <b>같은 것끼리</b> 모아 보세요. 과일을 <b>손가락으로 끌어서</b> 바구니에 놓아요. 그냥 눌러도 담을 수 있어요.</div>
+    <div class="guide">색과 모양을 살펴보고 <b>같은 것끼리</b> 모아 보세요. 과일을 <b>손가락으로 끌어서</b> 같은 바구니에 놓아요.</div>
     <div class="sort-baskets">${basketHtml}</div>
     <div class="sort-tray" aria-label="분류할 과일">${tray || '<b style="color:#16a34a">분류 완성! 모든 것을 바구니에 담았어요 🎉</b>'}</div>
     <div class="row-flex">
@@ -95,23 +97,22 @@ function renderSort() {
   const place = (i) => {
     const item = state.sort.items[i];
     if (!item) return;
-    const kind = SORT_KINDS.find((k) => k.id === item.kind);
+    const kId = typeof item === 'string' ? item : item.kind;
+    const kind = SORT_KINDS.find((k) => k.id === kId);
+    if (!kind) return;
     state.sort.items.splice(i, 1);
-    state.sort.counts[item.kind] += 1;
+    state.sort.counts[kId] = (state.sort.counts[kId] || 0) + 1;
     state.sort.done = state.sort.items.length === 0;
     recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${kind.label} 분류`);
     if (state.sort.done) {
       awardToken('분류를 모두 마쳤어요. 정말 잘했어요!');
       announce('분류를 모두 마쳤어요. 같은 것끼리 모았어요.');
     } else {
-      speak(`${kind.label} 바구니에 담았어요. ${countWord(state.sort.counts[item.kind])}개`);
+      speak(`${kind.label} 바구니에 담았어요. ${countWord(state.sort.counts[kId])}개`);
     }
     renderTool();
   };
 
-  body.querySelectorAll('[data-sort]').forEach((b) => {
-    b.onclick = () => place(Number(b.dataset.sort));
-  });
   bindDrag(body, '[data-sort-item]', (el) => ({ i: Number(el.dataset.sortItem), kind: el.dataset.kind }), (p, zone) => {
     if (!zone) return;
     const target = (zone.dataset.drop || '').split(':')[1];
@@ -126,6 +127,11 @@ function renderSort() {
     }
   }, {
     onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="basket:${p.kind}"]`, body); },
+    onTap: (p) => {
+      const kind = SORT_KINDS.find((k) => k.id === p.kind);
+      if (state.settings.errorless) showHintTarget(`[data-drop="basket:${p.kind}"]`, body);
+      speak(`${kind.label}을 손가락으로 끌어 ${kind.label} 바구니에 놓아 보세요.`);
+    },
     onActivate: (p) => place(p.i),
   });
 
@@ -184,8 +190,9 @@ function renderCount() {
 
   body.querySelectorAll('[data-ten]').forEach((b) => {
     b.onclick = () => {
-      const idx = Number(b.dataset.ten) + 1;
-      setCount(idx === n ? idx - 1 : idx, `${countWord(idx === n ? idx - 1 : idx)}`);
+      if (b.dataset.cellFill) return;
+      if (state.settings.errorless) showHintTarget('[data-count-token="1"]', body);
+      speak('아래 파란 점(●)을 손가락으로 끌어 10칸 판에 놓아 보세요.');
     };
   });
   body.querySelectorAll('[data-count]').forEach((b) => {
@@ -229,11 +236,22 @@ function renderCount() {
     }
   }, {
     onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="count-add"]', body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget('[data-drop="count-add"]', body);
+      speak('점을 손가락으로 끌어 10칸 판에 놓아 보세요.');
+    },
     onActivate: (p) => setCount(n + p.add, countWord(n + p.add)),
   });
   bindDrag(body, '[data-cell-fill]', () => ({ remove: 1 }), (p, zone) => {
     if (zone && (zone.dataset.drop === 'count-minus')) setCount(n - 1, `${countWord(n - 1)}. 하나를 덜어냈어요`);
-  }, { onActivate: () => setCount(n - 1, countWord(n - 1)) });
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="count-minus"]', body); },
+    onTap: () => {
+      if (state.settings.errorless) showHintTarget('[data-drop="count-minus"]', body);
+      speak('채워진 점을 빨간 빼기 상자로 끌어놓으면 하나 뺄 수 있어요.');
+    },
+    onActivate: () => setCount(n - 1, countWord(n - 1)),
+  });
 }
 
 function playCountSequence() {
@@ -311,12 +329,19 @@ function interactiveNumberLineHTML(start, target, op) {
     <button type="button" class="nl-stop${i % 5 === 0 ? ' major' : ''}" data-drop="nl:${i}" aria-label="${i} 자리">
       <span class="nl-num">${i % 2 === 0 ? i : ''}</span>
     </button>`).join('');
-  const pos = (v) => `calc(10px + (100% - 20px) * ${clamp(v, 0, 20) / 20})`;
+  const pos = (v) => `${((clamp(v, 0, 20) + 0.5) / 21) * 100}%`;
   return `<div class="nl-interactive" aria-label="0부터 20까지 끌 수 있는 수직선">
-    <div class="nl-target" style="left:${pos(target)}" title="목표">🎯</div>
-    <div class="nl-track"><div class="nl-stops">${stops}</div></div>
-    <div class="nl-marker" data-nl-marker style="left:${pos(marker)}" role="button" tabindex="0" aria-label="현재 ${marker}, 목표 ${target}. 끌어서 옮기세요">🐸</div>
-    <div class="nl-caption">🐸를 손가락으로 끌어 <b>${target}</b> 자리에 놓아 보세요. (${start}에서 ${op === '+' ? '앞으로' : '뒤로'} ${Math.abs(target - start)}칸)</div>
+    <div class="nl-track" data-nl-track>
+      <div class="nl-stops">${stops}</div>
+      <div class="nl-target" style="left:${pos(target)}" title="목표">🎯</div>
+      <div class="nl-marker" data-nl-marker style="left:${pos(marker)}" role="button" tabindex="0" aria-label="현재 ${marker}, 목표 ${target}. 좌우로 끌어서 옮기세요">🐸</div>
+    </div>
+    <div class="nl-step-actions">
+      <button type="button" class="btn soft" data-nl-step="-1">◀ -1 점프</button>
+      <span class="nl-pos-badge" data-nl-badge>현재 ${marker} · 목표 ${target}</span>
+      <button type="button" class="btn soft" data-nl-step="1">+1 점프 ▶</button>
+    </div>
+    <div class="nl-caption">🐸를 손가락으로 좌우로 끌어 <b>${target}</b> 자리에 놓아 보세요. (${start}에서 ${op === '+' ? '앞으로' : '뒤로'} ${Math.abs(target - start)}칸)</div>
   </div>`;
 }
 
@@ -393,12 +418,6 @@ function renderCompare() {
       setCompare(which, state.compare[which] + Number(delta), countWord(state.compare[which] + Number(delta)));
     };
   });
-  body.querySelectorAll('[data-cmp-token]').forEach((t) => {
-    t.onclick = () => {
-      const which = t.dataset.cmpToken;
-      setCompare(which, state.compare[which] + 1, countWord(state.compare[which] + 1));
-    };
-  });
   bindDrag(body, '[data-cmp-token]', (el) => ({ add: 1, which: el.dataset.cmpToken }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
@@ -406,7 +425,14 @@ function renderCompare() {
       const which = drop.split(':')[1];
       setCompare(which, state.compare[which] + 1, `${countWord(state.compare[which] + 1)}`);
     }
-  }, { onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="cmp:${p.which}"]`, body); } });
+  }, {
+    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="cmp:${p.which}"]`, body); },
+    onTap: (p) => {
+      if (state.settings.errorless) showHintTarget(`[data-drop="cmp:${p.which}"]`, body);
+      speak('점을 손가락으로 끌어 위쪽 접시에 놓아 보세요.');
+    },
+    onActivate: (p) => setCompare(p.which, state.compare[p.which] + 1, countWord(state.compare[p.which] + 1)),
+  });
   bindDrag(body, '[data-cmp-move]', (el) => ({ from: el.dataset.cmpMove }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
@@ -492,11 +518,11 @@ function renderCompose() {
   const rightFrame = isSub
     ? `<div class="drop-plate" data-drop="compose-minus" style="border-color:#fda4af;background:#fff1f2;min-height:180px">
         <div class="plate-title"><span>➖ 빼는 곳 · ${removed}/${b}</span><span class="plate-count">${removed}</span></div>
-        <div class="plate-items">${Array.from({ length: removed }, (_, i) => `<span class="counter-chip rose" role="button" tabindex="0" aria-label="${i + 1}번째 뺀 점">●</span>`).join('') || '<span class="muted">왼쪽 점을 여기로 끌어와요</span>'}</div>
+        <div class="plate-items">${Array.from({ length: removed }, (_, i) => `<span class="counter-chip rose" data-compose-restore="1" role="button" tabindex="0" aria-label="${i + 1}번째 뺀 점">●</span>`).join('') || '<span class="muted">왼쪽 점을 여기로 끌어와요</span>'}</div>
       </div>`
     : tenFrameHTML(10, Math.min(rightPart, 10), 0, -1, { frameId: 'composeB', dragFilled: true, forceColor: 'green' });
   body.innerHTML = `
-    <div class="guide">${headline} <b>점을 끌어다</b> 다른 칸으로 옮겨 보세요. 그냥 눌러도 돼요.</div>
+    <div class="guide">${headline} <b>점을 손가락으로 끌어다</b> 다른 칸으로 옮겨 보세요.</div>
     <div class="two-plates">
       <div><div class="guide" style="margin-bottom:5px"><b>${isSub ? '처음 수' : '첫 번째 수'} ${leftPart}</b></div>${leftFrame}</div>
       <div><div class="guide" style="margin-bottom:5px"><b>${isSub ? '빼는 곳' : '두 번째 수'} ${isSub ? b : rightPart}</b></div>${rightFrame}</div>
@@ -568,8 +594,34 @@ function renderCompose() {
     onStart: (p) => {
       if (!state.settings.errorless) return;
       if (isSub) showHintTarget('[data-drop="compose-minus"]', body);
-      else showHintTarget(`[data-drop="${p.frame === 'composeA' ? 'composeB' : 'composeA'}:0"]`, body);
+      else showHintTarget(`[data-drop="${p.frame === 'composeA' ? 'composeB' : 'composeA'}"]`, body);
     },
+    onTap: (p) => {
+      if (isSub) {
+        if (state.settings.errorless) showHintTarget('[data-drop="compose-minus"]', body);
+        speak('점을 오른쪽 빼는 곳으로 손가락으로 끌어와 보세요.');
+      } else {
+        const targetFrame = p.frame === 'composeA' ? 'composeB' : 'composeA';
+        if (state.settings.errorless) showHintTarget(`[data-drop="${targetFrame}"]`, body);
+        speak('점을 옆 10칸 판으로 손가락으로 끌어 옮겨 보세요.');
+      }
+    },
+    onActivate: (p) => {
+      if (isSub) transfer('composeA', 'compose-minus');
+      else transfer(p.frame, p.frame === 'composeA' ? 'composeB' : 'composeA');
+    },
+  });
+  bindDrag(body, '[data-compose-restore]', () => ({ restore: 1 }), (p, zone) => {
+    if (!zone) return;
+    const target = (zone.dataset.drop || '').split(':')[0];
+    if (target === 'composeA' && state.composeRemoved > 0) {
+      state.composeRemoved = Math.max(0, state.composeRemoved - 1);
+      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '점 되돌리기');
+      renderTool();
+      speak(`${countWord(a - state.composeRemoved)}개가 있어요`);
+    }
+  }, {
+    onTap: () => speak('뺀 점을 왼쪽 10칸 판으로 끌어놓으면 되돌릴 수 있어요.'),
   });
   body.querySelectorAll('[data-compose-bundle]').forEach((btn) => {
     btn.onclick = () => {
@@ -668,7 +720,23 @@ function renderMakeTen() {
       speak('왼쪽 10칸 판에서 오른쪽으로 옮기면 10을 만들 수 없어요.');
     }
   }, {
-    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="${p.frame === 'mtRight' ? 'mtLeft' : 'mtRight'}:0"]`, body); },
+    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="${p.frame === 'mtRight' ? 'mtLeft' : 'mtRight'}"]`, body); },
+    onTap: (p) => {
+      if (p.frame === 'mtRight') {
+        if (state.settings.errorless) showHintTarget('[data-drop="mtLeft"]', body);
+        speak('오른쪽 초록 점을 왼쪽 10칸 판으로 손가락으로 끌어와 보세요.');
+      } else {
+        speak('오른쪽 초록 점을 왼쪽 10칸 판으로 끌어와 10을 만들어요.');
+      }
+    },
+    onActivate: (p) => {
+      if (p.frame === 'mtRight' && b > 0 && a < 10) {
+        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '10 만들기');
+        loadExpression(a + 1, '+', b - 1, { quiet: true });
+        if (a + 1 === 10) awardToken('10을 만들었어요! 남은 수를 더해 보세요.');
+        else speak(`${a + 1}개. 10이 되려면 ${9 - a}개 더 필요해요.`);
+      }
+    },
   });
   body.querySelectorAll('[data-mt-bundle]').forEach((btn) => {
     btn.onclick = () => {
@@ -716,7 +784,7 @@ function renderStrategy() {
     { id: 'back', label: '거꾸로 세기' },
   ];
   if (!strategies.some((s) => s.id === state.strategy)) state.strategy = 'forward';
-  if (state.nlBase !== a) { state.nlBase = a; state.nlMarker = a; }
+  if (state.nlBase !== a || state.nlMarker == null) { state.nlBase = a; state.nlMarker = a; }
   let explain = '';
   let line = '';
   if (!inRange) {
@@ -790,16 +858,69 @@ function renderStrategy() {
     renderTool();
   };
   body.querySelectorAll('.nl-stop').forEach((stop) => {
-    stop.onclick = () => moveMarker(Number((stop.dataset.drop || 'nl:0').split(':')[1]));
+    stop.onclick = () => {
+      const idx = Number((stop.dataset.drop || 'nl:0').split(':')[1]);
+      if (state.settings.errorless) showHintTarget(`[data-drop="nl:${total}"]`, body);
+      speak(`개구리를 손가락으로 끌어 ${idx} 자리로 옮겨 보세요.`);
+    };
   });
-  bindDrag(body, '[data-nl-marker]', () => ({ value: state.nlMarker ?? a }), (p, zone) => {
-    if (!zone) return;
-    const drop = zone.dataset.drop || '';
-    if (drop.startsWith('nl:')) moveMarker(Number(drop.split(':')[1]));
-  }, {
-    onStart: () => { if (state.settings.errorless) showHintTarget(`[data-drop="nl:${total}"]`, body); },
-    onActivate: () => moveMarker(total),
+  body.querySelectorAll('[data-nl-step]').forEach((btn) => {
+    btn.onclick = () => moveMarker((state.nlMarker ?? a) + Number(btn.dataset.nlStep));
   });
+  const nlMarkerEl = body.querySelector('[data-nl-marker]');
+  const nlTrackEl = body.querySelector('[data-nl-track]');
+  const nlBadgeEl = body.querySelector('[data-nl-badge]');
+  if (nlMarkerEl && nlTrackEl) {
+    let curVal = clamp(Number(state.nlMarker ?? a), 0, 20);
+    const valueFromClientX = (clientX) => {
+      const r = nlTrackEl.getBoundingClientRect();
+      if (!r.width) return curVal;
+      return clamp(Math.floor(((clientX - r.left) / r.width) * 21), 0, 20);
+    };
+    const previewMarker = (val) => {
+      curVal = val;
+      nlMarkerEl.style.left = `${((val + 0.5) / 21) * 100}%`;
+      nlMarkerEl.setAttribute('aria-label', `현재 ${val}, 목표 ${total}. 좌우로 끌어서 옮기세요`);
+      if (nlBadgeEl) nlBadgeEl.textContent = `현재 ${val} · 목표 ${total}`;
+    };
+    nlMarkerEl.onpointerdown = (ev) => {
+      if (ev.button !== undefined && ev.button !== 0) return;
+      ev.preventDefault();
+      noteInteraction();
+      const pointerId = ev.pointerId;
+      const startX = ev.clientX;
+      const startY = ev.clientY;
+      let moved = false;
+      try { nlMarkerEl.setPointerCapture(pointerId); } catch (e) { /* 무시 */ }
+      const onMove = (e) => {
+        if (e.pointerId !== pointerId) return;
+        if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) < 6) return;
+        moved = true;
+        previewMarker(valueFromClientX(e.clientX));
+      };
+      const onUp = (e) => {
+        if (e.pointerId !== pointerId) return;
+        nlMarkerEl.removeEventListener('pointermove', onMove);
+        nlMarkerEl.removeEventListener('pointerup', onUp);
+        nlMarkerEl.removeEventListener('pointercancel', onUp);
+        try { nlMarkerEl.releasePointerCapture(pointerId); } catch (err) { /* 무시 */ }
+        if (moved) {
+          moveMarker(valueFromClientX(e.clientX));
+        } else {
+          if (state.settings.errorless) showHintTarget(`[data-drop="nl:${total}"]`, body);
+          announce(`개구리를 손가락으로 좌우로 끌어 ${total} 자리에 놓아 보세요.`);
+        }
+      };
+      nlMarkerEl.addEventListener('pointermove', onMove);
+      nlMarkerEl.addEventListener('pointerup', onUp);
+      nlMarkerEl.addEventListener('pointercancel', onUp);
+    };
+    nlMarkerEl.onkeydown = (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); moveMarker(curVal + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); moveMarker(curVal - 1); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); moveMarker(total); }
+    };
+  }
   body.querySelectorAll('[data-strategy]').forEach((b) => {
     b.onclick = () => { state.strategy = b.dataset.strategy; renderTool(); };
   });
