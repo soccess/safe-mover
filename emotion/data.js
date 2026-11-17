@@ -76,6 +76,44 @@ const moods = {
       ["draw", "놀란 순간 그려보기", "기억에 남는 장면을 그림으로 표현해요.", "그림으로 차근차근 생각을 정리해요."],
       ["cozy", "안심 자리에서 쉬기", "편안한 자리에서 어깨의 힘을 빼고 쉬어요.", "이제 안전하다는 걸 몸으로 느껴봐요."]
     ]
+  },
+  worried: {
+    label: "걱정",
+    adj: "걱정되는",
+    face: "😟",
+    color: "#e2f5ea",
+    tagline: "마음에 안개가 살짝 낀 날이에요.",
+    description: "걱정되는 마음을 꺼내 놓고 안전함을 확인해요.",
+    moodLine: "혼자 끙끙 앓지 않아도 괜찮아요. 지금 할 수 있는 작은 것부터 해봐요.",
+    methods: [
+      ["breathe", "천천히 숨 고르기", "긴장된 몸을 숨으로 부드럽게 풀어요.", "숨을 길게 내쉴 때 걱정도 같이 내려놔요."],
+      ["bubble", "걱정 비눗방울 날리기", "걱정되는 생각을 비눗방울에 담아 날려 보내요.", "방울이 톡 터질 때마다 마음이 가벼워져요."],
+      ["grounding", "오감 감각 찾기", "지금 내 주변에서 보고 만지는 것에 집중해요.", "지금 여기에서 나는 안전해요."],
+      ["radar", "안전 레이더 살피기", "나를 도와줄 사람과 안전한 물건을 확인해요.", "혼자가 아니라는 걸 기억해요."],
+      ["cozy", "포근하게 안아주기", "어깨 힘을 빼고 스스로를 따뜻하게 토닥여요.", "“괜찮아, 잘할 수 있어”라고 말해요."],
+      ["talk", "내 마음 말로 전하기", "선생님이나 가족에게 걱정되는 점을 말해요.", "말로 나누면 걱정이 반으로 줄어들어요."],
+      ["jar", "고마운 마음 모으기", "지금 내 곁에 있는 좋은 것들을 떠올려요.", "든든한 기억을 항아리에 담아요."],
+      ["letter", "나에게 응원 엽서 쓰기", "불안한 나에게 용기를 주는 엽서를 써봐요.", "오늘의 나에게 다정한 응원을 보내요."]
+    ]
+  },
+  tired: {
+    label: "피곤",
+    adj: "피곤하고 지친",
+    face: "😪",
+    color: "#fce9dc",
+    tagline: "몸과 마음에 쉼표가 필요한 시간이에요.",
+    description: "잠깐 멈추고 에너지를 천천히 채워요.",
+    moodLine: "열심히 달렸으니 쉬어가도 괜찮아요. 내 속도에 맞춰 쉬어요.",
+    methods: [
+      ["cozy", "포근한 자리에서 쉬기", "푹신한 곳에서 눈을 감고 잠깐 쉬어요.", "아무것도 하지 않고 쉬는 것도 멋진 활동이에요."],
+      ["water", "물 한 모금 마시기", "시원하고 깨끗한 물로 몸을 깨워요.", "한 모금씩 천천히 마셔봐요."],
+      ["music", "잔잔한 노래 듣기", "부드러운 멜로디를 들으며 힘을 빼요.", "좋아하는 소리를 자유롭게 연주해도 좋아요."],
+      ["walk", "천천히 산책하기", "맑은 공기를 마시며 천천히 걸어봐요.", "자연의 소리를 들으면 기운이 조금씩 나요."],
+      ["read", "그림책 보며 쉬기", "글이 적은 편안한 그림책을 천천히 넘겨요.", "그림만 보며 쉬어도 괜찮아요."],
+      ["garden", "초록 꽃밭 돌보기", "화분에 물을 주며 천천히 초록빛을 봐요.", "식물을 돌보듯 내 마음도 돌봐요."],
+      ["draw", "자유롭게 색칠하기", "아무 생각 없이 좋아하는 색을 칠해요.", "손이 가는 대로 그려도 멋진 작품이에요."],
+      ["letter", "고생한 나 칭찬하기", "오늘 열심히 한 나에게 수고했다고 말해요.", "“오늘도 정말 애썼어!”라고 적어봐요."]
+    ]
   }
 };
 
@@ -107,7 +145,9 @@ const MOOD_PAL = {
   happy: { sky1: "#fff9dd", sky2: "#ffeec1", horizon: "#fff5d4", hill: "#d3ebb9", hill2: "#aed795", ground: "#bbdf9f", edge: "#96c27c" },
   sad: { sky1: "#eef9fe", sky2: "#d7edf8", horizon: "#e8f7fd", hill: "#cde6db", hill2: "#a9d1c5", ground: "#b8dcd0", edge: "#8dbfae" },
   angry: { sky1: "#fff4ec", sky2: "#ffddd2", horizon: "#ffeadf", hill: "#f5d2c3", hill2: "#eab4a3", ground: "#f1c5b4", edge: "#d89a86" },
-  surprised: { sky1: "#f7f2ff", sky2: "#e6ddff", horizon: "#f3edff", hill: "#d5e8da", hill2: "#b7d6c1", ground: "#c8e2cf", edge: "#9ac2a6" }
+  surprised: { sky1: "#f7f2ff", sky2: "#e6ddff", horizon: "#f3edff", hill: "#d5e8da", hill2: "#b7d6c1", ground: "#c8e2cf", edge: "#9ac2a6" },
+  worried: { sky1: "#effbf4", sky2: "#d9f2e4", horizon: "#e9f9f0", hill: "#cbe6d4", hill2: "#a5d3b7", ground: "#b8dec7", edge: "#88be9d" },
+  tired: { sky1: "#fff6ef", sky2: "#fde5d6", horizon: "#fff0e6", hill: "#e7dbc9", hill2: "#d2bfa8", ground: "#dfd0bc", edge: "#bfa68b" }
 };
 
 const SCENE_ARMS = {
@@ -146,7 +186,9 @@ const EASY_MOOD_COPY = {
   happy: { desc: "기분이 아주 좋아요!", tagline: "마음이 환하고 즐거워요.", moodLine: "좋은 마음을 함께 나눠요." },
   sad: { desc: "마음이 슬퍼요. 쉬어요.", tagline: "눈물이 날 것 같아요.", moodLine: "괜찮아요. 천천히 돌봐요." },
   angry: { desc: "화가 나요. 숨을 쉬어요.", tagline: "마음이 뜨겁고 답답해요.", moodLine: "몸과 마음을 안전하게 식혀요." },
-  surprised: { desc: "깜짝 놀랐어요. 안전해요.", tagline: "심장이 콩콩 뛰어요.", moodLine: "주변을 보고 안심해요." }
+  surprised: { desc: "깜짝 놀랐어요. 안전해요.", tagline: "심장이 콩콩 뛰어요.", moodLine: "주변을 보고 안심해요." },
+  worried: { desc: "걱정돼요. 천천히 확인해요.", tagline: "마음이 조금 불안해요.", moodLine: "지금 안전한 곳을 살펴봐요." },
+  tired: { desc: "피곤해요. 잠깐 쉬어요.", tagline: "몸과 마음에 힘이 빠졌어요.", moodLine: "포근하게 쉬면서 힘을 채워요." }
 };
 
 const EASY_ACTION_STEPS = {

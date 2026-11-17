@@ -7,7 +7,9 @@ function faceSvg(mood){
   happy:{bg:'#fff3c6',ring:'#f0c45c',shirt1:'#ffe08a',shirt2:'#f7c85f'},
   sad:{bg:'#e2f4fc',ring:'#8cc6dd',shirt1:'#c4e7f6',shirt2:'#9fd3ea'},
   angry:{bg:'#ffe5dd',ring:'#efa78f',shirt1:'#ffc3b0',shirt2:'#f3a38e'},
-  surprised:{bg:'#eee8ff',ring:'#b0a1e2',shirt1:'#d8cdff',shirt2:'#bcabee'}
+  surprised:{bg:'#eee8ff',ring:'#b0a1e2',shirt1:'#d8cdff',shirt2:'#bcabee'},
+  worried:{bg:'#e2f5ea',ring:'#85c6a3',shirt1:'#bce8cf',shirt2:'#94d4af'},
+  tired:{bg:'#fce9dc',ring:'#e4ab8a',shirt1:'#fad3b8',shirt2:'#eeb693'}
  }[mood]||{bg:'#fff3c6',ring:'#f0c45c',shirt1:'#ffe08a',shirt2:'#f7c85f'};
  const id='face-'+mood;
  let weather='';
@@ -17,6 +19,10 @@ function faceSvg(mood){
   weather=`<g><g class="bob"><path d="M79 14q0-8 9-8t9 8q7 0 7 6t-7 6H79q-7 0-7-6t7-6" fill="#fff" stroke="#a9cfe0" stroke-width="1.6"/></g><g stroke="#87c6e2" stroke-width="2.4" stroke-linecap="round"><path class="rain" d="M84 30v6m9-4v6"/><path class="rain2" d="M101 30v6m-12 2v5"/></g><path d="M18 30q3-5 6 0q-3 4-6 0" fill="#9fd6ec" class="bob2"/></g>`;
  }else if(mood==='angry'){
   weather=`<g><g class="bob"><path d="M80 12q0-8 9-8t9 8q8 0 8 6t-8 6H80q-7 0-7-6t7-6" fill="#ffe0cf" stroke="#dfa48d" stroke-width="1.6"/></g><path d="M95 30l-5 10h6l-4 9 10-13h-6l4-6z" fill="#f2a24f" stroke="#cf7f33" stroke-width="1.2" stroke-linejoin="round" class="blink"/><g stroke="#f0a58f" stroke-width="2.4" fill="none" stroke-linecap="round" class="rise"><path d="M20 20q-6 4 0 9m8-14q-6 5 0 11"/></g></g>`;
+ }else if(mood==='worried'){
+  weather=`<g><g class="drift" opacity=".85"><path d="M16 24q8-7 16 0t16 0" fill="none" stroke="#8ec7a8" stroke-width="2.4" stroke-linecap="round"/><path d="M74 18q7-6 14 0t14 0" fill="none" stroke="#a7d7bc" stroke-width="2.2" stroke-linecap="round"/></g><circle cx="24" cy="36" r="3" fill="#b7e4c7" class="pulse"/></g>`;
+ }else if(mood==='tired'){
+  weather=`<g><path d="M22 14a9 9 0 1 0 11 11a7 7 0 1 1-11-11z" fill="#fbd38d" stroke="#e2a856" stroke-width="1.2" class="bob"/><g fill="#b08968" font-size="11" font-weight="bold" class="rise"><text x="86" y="24">z</text><text x="95" y="16" font-size="13">Z</text></g></g>`;
  }else{
   weather=`<g fill="#fff"><path d="M20 12l2.6 6.4L29 21l-6.4 2.6L20 30l-2.6-6.4L11 21l6.4-2.6z" class="twinkle"/><path d="M100 34l1.8 4.4L106 40l-4.2 1.8L100 46l-1.8-4.2L94 40l4.2-1.6z" class="twinkle2"/></g><g fill="none" stroke="#c9b6f2" stroke-width="2.4" stroke-linecap="round" class="drift"><path d="M24 42q8-8 16 0t16 0"/><circle cx="92" cy="18" r="3" class="pulse"/></g>`;
  }
@@ -34,6 +40,14 @@ function faceSvg(mood){
   eyes=`<g class="eyeBlink"><path d="M41 63q6-3 12 0" fill="none" stroke="#4a3733" stroke-width="2.4"/><path d="M67 63q6-3 12 0" fill="none" stroke="#4a3733" stroke-width="2.4"/><ellipse cx="47" cy="66" rx="4.8" ry="4.2" fill="#fff"/><ellipse cx="73" cy="66" rx="4.8" ry="4.2" fill="#fff"/><circle cx="47" cy="66" r="2.8" fill="#5d4336"/><circle cx="73" cy="66" r="2.8" fill="#5d4336"/><circle cx="46" cy="65" r="1" fill="#fff"/><circle cx="72" cy="65" r="1" fill="#fff"/></g>`;
   mouth=`<path d="M51 83q9-4 18 0" fill="none" stroke="#8d4a50" stroke-width="2.6" stroke-linecap="round"/>`;
   blush=`<ellipse cx="37" cy="76" rx="7" ry="4" fill="#f28c80" opacity=".65"/><ellipse cx="83" cy="76" rx="7" ry="4" fill="#f28c80" opacity=".65"/>`;
+ }else if(mood==='worried'){
+  brows=`<path d="M40 58q5-5 11-5M69 53q6 0 11 5" fill="none" stroke="#4a3733" stroke-width="2.6" stroke-linecap="round"/>`;
+  eyes=`<g class="eyeBlink"><ellipse cx="47" cy="66" rx="5.2" ry="5.6" fill="#fff"/><ellipse cx="73" cy="66" rx="5.2" ry="5.6" fill="#fff"/><circle cx="47" cy="66" r="3.4" fill="#6b5040"/><circle cx="73" cy="66" r="3.4" fill="#6b5040"/><circle cx="45.8" cy="64.8" r="1.3" fill="#fff"/><circle cx="71.8" cy="64.8" r="1.3" fill="#fff"/></g>`;
+  mouth=`<path d="M51 84q4-3 9 0t9 0" fill="none" stroke="#8d4a50" stroke-width="2.4" stroke-linecap="round"/>`;
+ }else if(mood==='tired'){
+  brows=`<path d="M41 58q5-2 11 0M68 58q6-2 11 0" fill="none" stroke="#4a3733" stroke-width="2.2" stroke-linecap="round"/>`;
+  eyes=`<g><path d="M41 66q6 4 12 0M67 66q6 4 12 0" fill="none" stroke="#4a3733" stroke-width="2.8" stroke-linecap="round"/></g>`;
+  mouth=`<ellipse cx="60" cy="83" rx="4" ry="3.2" fill="#c97b7e" stroke="#8d4a50" stroke-width="1.5"/>`;
  }else{
   brows=`<path d="M40 54q5-5 11-4M69 50q6-1 11 4" fill="none" stroke="#4a3733" stroke-width="2.6" stroke-linecap="round"/>`;
   eyes=`<g class="eyeBlink"><ellipse cx="47" cy="66" rx="6.2" ry="7.2" fill="#fff"/><ellipse cx="73" cy="66" rx="6.2" ry="7.2" fill="#fff"/><circle cx="47" cy="67" r="3" fill="#5d4336"/><circle cx="73" cy="67" r="3" fill="#5d4336"/><circle cx="47" cy="67" r="1.4" fill="#2f211c"/><circle cx="73" cy="67" r="1.4" fill="#2f211c"/><circle cx="45.6" cy="64.6" r="1.5" fill="#fff"/><circle cx="71.6" cy="64.6" r="1.5" fill="#fff"/></g>`;
@@ -92,6 +106,10 @@ function bgScene(mood,type){
   weather=`<g>${cloud(196,30,1.15,.95,'bob')}${cloud(58,22,.7,.75,'bob2')}<g stroke="#8ecbe4" stroke-width="2.2" stroke-linecap="round"><g class="rain"><path d="M180 48l-3 8m14-6-3 9"/></g><g class="rain2"><path d="M196 46l-2 7m12-5-2 7M66 40l-2 7"/></g></g></g><g fill="#fff" opacity=".6"><circle cx="30" cy="52" r="2" class="twinkle"/><circle cx="118" cy="34" r="1.6" class="twinkle2"/><circle cx="84" cy="24" r="1.4" class="twinkle"/></g><path d="M22 60q8-7 16 0" fill="none" stroke="#a9cfe0" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
  }else if(mood==='angry'){
   weather=`<g>${cloud(198,30,1.1,.9,'bob')}${cloud(64,24,.8,.6,'bob2')}<path d="M202 44l-7 14h8l-6 14 15-19h-8l6-9z" fill="#f3a24d" stroke="#cf7e32" stroke-width="1.6" stroke-linejoin="round" class="blink"/><g stroke="#e9a28c" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".85"><path d="M28 34q12-9 24 0t24 0"/><path d="M40 46q10-7 20 0"/></g><g fill="#f6b48c"><circle cx="176" cy="66" r="1.8" class="rise"/><circle cx="190" cy="74" r="1.4" class="rise"/><circle cx="162" cy="78" r="1.2" class="rise"/></g></g>`;
+ }else if(mood==='worried'){
+  weather=`<g>${cloud(190,28,1.0,.85,'bob')}${cloud(52,24,.75,.75,'bob2')}<g stroke="#8bc7a8" stroke-width="2" fill="none" stroke-linecap="round" class="drift"><path d="M36 44q10-7 20 0t20 0"/><path d="M138 30q8-6 16 0"/></g></g>`;
+ }else if(mood==='tired'){
+  weather=`<g>${cloud(192,30,.95,.8,'bob')}<path d="M42 20a10 10 0 1 0 12 12a8 8 0 1 1-12-12z" fill="#fbd38d" class="bob2"/><g fill="#b08968" font-size="11" font-weight="bold" class="rise"><text x="166" y="42">z</text><text x="176" y="34" font-size="13">Z</text></g></g>`;
  }else{
   weather=`<g>${cloud(190,30,.95,.75,'bob')}<g fill="#fff"><path d="M34 28l2.6 6.6 6.6 2.6-6.6 2.6L34 46l-2.6-6.2L25 37.2l6.4-2.6z" class="twinkle"/><path d="M168 58l1.8 4.6 4.6 1.8-4.6 1.8-1.8 4.6-1.8-4.6-4.6-1.8 4.6-1.8z" class="twinkle2"/><path d="M120 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" class="twinkle"/></g><g fill="none" stroke="#c2aef0" stroke-width="2.2" stroke-linecap="round" class="drift"><path d="M52 34q10-9 20 0t20 0"/><circle cx="140" cy="22" r="2.6"/><circle cx="154" cy="34" r="1.8"/><path d="M24 48q6-5 12 0"/></g></g>`;
  }

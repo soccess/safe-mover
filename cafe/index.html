@@ -43,6 +43,11 @@
           </div>
 
           <div class="controls-group">
+            <div class="pmode-switch" id="practiceModeSwitch" role="group" aria-label="연습 모드 선택">
+              <button type="button" class="pmode-btn active" data-pmode="auto" title="단계별로 자동으로 안내하고 강조해요">🤖 자동연습</button>
+              <button type="button" class="pmode-btn" data-pmode="manual" title="단계 완료 후 다음 행동을 직접 골라요">🧭 수동연습</button>
+              <button type="button" class="pmode-btn" data-pmode="practicum" title="실수까지 직접 경험하며 자유롭게 제조해요">🧪 실습모드</button>
+            </div>
             <button id="focusStepBtn" class="pill-btn active" title="현재 단계 크게 보기">🔍 확대</button>
             <button id="resetCamBtn" class="pill-btn" title="카페 전체 보기">🎥 전체</button>
             <button id="quickBreakBtn" class="pill-btn" title="잠깐 쉬기">🌿 쉼</button>
@@ -88,6 +93,8 @@
           <span class="guidance-text" id="guidanceText">3D 카페를 불러오고 있어요...</span>
           <button type="button" id="speakStepBtn" class="speak-step-btn" title="지금 할 일 다시 듣기">🔊 듣기</button>
         </div>
+        <div id="manualChoiceBar" class="manual-choice-bar hidden" aria-live="polite"></div>
+        <div id="practicumStatusBar" class="practicum-status-bar hidden" aria-live="polite"></div>
         <div class="action-bar" id="actionBar" aria-label="동작 버튼"></div>
       </footer>
 
@@ -120,6 +127,7 @@
           <div class="complete-emoji" id="completeEmoji">🎉</div>
           <h2 id="completeTitle">음료가 완성되었어요!</h2>
           <p id="completeDesc">차분하게 순서대로 정말 잘 만들었어요.</p>
+          <div id="practicumReport" class="practicum-report hidden"></div>
           <div class="complete-actions">
             <button id="nextDrinkBtn" class="primary-action-btn">✨ 한 잔 더 만들기</button>
           </div>

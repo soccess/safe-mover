@@ -218,6 +218,10 @@ html, body {
 .buff-magnet { background: #DB2777; border: 1px solid #FBCFE8; }
 .buff-boost { background: #F59E0B; border: 1px solid #FEF08A; color: #78350F; }
 .buff-combo { background: linear-gradient(135deg, #EC4899, #F59E0B); border: 1px solid #FEF08A; }
+.buff-fever { background: linear-gradient(135deg, #F43F5E, #FACC15); border: 1px solid #FEF08A; color: #FFFBEB; }
+.buff-rail { background: linear-gradient(135deg, #10B981, #0EA5E9); border: 1px solid #A7F3D0; }
+.buff-gravity { background: linear-gradient(135deg, #7C3AED, #6366F1); border: 1px solid #E9D5FF; }
+.buff-mirror { background: linear-gradient(135deg, #EC4899, #9333EA); border: 1px solid #FBCFE8; }
 
 .barOuter {
   flex: 1;
@@ -280,6 +284,11 @@ canvas {
 .padBtn:active {
   background: rgba(34, 197, 94, .75);
   transform: scale(.94);
+}
+.padBtn.mirrored {
+  background: linear-gradient(135deg, rgba(219, 39, 119, .82), rgba(147, 51, 234, .78));
+  border-color: #FBCFE8;
+  color: #FEF08A;
 }
 #padL { left: 12px; }
 #padR { right: 12px; }

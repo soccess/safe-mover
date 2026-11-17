@@ -23,11 +23,12 @@
         <span>마음 날씨 연구소</span>
       </button>
       <div class="top-actions">
+        <button type="button" class="em-tool-btn studio" id="btnFreeStudio">🎨 자유 활동실</button>
+        <button type="button" class="em-tool-btn gallery" id="btnMindGallery">🗂️ 마음 보관함 <span id="galleryCountBadge"></span></button>
         <button type="button" class="em-tool-btn" id="btnEmotionSpeak">🔊 읽어주기</button>
         <button type="button" class="em-tool-btn" id="btnEmotionEasy">📖 쉬운 말</button>
         <button type="button" class="em-tool-btn breathe" id="btnQuickBreathe">🌬️ 바로 숨 고르기</button>
-        <a class="home-link" href="./index.html">🏠 학습 게임 목록</a>
-        <div class="top-note">🌱 어떤 마음이든 괜찮아요</div>
+        <a class="home-link" href="./index.html">🏠 목록</a>
       </div>
     </header>
 
@@ -54,9 +55,26 @@
     <section id="homeStage" class="stage visible">
       <div class="section-heading">
         <h2>지금 내 마음을 골라봐요</h2>
-        <p>감정에는 정답도, 오답도 없어요.</p>
+        <p>6가지 마음 날씨 중에서 고르거나, 자유 활동실에서 원하는 놀이를 바로 열 수 있어요.</p>
       </div>
       <div class="moods" id="moodCards"></div>
+
+      <!-- 자유 복합 감정 조합기 + 자유 활동실 바로가기 -->
+      <div class="free-mixer-card" id="freeMixerCard">
+        <div class="mixer-head">
+          <h3>🌈 여러 마음이 섞여 있나요? 나만의 마음 조합 & 자유 활동</h3>
+          <button type="button" class="ta-btn" id="btnOpenStudioFromHome">🎨 21가지 자유 활동실 열기 →</button>
+        </div>
+        <div class="mixer-row">
+          <div class="mixer-chips" id="mixerMoodChips"></div>
+          <div class="mixer-thermo">
+            <label for="homeThermo">🌡️ 마음 크기: <b id="homeThermoVal">50</b>%</label>
+            <input id="homeThermo" type="range" min="10" max="100" value="50">
+          </div>
+        </div>
+        <div class="mixer-result" id="mixerResultText">마음을 1~2개 눌러 섞어보거나 바로 자유 활동을 골라보세요!</div>
+      </div>
+
       <div class="privacy-note">
         <span>💛</span>
         <span>기억해요! 감정은 우리에게 무언가를 알려주는 소중한 신호예요.</span>
@@ -72,6 +90,39 @@
       </div>
       <div id="methodCards" class="methods"></div>
       <div class="detail" id="detail"></div>
+    </section>
+
+    <section id="freeStage" class="stage">
+      <button class="back" onclick="goHome()">← 마음 날씨 홈으로</button>
+      <div class="section-heading">
+        <h2>🎨 자유 마음 활동실 (모든 놀이 자유 선택!)</h2>
+        <p>정해진 순서 없이 하고 싶은 활동을 마음껏 골라 해보세요.</p>
+      </div>
+      <div class="studio-toolbar" id="studioToolbar">
+        <div class="studio-cats" id="studioCats">
+          <button type="button" class="ta-chip on" data-cat="all">✨ 전체 (21)</button>
+          <button type="button" class="ta-chip" data-cat="create">🎨 그리기·쓰기</button>
+          <button type="button" class="ta-chip" data-cat="calm">🌬️ 소리·숨 고르기</button>
+          <button type="button" class="ta-chip" data-cat="play">🌸 몸·놀이</button>
+          <button type="button" class="ta-chip" data-cat="share">💬 마음 나누기</button>
+        </div>
+        <button type="button" class="ta-btn gold" id="btnRandomAct">🎲 오늘의 활동 뽑기</button>
+      </div>
+      <div class="methods" id="freeMethodCards"></div>
+      <div class="detail" id="freeDetail"></div>
+    </section>
+
+    <section id="galleryStage" class="stage">
+      <button class="back" onclick="goHome()">← 마음 날씨 홈으로</button>
+      <div class="section-heading">
+        <h2>🗂️ 내 마음 보관함</h2>
+        <p>내가 그린 마음 그림, 고마움 쪽지, 응원 엽서, 마음 메모가 모여 있어요.</p>
+      </div>
+      <div class="gallery-actions">
+        <button type="button" class="ta-btn" onclick="openFreeStudio()">🎨 새 작품 만들러 가기</button>
+        <button type="button" class="ta-chip" id="btnClearGallery">🗑 보관함 비우기</button>
+      </div>
+      <div id="galleryList" class="gallery-grid"></div>
     </section>
 
     <footer class="footer">마음을 표현하고 돌보는 연습은 매일 조금씩 자라나요. 🌼</footer>

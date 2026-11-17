@@ -28,16 +28,24 @@
   let windT = 5;
   let currentT = 5.5;
   let padT = 2.6;
+  let mirrorEventT = 11.0;
+  let gravityEventT = 12.0;
+  let bossLaserT = 5.5;
   let midIdx = 0;
   let spawnT = 1.0;
   let stepT = 0;
   let stepN = 0;
   let wordBag = [];
+  let swipeStart = null;
 
   const state = {
     stageIdx: 0,
     stageTime: 0,
     roadScroll: 0,
+    trackPhase: 0,
+    hillPhase: 0,
+    camTilt: 0,
+    flipBlend: 0,
     lane: 0,
     lanePos: 0,
     laneFlash: 0,
@@ -47,8 +55,20 @@
     shield: 0,
     magnetTimer: 0,
     boostTimer: 0,
+    railTimer: 0,
+    feverTimer: 0,
+    gravityTimer: 0,
+    mirrorTimer: 0,
+    mirrorWarn: 0,
+    warpAnim: 0,
+    warpInvuln: 0,
     windWarn: 0,
     nextWindDir: 1,
+    bossActive: false,
+    bossHp: 5,
+    bossMaxHp: 5,
+    bossHitFlash: 0,
+    bossLaser: null,
     shake: 0,
     entities: [],
     pads: [],
@@ -148,11 +168,26 @@
   function updateBuffBadges() {
     if (!buffBadges) return;
     let html = "";
-    if (state.combo >= 2) html += '<span class="buff-pill buff-combo">🔥 ' + state.combo + '콤보</span>';
+    if (state.feverTimer > 0) html += '<span class="buff-pill buff-fever">🔥 피버 ' + Math.ceil(state.feverTimer) + 's</span>';
+    else if (state.combo >= 2) html += '<span class="buff-pill buff-combo">🔥 ' + state.combo + '콤보</span>';
     if (state.shield > 0) html += '<span class="buff-pill buff-shield">🫧 보호막</span>';
     if (state.magnetTimer > 0) html += '<span class="buff-pill buff-magnet">🧲 자석 ' + Math.ceil(state.magnetTimer) + 's</span>';
     if (state.boostTimer > 0) html += '<span class="buff-pill buff-boost">⚡ 부스트 ' + Math.ceil(state.boostTimer) + 's</span>';
+    if (state.railTimer > 0) html += '<span class="buff-pill buff-rail">🛷 레일 ' + Math.ceil(state.railTimer) + 's</span>';
+    if (state.gravityTimer > 0) html += '<span class="buff-pill buff-gravity">🙃 중력반전 ' + Math.ceil(state.gravityTimer) + 's</span>';
+    if (state.mirrorTimer > 0) html += '<span class="buff-pill buff-mirror">🎭 거울 ' + Math.ceil(state.mirrorTimer) + 's</span>';
     buffBadges.innerHTML = html;
+  }
+
+  function syncPadButtons() {
+    const padL = document.getElementById("padL");
+    const padR = document.getElementById("padR");
+    if (!padL || !padR) return;
+    const mir = state.mirrorTimer > 0;
+    padL.classList.toggle("mirrored", mir);
+    padR.classList.toggle("mirrored", mir);
+    padL.textContent = mir ? "🔄 오른쪽 ▶" : "◀ 왼쪽";
+    padR.textContent = mir ? "◀ 왼쪽 🔄" : "오른쪽 ▶";
   }
 
   function spawnParts(x, y, n, colors, withHangul) {
@@ -234,6 +269,10 @@
     stageTransition = null;
     state.stageIdx = i;
     state.stageTime = 0;
+    state.trackPhase = 0;
+    state.hillPhase = 0;
+    state.camTilt = 0;
+    state.flipBlend = 0;
     state.entities = [];
     state.pads = [];
     state.beams = [];
@@ -247,7 +286,19 @@
     state.shield = 0;
     state.magnetTimer = 0;
     state.boostTimer = 0;
+    state.railTimer = 0;
+    state.feverTimer = 0;
+    state.gravityTimer = 0;
+    state.mirrorTimer = 0;
+    state.mirrorWarn = 0;
+    state.warpAnim = 0;
+    state.warpInvuln = 0;
     state.windWarn = 0;
+    state.bossActive = false;
+    state.bossHp = 5;
+    state.bossMaxHp = 5;
+    state.bossHitFlash = 0;
+    state.bossLaser = null;
     state.shake = 0;
     state.combo = 0;
     state.finished = false;
@@ -259,12 +310,16 @@
     spawnT = 0.85;
     windT = 4.2;
     currentT = 4.8;
-    padT = 2.4;
+    padT = 2.0;
+    mirrorEventT = 11.5;
+    gravityEventT = 12.5;
+    bossLaserT = 5.0;
     midIdx = 0;
     refillWordBag(i);
 
     document.getElementById("overlay").style.display = "none";
     buildChips();
+    syncPadButtons();
     const s = STAGES[i];
     const startMsg = state.easyMode
       ? (i + 1) + "단계! 바른 말을 잡아요."
@@ -289,26 +344,31 @@
     startStage(0);
   }
 
-  function goLeft() {
+  function stepLane(dir) {
     if (state.finished || state.paused || state.reviewOpen || state.stageClearWait) return;
-    if (state.lane > -1) {
-      state.lane--;
+    const next = state.lane + dir;
+    if (next >= -1 && next <= 1) {
+      state.lane = next;
       state.laneFlash = 0.24;
       AUDIO.lane();
     }
   }
 
+  function goLeft() {
+    stepLane(state.mirrorTimer > 0 ? 1 : -1);
+  }
+
   function goRight() {
-    if (state.finished || state.paused || state.reviewOpen || state.stageClearWait) return;
-    if (state.lane < 1) {
-      state.lane++;
-      state.laneFlash = 0.24;
-      AUDIO.lane();
-    }
+    stepLane(state.mirrorTimer > 0 ? -1 : 1);
   }
 
   function getPlayerAnchor() {
     const S = STAGES[state.stageIdx] || STAGES[0];
+    if (RENDERER && RENDERER.project) {
+      const pt = RENDERER.project(W, H, S, state, 0.85, state.lanePos);
+      const flipped = (state.flipBlend || 0) > 0.5;
+      return { x: pt.x, y: pt.y + (flipped ? 70 : -70) };
+    }
     const nw = S.narrow || 1;
     const topW = W * 0.1 * nw, botW = W * 0.44 * nw;
     const hw = topW + (botW - topW) * 0.86;
@@ -378,15 +438,35 @@
      ------------------------------------------------------------ */
   function spawnPad(S) {
     if (state.practiceMode) return;
-    const lanes = [-1, 0, 1];
-    const lane = lanes[Math.floor(Math.random() * 3)];
-    let kind = null;
-    if (S.puddles) kind = "puddle";
-    else if (S.boostPads) kind = "boost";
-    else if (S.cloudJump) kind = "cloud";
-    else if (S.tidalWave) kind = "tidal";
-    if (!kind) return;
+    const types = S.padTypes && S.padTypes.length ? S.padTypes : null;
+    if (!types) return;
 
+    const lanes = [-1, 0, 1];
+    let kind = types[Math.floor(Math.random() * types.length)];
+    // 보스 미활성 시 counterPad 대신 boost
+    if (kind === "counterPad" && !state.bossActive) kind = "boost";
+
+    if (kind === "portalPair") {
+      const l1 = lanes[Math.floor(Math.random() * 3)];
+      const others = lanes.filter((l) => l !== l1);
+      const l2 = others[Math.floor(Math.random() * others.length)];
+      state.pads.push({ kind: "portalPair", portalColor: "blue", lane: l1, targetLane: l2, z: 0.02, triggered: false, ph: Math.random() * 6.28 });
+      state.pads.push({ kind: "portalPair", portalColor: "orange", lane: l2, targetLane: l1, z: 0.02, triggered: false, ph: Math.random() * 6.28 });
+      return;
+    }
+
+    let safeLanes = lanes;
+    if (kind === "bridgeGap") {
+      // 바른 단어가 방금 스폰된 레인은 구멍으로 막지 않음
+      const blockedByWord = new Set(
+        state.entities.filter((e) => e.kind === "correct" && e.z < 0.28).map((e) => e.lane)
+      );
+      const avail = lanes.filter((l) => !blockedByWord.has(l));
+      if (!avail.length) return;
+      safeLanes = avail;
+    }
+
+    const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
     state.pads.push({
       kind,
       lane,
@@ -910,7 +990,8 @@
     state.totalCollected++;
     state.combo++;
     if (state.combo > state.maxCombo) state.maxCombo = state.combo;
-    const pts = (100 + Math.min(200, state.combo * 20)) * (o.isGold ? 2 : 1);
+    const feverMul = state.feverTimer > 0 ? 2 : 1;
+    const pts = (100 + Math.min(200, state.combo * 20)) * (o.isGold ? 2 : 1) * feverMul;
     state.score += pts;
     state.catchAnim = 0.45;
     recordLearned(o.pair);
@@ -919,16 +1000,40 @@
     const anchor = getPlayerAnchor();
     const sx = o.screenX != null ? o.screenX : anchor.x;
     const sy = o.screenY != null ? o.screenY : anchor.y;
-    const beamCol = o.isGold ? "#FACC15" : "#4ADE80";
+    const beamCol = state.feverTimer > 0 ? "#F43F5E" : (o.isGold ? "#FACC15" : "#4ADE80");
     state.beams.push({ x1: anchor.x, y1: anchor.y, x2: sx, y2: sy, life: 1, c: beamCol });
     state.rings.push({ x: anchor.x, y: anchor.y, rad: 24, life: 1, c: beamCol });
     spawnParts(sx, sy, o.isGold ? 34 : 24, ["#4ADE80", "#FDE047", "#FFFFFF", "#38BDF8", "#F472B6"], true);
 
     const comboTxt = state.combo >= 2 ? " (" + state.combo + "콤보!)" : "";
-    addPopup(anchor.x, anchor.y - 45, "+" + pts + (o.isGold ? " ⭐2배!" : "") + comboTxt, o.isGold ? "#FDE047" : "#4ADE80", 21);
+    addPopup(anchor.x, anchor.y - 45, "+" + pts + (o.isGold ? " ⭐2배!" : "") + (feverMul > 1 ? " 🔥" : "") + comboTxt, o.isGold ? "#FDE047" : "#4ADE80", 21);
     showFloat((o.isGold ? "⭐ 황금말! '" : "⭕ '") + o.word + "' +" + pts + "점!", o.isGold ? "#FDE047" : "#4ADE80");
     setBanner("잘했어요! '" + o.word + "' — " + o.pair.tip, "good");
+
+    // 5콤보 달성 시 피버 타임 발동!
+    if (state.combo > 0 && state.combo % 5 === 0 && state.feverTimer <= 0) {
+      state.feverTimer = 5.0;
+      AUDIO.fever();
+      spawnParts(anchor.x, anchor.y, 28, ["#FDE047", "#F43F5E", "#38BDF8", "#4ADE80"]);
+      showFloat("🔥 5콤보 달성! 무지개 피버 타임!", "#FDE047");
+    }
     updateBuffBadges();
+  }
+
+  function triggerWarp(targetLane, label, color) {
+    const oldAnchor = getPlayerAnchor();
+    state.rings.push({ x: oldAnchor.x, y: oldAnchor.y, rad: 32, life: 1, c: color || "#38BDF8" });
+    state.lane = targetLane;
+    state.lanePos = targetLane;
+    state.warpAnim = 0.65;
+    state.warpInvuln = 0.95;
+    state.score += 60;
+    AUDIO.warp();
+    const newAnchor = getPlayerAnchor();
+    state.beams.push({ x1: oldAnchor.x, y1: oldAnchor.y, x2: newAnchor.x, y2: newAnchor.y, life: 1, c: color || "#38BDF8", w: 10 });
+    state.rings.push({ x: newAnchor.x, y: newAnchor.y, rad: 28, life: 1, c: color || "#38BDF8" });
+    spawnParts(newAnchor.x, newAnchor.y, 22, ["#38BDF8", "#C084FC", "#FDE047"]);
+    addPopup(newAnchor.x, newAnchor.y - 40, label || "🌀 워프 +60!", color || "#38BDF8", 20);
   }
 
   function update(dt) {
@@ -942,7 +1047,11 @@
     }
 
     const S = STAGES[state.stageIdx];
-    const speedMul = (state.practiceMode ? 0.56 : 1) * (state.boostTimer > 0 ? 1.35 : 1);
+    const speedMul =
+      (state.practiceMode ? 0.56 : 1) *
+      (state.boostTimer > 0 ? 1.35 : 1) *
+      (state.feverTimer > 0 ? 1.18 : 1) *
+      (state.railTimer > 0 ? 1.2 : 1);
     const spawnMul = state.practiceMode ? 1.45 : 1;
     const useSlippery = state.practiceMode ? false : !!S.slippery;
     const useWind = state.practiceMode ? false : !!S.wind;
@@ -953,7 +1062,23 @@
     state.jumpTimer = Math.max(0, state.jumpTimer - dt);
     state.magnetTimer = Math.max(0, state.magnetTimer - dt);
     state.boostTimer = Math.max(0, state.boostTimer - dt);
+    state.railTimer = Math.max(0, state.railTimer - dt);
+    state.feverTimer = Math.max(0, state.feverTimer - dt);
+    state.warpAnim = Math.max(0, state.warpAnim - dt);
+    state.warpInvuln = Math.max(0, state.warpInvuln - dt);
+    state.bossHitFlash = Math.max(0, state.bossHitFlash - dt);
     state.shake = Math.max(0, state.shake - dt);
+
+    const prevMirror = state.mirrorTimer > 0;
+    state.mirrorTimer = Math.max(0, state.mirrorTimer - dt);
+    if (prevMirror && state.mirrorTimer <= 0) {
+      syncPadButtons();
+      showFloat("✨ 좌우 방향이 원래대로 돌아왔어요!", "#4ADE80");
+    }
+
+    state.gravityTimer = Math.max(0, state.gravityTimer - dt);
+    const flipTarget = state.gravityTimer > 0 ? 1 : 0;
+    state.flipBlend += (flipTarget - state.flipBlend) * Math.min(1, dt * 4.5);
 
     const sf = state.stumble > 0 ? 0.5 : 1;
     if (state.stumble > 0) {
@@ -965,8 +1090,30 @@
 
     state.stageTime += dt * sf;
     state.roadScroll = (state.roadScroll + dt * 2.5 * sf * S.speed * speedMul) % 1;
+    state.trackPhase += dt * (S.curveFreq || 0.5) * sf * speedMul;
+    state.hillPhase += dt * (S.hillFreq || 0.6) * sf * speedMul;
+
+    const bankTarget =
+      Math.sin(state.trackPhase) * (S.bankMul || 0.04) * (state.practiceMode ? 0.35 : 1) +
+      (state.lane - state.lanePos) * 0.03;
+    state.camTilt += (bankTarget - state.camTilt) * Math.min(1, dt * 6);
+
     const lerpK = useSlippery ? 5.2 : 10.5;
     state.lanePos += (state.lane - state.lanePos) * Math.min(1, dt * lerpK);
+
+    // 레일 그라인드 중 스파크 파티클
+    if (state.railTimer > 0 && Math.random() < 0.45) {
+      const a = getPlayerAnchor();
+      state.parts.push({
+        x: a.x + (Math.random() - 0.5) * 26,
+        y: a.y + 40,
+        vx: (Math.random() - 0.5) * 140,
+        vy: -40 - Math.random() * 90,
+        life: 0.65,
+        c: S.roadStyle === "forest" ? "#4ADE80" : "#7DD3FC",
+        s: 5
+      });
+    }
 
     // 스테이지 5: 예고 후 사막 강풍 기믹
     if (useWind) {
@@ -975,7 +1122,7 @@
         if (state.windWarn <= 0) {
           state.lanePos = Math.max(-1.15, Math.min(1.15, state.lanePos + state.nextWindDir * 0.42));
           AUDIO.tone(180, 90, 0.4, "sawtooth", 0.16);
-          showFloat(state.nextWindDir < 0 ? "🌪️ 강풍 휘몰아침!" : "🌪️ 강풍 휘몰아침!", "#FFAB40");
+          showFloat("🌪️ 강풍 휘몰아침!", "#FFAB40");
         }
       } else {
         windT -= dt * sf;
@@ -985,6 +1132,95 @@
           state.windWarn = 1.5;
         }
       }
+    }
+
+    // 스테이지 8: 예고 후 거울 반전 이벤트
+    if (S.mirrorEvent && !state.practiceMode) {
+      if (state.mirrorWarn > 0) {
+        state.mirrorWarn -= dt * sf;
+        if (state.mirrorWarn <= 0) {
+          state.mirrorTimer = 4.5;
+          AUDIO.flip();
+          syncPadButtons();
+          showFloat("🎭 좌우 거울 반전 시작!", "#F472B6");
+        }
+      } else if (state.mirrorTimer <= 0) {
+        mirrorEventT -= dt * sf;
+        if (mirrorEventT <= 0) {
+          mirrorEventT = 15.0 + Math.random() * 4.0;
+          state.mirrorWarn = 1.5;
+        }
+      }
+    }
+
+    // 스테이지 11·12: 주기적 중력 반전 이벤트
+    if (S.gravityFlipEvent && !state.practiceMode && state.gravityTimer <= 0) {
+      gravityEventT -= dt * sf;
+      if (gravityEventT <= 0) {
+        gravityEventT = 16.0 + Math.random() * 5.0;
+        state.gravityTimer = 5.5;
+        AUDIO.flip();
+        showFloat("🙃 중력 반전! 천장 질주!", "#C084FC");
+      }
+    }
+
+    // 스테이지 12: 거대 오타 마왕 보스전
+    if (S.bossChase && !state.practiceMode && state.stageTime > 8 && S.dur - state.stageTime > 4) {
+      if (!state.bossActive) {
+        state.bossActive = true;
+        showFloat("👾 거대 오타 마왕 출현! 레이저를 피하세요!", "#FB7185");
+      }
+      if (state.bossLaser) {
+        state.bossLaser.timer -= dt * sf;
+        if (state.bossLaser.phase === "warn" && state.bossLaser.timer <= 0) {
+          state.bossLaser.phase = "fire";
+          state.bossLaser.timer = 0.65;
+          state.bossLaser.resolved = false;
+          AUDIO.laserBlast();
+        } else if (state.bossLaser.phase === "fire") {
+          if (!state.bossLaser.resolved) {
+            state.bossLaser.resolved = true;
+            const inDanger = state.bossLaser.lanes.includes(state.lane);
+            const invuln = state.jumpTimer > 0 || state.boostTimer > 0 || state.railTimer > 0 || state.feverTimer > 0 || state.warpInvuln > 0;
+            if (inDanger && !invuln) {
+              if (state.shield > 0) {
+                state.shield = 0;
+                AUDIO.shieldBlock();
+                showFloat("🫧 보호막으로 보스 레이저 방어!", "#38BDF8");
+              } else {
+                state.stumble = 0.85;
+                state.shake = 0.32;
+                state.combo = 0;
+                AUDIO.hit();
+                showFloat("⚡ 레이저에 스쳤어요! 빨간 레인을 피하세요!", "#EF4444");
+              }
+            } else {
+              state.score += 80;
+              state.dodged++;
+              state.totalDodged++;
+              const a = getPlayerAnchor();
+              addPopup(a.x, a.y - 45, "⚡ 레이저 회피 +80!", "#FDE047", 18);
+            }
+          }
+          if (state.bossLaser.timer <= 0) state.bossLaser = null;
+        }
+      } else {
+        bossLaserT -= dt * sf;
+        if (bossLaserT <= 0) {
+          bossLaserT = 5.4 + Math.random() * 1.8;
+          const lanes = [-1, 0, 1];
+          const l1 = lanes[Math.floor(Math.random() * 3)];
+          const targets = [l1];
+          if (state.stageTime > 30) {
+            const rest = lanes.filter((l) => l !== l1);
+            targets.push(rest[Math.floor(Math.random() * rest.length)]);
+          }
+          state.bossLaser = { lanes: targets, phase: "warn", timer: 1.65, resolved: false };
+          AUDIO.laserWarn();
+        }
+      }
+    } else {
+      state.bossLaser = null;
     }
 
     // 스테이지 11: 바닷속 해류 기믹
@@ -1012,7 +1248,7 @@
     if (stepT >= 0.27) {
       stepT = 0;
       stepN++;
-      if (state.stumble <= 0 && state.jumpTimer <= 0 && state.stageTime < S.dur - 0.5) AUDIO.step(stepN);
+      if (state.stumble <= 0 && state.jumpTimer <= 0 && state.railTimer <= 0 && state.stageTime < S.dur - 0.5) AUDIO.step(stepN);
     }
 
     const remain = S.dur - state.stageTime;
@@ -1022,11 +1258,11 @@
         spawnWave(S);
         spawnT = S.spawn * spawnMul * (0.85 + Math.random() * 0.35);
       }
-      if (S.puddles || S.boostPads || S.cloudJump || S.tidalWave) {
+      if (S.padsEnabled || S.puddles || S.boostPads || S.cloudJump || S.tidalWave) {
         padT -= dt * sf;
         if (padT <= 0) {
           spawnPad(S);
-          padT = 3.2 + Math.random() * 2.4;
+          padT = 2.6 + Math.random() * 2.0;
         }
       }
     }
@@ -1052,19 +1288,83 @@
             spawnParts(anchor.x, anchor.y + 20, 22, ["#22D3EE", "#FDE047", "#F472B6"]);
             addPopup(anchor.x, anchor.y - 30, "⚡ 부스트 +50!", "#22D3EE", 20);
             showFloat("⚡ 네온 부스트 무적 질주!", "#22D3EE");
-          } else if (p.kind === "cloud") {
-            state.jumpTimer = 0.85;
-            state.score += 60;
+          } else if (p.kind === "cloud" || p.kind === "spring" || p.kind === "surfRamp") {
+            state.jumpTimer = p.kind === "surfRamp" ? 1.0 : 0.88;
+            const bonus = p.kind === "surfRamp" ? 70 : 60;
+            state.score += bonus;
             AUDIO.jump();
             spawnParts(anchor.x, anchor.y + 30, 18, ["#FFFFFF", "#BAE6FD", "#FDE047"]);
-            addPopup(anchor.x, anchor.y - 40, "☁️ 퐁당 점프 +60!", "#FFFFFF", 20);
-            showFloat("☁️ 구름 점프! 하늘을 날아요!", "#BAE6FD");
+            const msg = p.kind === "spring" ? "🌸 스프링 점프 +" + bonus + "!" : (p.kind === "surfRamp" ? "🏄 서핑 점프 +" + bonus + "!" : "☁️ 퐁당 점프 +" + bonus + "!");
+            addPopup(anchor.x, anchor.y - 40, msg, "#FFFFFF", 20);
+            showFloat(msg, "#BAE6FD");
           } else if (p.kind === "tidal") {
             AUDIO.splash();
             const push = p.lane === 0 ? (Math.random() < 0.5 ? -1 : 1) : (p.lane < 0 ? 1 : -1);
             state.lane = Math.max(-1, Math.min(1, state.lane + push));
             spawnParts(anchor.x, anchor.y + 35, 18, ["#0EA5E9", "#E0F2FE", "#FFFFFF"]);
             showFloat("🌊 파도에 밀렸어요!", "#38BDF8");
+          } else if (p.kind === "portalPair") {
+            state.pads.forEach((other) => {
+              if (other !== p && other.kind === "portalPair" && Math.abs(other.z - p.z) < 0.12) other.triggered = true;
+            });
+            triggerWarp(p.targetLane, "🌀 쌍둥이 포탈 워프!", p.portalColor === "orange" ? "#F97316" : "#38BDF8");
+            showFloat("🌀 포탈 순간이동!", "#38BDF8");
+          } else if (p.kind === "warp" || p.kind === "skyWarp") {
+            const nextWord = state.entities.find((e) => e.kind === "correct" && !e.collected && e.z < 0.78);
+            const fallback = [-1, 0, 1].filter((l) => l !== p.lane);
+            const dest = nextWord ? nextWord.lane : fallback[Math.floor(Math.random() * fallback.length)];
+            triggerWarp(dest, p.kind === "skyWarp" ? "✨ 천상 워프!" : "🌀 맨홀 워프!", p.kind === "skyWarp" ? "#FACC15" : "#22D3EE");
+            if (p.kind === "skyWarp") { state.jumpTimer = 0.75; state.score += 40; }
+            showFloat(p.kind === "skyWarp" ? "✨ 천상 워프 보너스!" : "🌀 맨홀 순간이동!", "#22D3EE");
+          } else if (p.kind === "iceRail" || p.kind === "vineRail") {
+            state.railTimer = 2.6;
+            state.score += 70;
+            AUDIO.rail();
+            addPopup(anchor.x, anchor.y - 36, p.kind === "vineRail" ? "🌿 덩굴 레일 +70!" : "🛷 얼음 레일 +70!", "#4ADE80", 20);
+            showFloat(p.kind === "vineRail" ? "🌿 덩굴 레일 그라인드!" : "🛷 얼음 레일 무적 서핑!", "#4ADE80");
+          } else if (p.kind === "conveyorL" || p.kind === "conveyorR") {
+            const dir = p.kind === "conveyorL" ? -1 : 1;
+            AUDIO.conveyor();
+            state.lane = Math.max(-1, Math.min(1, state.lane + dir));
+            showFloat(dir < 0 ? "◀◀ 모래 컨베이어에 왼쪽 이동!" : "▶▶ 모래 컨베이어에 오른쪽 이동!", "#FBBF24");
+          } else if (p.kind === "bridgeGap") {
+            if (state.railTimer <= 0 && state.feverTimer <= 0 && state.boostTimer <= 0 && state.warpInvuln <= 0) {
+              const safe = p.lane === 0 ? (Math.random() < 0.5 ? -1 : 1) : 0;
+              state.lane = safe;
+              state.stumble = 0.55;
+              state.shake = 0.25;
+              AUDIO.wrongTap();
+              showFloat("🌉 끊어진 다리! 옆 판자로 점프!", "#FCA5A5");
+            }
+          } else if (p.kind === "mirrorGate") {
+            state.mirrorTimer = 4.5;
+            AUDIO.flip();
+            syncPadButtons();
+            showFloat("🎭 거울 게이트! 좌우가 반전돼요!", "#F472B6");
+          } else if (p.kind === "gravityGate") {
+            state.gravityTimer = state.gravityTimer > 0 ? 0 : 5.5;
+            AUDIO.flip();
+            showFloat(state.gravityTimer > 0 ? "🙃 중력 반전! 천장 질주!" : "✨ 중력이 돌아왔어요!", "#C084FC");
+          } else if (p.kind === "counterPad") {
+            AUDIO.bossHit();
+            state.score += 150;
+            state.bossHitFlash = 0.45;
+            if (state.bossActive) {
+              state.bossHp = Math.max(0, state.bossHp - 1);
+              const hpPt = RENDERER.project(W, H, S, state, 0.04, 0);
+              state.beams.push({ x1: anchor.x, y1: anchor.y, x2: hpPt.cx, y2: hpPt.hy - 30, life: 1, c: "#FACC15", w: 12 });
+              spawnParts(hpPt.cx, hpPt.hy - 30, 26, ["#FDE047", "#FB7185", "#38BDF8"]);
+              if (state.bossHp <= 0) {
+                state.score += 500;
+                state.bossHp = state.bossMaxHp;
+                burstConfetti(40);
+                addPopup(anchor.x, anchor.y - 50, "💥 보스 격파 +500!", "#FDE047", 24);
+                showFloat("💥 오타 마왕 격파 보너스 +500점!", "#FDE047");
+              } else {
+                addPopup(anchor.x, anchor.y - 40, "⚡ 보스 반격 +150!", "#FDE047", 20);
+                showFloat("⚡ 오타 마왕에게 스타 빔 명중!", "#FDE047");
+              }
+            }
           }
           updateBuffBadges();
         }
@@ -1081,15 +1381,15 @@
         o.off = Math.sin(o.ph) * (S.sway || 0.3);
       }
 
-      // 자석 활성화 시 바른 단어를 캐릭터 레인으로 끌어당김
-      if (o.kind === "correct" && !o.collected && state.magnetTimer > 0 && o.z >= 0.45) {
+      // 자석 또는 피버 활성화 시 바른 단어를 캐릭터 레인으로 끌어당김
+      if (o.kind === "correct" && !o.collected && (state.magnetTimer > 0 || state.feverTimer > 0) && o.z >= 0.45) {
         o.lane += (state.lanePos - o.lane) * Math.min(1, dt * 6.5);
       }
 
       if (o.kind === "correct") {
         const oLane = o.lane + (o.off || 0);
         if (!o.collected && o.z >= 0.76 && o.z <= 0.96) {
-          if (Math.abs(state.lanePos - oLane) < (state.magnetTimer > 0 ? 0.9 : 0.56)) {
+          if (Math.abs(state.lanePos - oLane) < ((state.magnetTimer > 0 || state.feverTimer > 0) ? 0.92 : 0.56)) {
             collectWordEntity(o, S);
           }
         }
@@ -1113,7 +1413,6 @@
         }
       } else if (o.kind === "enemy") {
         const oLane = o.lane + (o.off || 0);
-        // 점프 중이거나 부스트 무적 중이면 적을 뛰어넘거나 튕겨냄!
         if (!o.hit && !o.passed && o.z >= 0.80 && o.z <= 0.91) {
           if (Math.abs(state.lanePos - oLane) < 0.5) {
             if (state.jumpTimer > 0) {
@@ -1123,14 +1422,14 @@
               state.score += 40;
               AUDIO.dodge();
               addPopup(getPlayerAnchor().x, getPlayerAnchor().y - 40, "☁️ 뛰어넘기 +40!", "#BAE6FD", 18);
-            } else if (state.boostTimer > 0) {
+            } else if (state.feverTimer > 0 || state.boostTimer > 0 || state.railTimer > 0 || state.warpInvuln > 0) {
               o.hit = true;
               state.dodged++;
               state.totalDodged++;
               state.score += 50;
               AUDIO.dodge();
               spawnParts(o.screenX || W * 0.5, o.screenY || H * 0.75, 16, ["#22D3EE", "#FDE047"]);
-              addPopup(getPlayerAnchor().x, getPlayerAnchor().y - 40, "⚡ 부스트 돌파!", "#22D3EE", 18);
+              addPopup(getPlayerAnchor().x, getPlayerAnchor().y - 40, state.feverTimer > 0 ? "🔥 피버 격파 +50!" : "⚡ 무적 돌파 +50!", "#FDE047", 18);
             } else if (state.shield > 0) {
               o.hit = true;
               state.shield = 0;
@@ -1232,10 +1531,28 @@
   });
   cv.addEventListener("pointerdown", (e) => {
     e.preventDefault();
-    if (!state.paused && !state.stageClearWait && !state.finished && !state.reviewOpen) {
+    if (state.paused || state.stageClearWait || state.finished || state.reviewOpen) return;
+    swipeStart = { x: e.clientX, y: e.clientY, swiped: false };
+  });
+  cv.addEventListener("pointermove", (e) => {
+    if (!swipeStart || swipeStart.swiped) return;
+    if (state.paused || state.stageClearWait || state.finished || state.reviewOpen) return;
+    const dx = e.clientX - swipeStart.x;
+    if (Math.abs(dx) >= 26) {
+      swipeStart.swiped = true;
+      if (dx < 0) goLeft();
+      else goRight();
+    }
+  });
+  cv.addEventListener("pointerup", (e) => {
+    if (!swipeStart) return;
+    const s = swipeStart;
+    swipeStart = null;
+    if (!s.swiped && !state.paused && !state.stageClearWait && !state.finished && !state.reviewOpen) {
       handleCanvasTap(e.clientX, e.clientY);
     }
   });
+  cv.addEventListener("pointercancel", () => { swipeStart = null; });
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       if (state.reviewOpen) {
@@ -1280,6 +1597,14 @@
   if (btnPractice) {
     btnPractice.onclick = () => {
       state.practiceMode = !state.practiceMode;
+      if (state.practiceMode) {
+        state.mirrorTimer = 0;
+        state.mirrorWarn = 0;
+        state.gravityTimer = 0;
+        state.windWarn = 0;
+        state.bossLaser = null;
+        syncPadButtons();
+      }
       AUDIO.setSlow && AUDIO.setSlow(state.practiceMode);
       if (window.D1Bridge && window.D1Bridge.setSpedPrefs) {
         window.D1Bridge.setSpedPrefs({ slowPace: state.practiceMode });

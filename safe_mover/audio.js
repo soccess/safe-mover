@@ -189,6 +189,40 @@ window.SafeMoverAudio = (() => {
         tone(f, f * 1.01, 0.22, "triangle", 0.16, i * 0.09);
       });
     },
+    warp() {
+      tone(320, 1280, 0.24, "sine", 0.16);
+      tone(640, 240, 0.22, "triangle", 0.11, 0.05);
+      noiseBurst(0.14, 0.07, 2200);
+    },
+    flip() {
+      tone(440, 220, 0.16, "sawtooth", 0.11);
+      tone(220, 660, 0.22, "triangle", 0.14, 0.1);
+    },
+    fever() {
+      [523.25, 659.25, 783.99, 1046.5, 1318.5, 1568].forEach((f, i) => {
+        tone(f, f * 1.05, 0.16, "triangle", 0.15, i * 0.045);
+      });
+    },
+    rail() {
+      tone(740, 980, 0.11, "triangle", 0.12);
+      noiseBurst(0.08, 0.05, 2800, 0.02);
+    },
+    conveyor() {
+      tone(280, 420, 0.12, "sine", 0.11);
+      tone(420, 560, 0.1, "triangle", 0.08, 0.04);
+    },
+    laserWarn() {
+      tone(880, 660, 0.12, "square", 0.08);
+    },
+    laserBlast() {
+      filteredTone(540, 110, 0.3, "sawtooth", 0.14, 1200);
+      noiseBurst(0.22, 0.09, 1400);
+    },
+    bossHit() {
+      [440, 660, 880, 1174].forEach((f, i) => {
+        tone(f, f * 1.1, 0.15, "triangle", 0.16, i * 0.035);
+      });
+    },
     fanfare() {
       [392, 523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
         tone(f, f, 0.26, "triangle", 0.16, i * 0.09);

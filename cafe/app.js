@@ -164,9 +164,34 @@ function saveCafeCount(n) {
   try { localStorage.setItem(CAFE_COUNT_KEY, String(n)); } catch {}
 }
 
+function createInitialCraft() {
+  return {
+    cupPlaced: null, // null | 'mug' | 'glass' | 'tea'
+    beansGround: false,
+    beansTamped: false,
+    shotExtracted: false,
+    shotQuality: 'good', // 'good' | 'weak_untamped' | 'watery_nobeans'
+    shotPoured: false,
+    iceInCup: false,
+    waterPoured: false,
+    milkPoured: false,
+    ingredientsInCup: [],
+    blenderItems: [],
+    blended: false,
+    smoothiePoured: false,
+    spilled: false,
+    mistakes: [],
+    log: []
+  };
+}
+
 const state = {
   recipeKey: 'hot_americano',
+  practiceMode: 'auto', // 'auto' | 'manual' | 'practicum'
   stepIndex: 0,
+  awaitingNextChoice: false,
+  manualChoices: [],
+  awaitingCupPick: false,
   guidedMode: true,
   autoCamera: true,
   cameraViewMode: 'step', // 'step' | 'overview'
@@ -180,7 +205,8 @@ const state = {
   liquidLevel: 0,
   liquidColor: new THREE.Color(0x3b2314),
   hasIce: false,
-  isHot: false
+  isHot: false,
+  craft: createInitialCraft()
 };
 
 // ============================================================================
@@ -802,6 +828,28 @@ tray.add(trayBase, trayRim);
 tray.position.set(PREP_POS.x, COUNTER_Y, PREP_POS.z);
 scene.add(tray);
 
+// 실습모드 쟁반 흘림 / 얼음 떨어짐 3D 시각화
+const spillPuddleMesh = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.11, 0.115, 0.004, 24),
+  new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: 0.15, transparent: true, opacity: 0.82 })
+);
+spillPuddleMesh.position.set(0, 0.02, 0);
+spillPuddleMesh.visible = false;
+tray.add(spillPuddleMesh);
+
+const spillIceGroup = new THREE.Group();
+for (let i = 0; i < 3; i++) {
+  const scube = new THREE.Mesh(
+    new THREE.BoxGeometry(0.024, 0.024, 0.024),
+    new THREE.MeshStandardMaterial({ color: 0xe0f7ff, roughness: 0.12, transparent: true, opacity: 0.85 })
+  );
+  scube.position.set((i - 1) * 0.045, 0.03, (i % 2 === 0 ? 0.03 : -0.03));
+  scube.rotation.set(i * 0.5, i * 0.8, 0.2);
+  spillIceGroup.add(scube);
+}
+spillIceGroup.visible = false;
+tray.add(spillIceGroup);
+
 // 동적 음료 그룹 (컵 + 내부 액체 + 거품 + 얼음)
 const drinkGroup = new THREE.Group();
 drinkGroup.position.set(PREP_POS.x, COUNTER_Y + 0.02, PREP_POS.z);
@@ -1402,12 +1450,34 @@ function getCurrentStep() {
 
 function handleAction(actionId) {
   if (state.busy || state.paused) return;
+
+  if (state.practiceMode === 'practicum') {
+    handlePracticumAction(actionId);
+    return;
+  }
+
   const currentStep = getCurrentStep();
   if (!currentStep) return;
 
   // 믹서기 3D 클릭으로 '블렌더 갈기'와 '컵에 따르기' 모두 처리
   if (actionId === 'blender' && currentStep.target === 'pour_blender') {
     actionId = 'pour_blender';
+  }
+
+  if (state.practiceMode === 'manual' && state.awaitingNextChoice) {
+    if (actionId === currentStep.target) {
+      state.awaitingNextChoice = false;
+      state.manualChoices = [];
+      playSoftTone(784, 0.12, 'sine', 0.05);
+      showGuidance(`좋아요! "${currentStep.label}"을(를) 직접 골랐어요!`, currentStep.emoji, false);
+      executeStep(actionId);
+    } else {
+      playGentleHintSound();
+      const reason = getManualMismatchReason(actionId, currentStep);
+      showGuidance(reason, '🧭', true);
+      speakKorean(reason);
+    }
+    return;
   }
 
   if (actionId !== currentStep.target) {
@@ -1419,6 +1489,386 @@ function handleAction(actionId) {
   }
 
   executeStep(actionId);
+}
+
+function getManualMismatchReason(pickedId, expectedStep) {
+  const pickedBtn = TOOL_BUTTONS.find((b) => b.id === pickedId);
+  const pickedLabel = pickedBtn ? pickedBtn.label : pickedId;
+  if (expectedStep.target === 'tamper' && pickedId === 'machine') {
+    return `"${pickedLabel}" 전에 먼저 방금 간 원두를 탬퍼로 다져야 샷이 맛있게 추출돼요!`;
+  }
+  if ((pickedId === 'water' || pickedId === 'milk' || pickedId === 'shot' || pickedId === 'ice') && expectedStep.target === 'cup') {
+    return `아직 컵이 쟁반에 없어서 "${pickedLabel}"를 하면 바닥에 쏟아져요! 먼저 컵을 놓아볼까요?`;
+  }
+  if (pickedId === 'serve') {
+    return `아직 음료가 다 만들어지지 않아 손님께 드릴 수 없어요! 다음 순서를 골라봐요.`;
+  }
+  if (pickedId === 'pour_blender' && expectedStep.target === 'blender') {
+    return `아직 재료를 갈지 않았어요! 먼저 블렌더로 갈아야 스무디가 돼요.`;
+  }
+  return `"${pickedLabel}"는 지금 순서가 아니에요. 방금 전 단계 다음에 무엇이 필요할지 다시 골라봐요!`;
+}
+
+function buildManualChoices(recipe, nextIdx) {
+  const nextStep = recipe.steps[nextIdx];
+  if (!nextStep) return [];
+  const nextTool = TOOL_BUTTONS.find((b) => b.id === nextStep.target) || { id: nextStep.target, label: nextStep.label, emoji: nextStep.emoji };
+  const distractorIds = [...new Set(recipe.steps.map((s) => s.target))].filter((id) => id !== nextStep.target);
+  const extraPool = TOOL_BUTTONS.map((b) => b.id).filter((id) => id !== nextStep.target && !distractorIds.includes(id));
+  const pool = [...distractorIds, ...extraPool];
+  // 셔플 후 2~3개 오답 후보 추출
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const picks = [nextStep.target, ...pool.slice(0, 3)];
+  for (let i = picks.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [picks[i], picks[j]] = [picks[j], picks[i]];
+  }
+  return picks.map((id) => {
+    const tb = TOOL_BUTTONS.find((b) => b.id === id) || nextTool;
+    const dispLabel = (state.easyMode && EASY_STEP_MAP[id]) ? EASY_STEP_MAP[id].label : tb.label;
+    return { id, label: dispLabel, emoji: tb.emoji };
+  });
+}
+
+function recordMistake(code, msg, emoji = '⚠️') {
+  state.craft.mistakes.push({ code, msg });
+  playGentleHintSound();
+  showGuidance(`${emoji} ${msg}`, emoji, true, true);
+  speakKorean(msg);
+  renderPracticumStatus();
+}
+
+function triggerTraySpill(colorHex, withIce = false) {
+  state.craft.spilled = true;
+  if (withIce) {
+    spillIceGroup.visible = true;
+    playIceSound();
+  } else {
+    spillPuddleMesh.material.color.setHex(colorHex);
+    spillPuddleMesh.visible = true;
+    playPourSound(0.45, 320, 480);
+  }
+  renderPracticumStatus();
+}
+
+function clearTraySpillAndCup() {
+  if (state.busy) return;
+  resetDrink();
+  showGuidance('🧽 쟁반을 깨끗이 닦고 새 컵을 준비했어요! 다시 제조해 보세요.', '✨', false);
+}
+
+function handlePracticumAction(actionId, chosenCupType = null) {
+  const recipe = getCurrentRecipe();
+  const craft = state.craft;
+
+  // 믹서기 3D 클릭 시: 안에 재료가 이미 갈렸으면 따르기, 아니면 갈기
+  if (actionId === 'blender' && craft.blended && !craft.smoothiePoured) {
+    actionId = 'pour_blender';
+  }
+
+  if (actionId === 'cup') {
+    if (craft.cupPlaced) {
+      showGuidance('이미 컵이 쟁반 위에 올라가 있어요! 바꾸려면 🧽 쟁반 닦기를 눌러요.', '☕', true);
+      return;
+    }
+    if (!chosenCupType) {
+      state.awaitingCupPick = true;
+      renderUI();
+      showGuidance('어울리는 컵을 직접 골라보세요! (뜨거운 음료는 머그컵/찻잔, 차가운 음료는 투명 유리컵)', '☕', false);
+      return;
+    }
+    state.awaitingCupPick = false;
+    craft.cupPlaced = chosenCupType;
+    craft.log.push(`cup:${chosenCupType}`);
+    if (chosenCupType !== recipe.cupType) {
+      const cupNames = { mug: '머그컵', glass: '투명 유리컵', tea: '찻잔' };
+      recordMistake(
+        'wrong_cup',
+        `앗! ${recipe.name}에는 보통 ${cupNames[recipe.cupType]}을 쓰는데 ${cupNames[chosenCupType]}을 놓았어요!`
+      );
+    }
+    executeStep('cup', { skipAdvance: true, cupType: chosenCupType });
+    return;
+  }
+
+  state.awaitingCupPick = false;
+
+  if (actionId === 'grinder') {
+    if (craft.beansGround) {
+      recordMistake('double_grind', '원두를 두 번 갈아서 포터필터에 가루가 넘쳤어요!');
+    }
+    craft.beansGround = true;
+    craft.beansTamped = false;
+    craft.log.push('grinder');
+    executeStep('grinder', { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'tamper') {
+    if (!craft.beansGround) {
+      recordMistake('tamp_empty', '아직 원두가 없는데 빈 포터필터를 눌렀어요! 먼저 원두를 갈아야 해요.');
+    } else {
+      craft.beansTamped = true;
+    }
+    craft.log.push('tamper');
+    executeStep('tamper', { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'machine') {
+    if (!craft.beansGround) {
+      craft.shotQuality = 'watery_nobeans';
+      craft.shotExtracted = true;
+      recordMistake('extract_no_beans', '원두를 갈지 않고 추출해서 맹물 같은 연한 물만 나왔어요!');
+    } else if (!craft.beansTamped) {
+      craft.shotQuality = 'weak_untamped';
+      craft.shotExtracted = true;
+      recordMistake('extract_untamped', '탬핑으로 다지지 않아 물이 너무 빨리 빠져 연한 샷이 됐어요!');
+    } else {
+      craft.shotQuality = 'good';
+      craft.shotExtracted = true;
+    }
+    craft.log.push('machine');
+    executeStep('machine', { skipAdvance: true, shotColor: craft.shotQuality === 'good' ? 0x3b2314 : 0xa17c5b });
+    return;
+  }
+
+  if (actionId === 'shot') {
+    if (!craft.shotExtracted) {
+      recordMistake('pour_empty_shot', '샷 잔이 비어 있어요! 먼저 커피 머신으로 에스프레소를 추출해야 해요.');
+      return;
+    }
+    if (!craft.cupPlaced) {
+      shotLiquidMesh.visible = false;
+      craft.shotExtracted = false;
+      triggerTraySpill(0x3b2314, false);
+      recordMistake('spill_shot', '컵을 놓지 않고 샷을 부어서 쟁반에 커피를 쏟았어요! (행주로 닦아요)', '💦');
+      return;
+    }
+    craft.shotPoured = true;
+    craft.shotExtracted = false;
+    craft.log.push('shot');
+    const expectsShot = recipe.steps.some((s) => s.target === 'shot');
+    if (!expectsShot) {
+      recordMistake('wrong_shot', `${recipe.name}에는 커피 샷이 들어가지 않는데 에스프레소가 섞였어요!`);
+    }
+    const shotCol = craft.shotQuality === 'good' ? (state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314) : 0x9c7a5b;
+    executeStep('shot', { skipAdvance: true, pourColor: shotCol });
+    return;
+  }
+
+  if (actionId === 'ice') {
+    if (state.recipeKey === 'strawberry_smoothie' && !craft.cupPlaced && !craft.blended) {
+      craft.blenderItems.push('ice');
+      craft.log.push('ice_blender');
+      executeStep('ice', { skipAdvance: true, toBlender: true });
+      return;
+    }
+    if (!craft.cupPlaced) {
+      triggerTraySpill(0xe0f7ff, true);
+      recordMistake('spill_ice', '컵이 없어서 얼음이 쟁반 위로 우르르 굴러떨어졌어요!', '🧊');
+      return;
+    }
+    craft.iceInCup = true;
+    craft.log.push('ice');
+    if (['hot_americano', 'hot_choco', 'hot_tea'].includes(state.recipeKey)) {
+      steamGroup.visible = false;
+      recordMistake('ice_in_hot', `따뜻한 ${recipe.name}에 얼음이 들어가 미지근해졌어요!`);
+    }
+    executeStep('ice', { skipAdvance: true, toBlender: false });
+    return;
+  }
+
+  if (actionId === 'strawberry') {
+    if (state.recipeKey === 'strawberry_smoothie' && !craft.cupPlaced && !craft.blended) {
+      craft.blenderItems.push('strawberry');
+      craft.log.push('strawberry_blender');
+      executeStep('strawberry', { skipAdvance: true, toBlender: true });
+      return;
+    }
+    if (!craft.cupPlaced) {
+      triggerTraySpill(0xe11d48, false);
+      recordMistake('spill_strawberry', '컵을 놓지 않고 딸기를 넣어서 쟁반에 떨어졌어요!', '💦');
+      return;
+    }
+    craft.ingredientsInCup.push('strawberry');
+    craft.log.push('strawberry');
+    if (!recipe.steps.some((s) => s.target === 'strawberry')) {
+      recordMistake('wrong_strawberry', `${recipe.name}에는 딸기가 들어가지 않아요!`);
+    }
+    executeStep('strawberry', { skipAdvance: true, toBlender: false });
+    return;
+  }
+
+  if (['lemon', 'choco', 'tea'].includes(actionId)) {
+    const mapColors = { lemon: 0xf4d03f, choco: 0x4e2a14, tea: 0x7fb069 };
+    const mapNames = { lemon: '레몬', choco: '초코', tea: '녹차 티백' };
+    if (!craft.cupPlaced) {
+      triggerTraySpill(mapColors[actionId], false);
+      recordMistake(`spill_${actionId}`, `컵이 없어서 ${mapNames[actionId]}이(가) 쟁반에 떨어졌어요!`, '💦');
+      return;
+    }
+    craft.ingredientsInCup.push(actionId);
+    craft.log.push(actionId);
+    if (!recipe.steps.some((s) => s.target === actionId)) {
+      if (actionId === 'lemon' && craft.milkPoured) {
+        recordMistake('lemon_milk', '우유에 레몬을 넣어서 몽글몽글 뭉쳐버렸어요!');
+      } else {
+        recordMistake(`wrong_${actionId}`, `${recipe.name}에는 ${mapNames[actionId]}이(가) 들어가지 않아요!`);
+      }
+    }
+    executeStep(actionId, { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'milk') {
+    if (state.recipeKey === 'strawberry_smoothie' && !craft.cupPlaced && !craft.blended) {
+      craft.blenderItems.push('milk');
+      craft.log.push('milk_blender');
+      executeStep('milk', { skipAdvance: true, toBlender: true });
+      return;
+    }
+    if (!craft.cupPlaced) {
+      triggerTraySpill(0xfaf6ee, false);
+      recordMistake('spill_milk', '컵을 놓지 않고 우유를 부어 쟁반에 하얗게 쏟아졌어요!', '💦');
+      return;
+    }
+    craft.milkPoured = true;
+    craft.log.push('milk');
+    if (!recipe.steps.some((s) => s.target === 'milk')) {
+      recordMistake('wrong_milk', `${recipe.name}에는 우유 대신 물이 들어가야 하는데 우유를 부었어요!`);
+    }
+    executeStep('milk', { skipAdvance: true, toBlender: false });
+    return;
+  }
+
+  if (actionId === 'water') {
+    if (!craft.cupPlaced) {
+      triggerTraySpill(0xbfdbfe, false);
+      recordMistake('spill_water', '컵을 놓지 않고 물을 부어 쟁반에 물바다가 됐어요!', '💦');
+      return;
+    }
+    craft.waterPoured = true;
+    craft.log.push('water');
+    if (!recipe.steps.some((s) => s.target === 'water')) {
+      recordMistake('wrong_water', `${recipe.name}에는 물이 아니라 우유나 스무디가 들어가야 해서 밍밍해졌어요!`);
+    }
+    executeStep('water', { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'blender') {
+    if (craft.blenderItems.length === 0) {
+      recordMistake('empty_blender', '믹서기가 텅 비어 있어요! 우유, 딸기, 얼음을 먼저 넣고 갈아야 해요.');
+      playBlenderSound();
+      return;
+    }
+    if (!craft.blenderItems.includes('milk')) {
+      recordMistake('dry_blender', '우유(액체) 없이 얼음만 갈려다 칼날이 헛돌았어요! 우유를 꼭 먼저 넣어요.');
+    }
+    craft.blended = true;
+    craft.log.push('blender');
+    executeStep('blender', { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'pour_blender') {
+    if (craft.blenderItems.length === 0) {
+      recordMistake('pour_empty_blender', '믹서기 안에 담긴 재료가 없어요!');
+      return;
+    }
+    if (!craft.blended) {
+      recordMistake('pour_unblended', '아직 블렌더로 갈지 않고 부어서 덩어리가 그대로 떨어졌어요!');
+      return;
+    }
+    if (!craft.cupPlaced) {
+      blenderMixMesh.visible = false;
+      triggerTraySpill(0xf2849e, false);
+      recordMistake('spill_smoothie', '컵을 놓지 않고 스무디를 따라 쟁반에 쏟아졌어요!', '💦');
+      return;
+    }
+    craft.smoothiePoured = true;
+    craft.log.push('pour_blender');
+    executeStep('pour_blender', { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'serve') {
+    if (!craft.cupPlaced) {
+      recordMistake('serve_no_cup', '아직 컵이 없어서 손님께 드릴 수 없어요! 컵을 먼저 놓아보세요.');
+      return;
+    }
+    executeStep('serve', { skipAdvance: true, isPracticumServe: true });
+  }
+}
+
+function evaluatePracticumDrink(recipe) {
+  const c = state.craft;
+  const checks = [];
+  let issues = c.mistakes.length;
+
+  // 1. 컵 확인
+  const cupNames = { mug: '머그컵', glass: '투명 유리컵', tea: '찻잔' };
+  if (c.cupPlaced === recipe.cupType) {
+    checks.push({ ok: true, text: `알맞은 ${cupNames[recipe.cupType]}에 예쁘게 담았어요.` });
+  } else {
+    checks.push({ ok: false, text: `${cupNames[recipe.cupType]} 대신 ${cupNames[c.cupPlaced] || '다른 컵'}을 사용했어요.` });
+    issues++;
+  }
+
+  // 2. 필수 단계 누락 확인
+  const stepTargets = recipe.steps.map((s) => s.target);
+  if (stepTargets.includes('shot')) {
+    if (c.shotPoured && c.shotQuality === 'good') {
+      checks.push({ ok: true, text: '원두 갈기 → 탬핑 → 추출 순서로 진한 샷을 잘 내렸어요.' });
+    } else if (!c.shotPoured) {
+      checks.push({ ok: false, text: '에스프레소 샷이 음료에 들어가지 않았어요!' });
+      issues++;
+    }
+  }
+  if (stepTargets.includes('ice')) {
+    const hasIce = state.recipeKey === 'strawberry_smoothie' ? c.blenderItems.includes('ice') : c.iceInCup;
+    if (hasIce) checks.push({ ok: true, text: '시원한 얼음을 알맞게 넣었어요.' });
+    else { checks.push({ ok: false, text: '시원한 얼음이 빠졌어요!' }); issues++; }
+  }
+  if (stepTargets.includes('water')) {
+    if (c.waterPoured) checks.push({ ok: true, text: '물의 양을 알맞게 채웠어요.' });
+    else { checks.push({ ok: false, text: '물을 붓지 않았어요!' }); issues++; }
+  }
+  if (stepTargets.includes('milk')) {
+    const hasMilk = state.recipeKey === 'strawberry_smoothie' ? c.blenderItems.includes('milk') : c.milkPoured;
+    if (hasMilk) checks.push({ ok: true, text: '우유를 알맞게 넣었어요.' });
+    else { checks.push({ ok: false, text: '우유가 빠졌어요!' }); issues++; }
+  }
+  ['strawberry', 'lemon', 'choco', 'tea'].forEach((ing) => {
+    if (stepTargets.includes(ing)) {
+      const ok = state.recipeKey === 'strawberry_smoothie'
+        ? c.blenderItems.includes(ing)
+        : c.ingredientsInCup.includes(ing);
+      const n = { strawberry: '딸기', lemon: '레몬', choco: '초코', tea: '녹차 티백' }[ing];
+      if (ok) checks.push({ ok: true, text: `${n} 재료를 빠짐없이 넣었어요.` });
+      else { checks.push({ ok: false, text: `${n} 재료가 빠졌어요!` }); issues++; }
+    }
+  });
+  if (stepTargets.includes('pour_blender')) {
+    if (c.blended && c.smoothiePoured) checks.push({ ok: true, text: '블렌더로 곱게 갈아 컵에 잘 따랐어요.' });
+    else { checks.push({ ok: false, text: '스무디를 갈아 컵에 따르는 과정이 빠졌어요!' }); issues++; }
+  }
+
+  // 3. 실습 중 발생한 실수 내역 추가
+  const seenMsg = new Set();
+  c.mistakes.forEach((m) => {
+    if (!seenMsg.has(m.msg)) {
+      seenMsg.add(m.msg);
+      checks.push({ ok: false, text: m.msg });
+    }
+  });
+
+  const stars = issues === 0 ? 3 : (issues <= 2 ? 2 : 1);
+  return { stars, issues, checks };
 }
 
 function addCupTopping(kind) {
@@ -1556,14 +2006,49 @@ function configureCupLiquidProfile(cupType) {
   foamCapMesh.scale.set(profile.xz, 1, profile.xz);
 }
 
-function executeStep(actionId) {
+function executeStep(actionId, opts = {}) {
   state.busy = true;
   const recipe = getCurrentRecipe();
 
   const finishStep = () => {
     state.busy = false;
+    if (opts.skipAdvance) {
+      if (opts.isPracticumServe) {
+        const evalRes = evaluatePracticumDrink(recipe);
+        state.completedCount++;
+        saveCafeCount(state.completedCount);
+        if (window.D1Bridge) {
+          window.D1Bridge.saveRecord({
+            game: 'cafe',
+            stage: `${recipe.name} (실습 ${evalRes.stars}성)`,
+            score: evalRes.stars,
+            summary: `${recipe.name} 실습 완료 · 별 ${evalRes.stars}개 (실수 ${evalRes.issues}건)`,
+            payload: {
+              mode: 'practicum',
+              recipeKey: state.recipeKey,
+              recipeName: recipe.name,
+              stars: evalRes.stars,
+              issues: evalRes.issues,
+              mistakes: state.craft.mistakes
+            }
+          });
+          window.D1Bridge.setKV(CAFE_COUNT_KEY, state.completedCount);
+        }
+        spawn3DSparkles(new THREE.Vector3(0, COUNTER_Y + 0.18, 0.28), evalRes.stars === 3 ? 26 : 12, 0xfbbf24);
+        playSuccessChime();
+        speakKorean(evalRes.stars === 3 ? `${recipe.name} 완벽하게 제조했어요!` : `${recipe.name} 제조를 마쳤어요. 결과를 살펴봐요.`);
+        showCompletionModal(recipe, evalRes);
+      } else {
+        playSoftTone(659.25, 0.11, 'sine', 0.04);
+      }
+      renderUI();
+      return;
+    }
+
     state.stepIndex++;
     if (state.stepIndex >= recipe.steps.length) {
+      state.awaitingNextChoice = false;
+      state.manualChoices = [];
       state.completedCount++;
       saveCafeCount(state.completedCount);
       if (window.D1Bridge) {
@@ -1571,8 +2056,9 @@ function executeStep(actionId) {
           game: 'cafe',
           stage: recipe.name,
           score: state.completedCount,
-          summary: `${recipe.name} 완성 (누적 ${state.completedCount}잔)`,
+          summary: `${recipe.name} 완성 (${state.practiceMode} · 누적 ${state.completedCount}잔)`,
           payload: {
+            mode: state.practiceMode,
             recipeKey: state.recipeKey,
             recipeName: recipe.name,
             steps: recipe.steps.length,
@@ -1587,6 +2073,10 @@ function executeStep(actionId) {
       showCompletionModal(recipe);
     } else {
       playSoftTone(659.25, 0.11, 'sine', 0.04);
+      if (state.practiceMode === 'manual') {
+        state.awaitingNextChoice = true;
+        state.manualChoices = buildManualChoices(recipe, state.stepIndex);
+      }
     }
     renderUI();
   };
@@ -1648,9 +2138,10 @@ function executeStep(actionId) {
         requestAnimationFrame(slideToSpout);
         return;
       }
-      pourStream.material.color.setHex(0x3b2314);
+      pourStream.material.color.setHex(opts.shotColor || 0x3b2314);
       pourStream.position.set(MACHINE_SPOUT_POS.x, COUNTER_Y + 0.16, MACHINE_SPOUT_POS.z);
       pourStream.visible = true;
+      shotLiquidMesh.material.color.setHex(opts.shotColor || 0x3b2314);
       const start = performance.now();
       const animExtract = (n2) => {
         const t = Math.min((n2 - start) / 680, 1);
@@ -1696,8 +2187,8 @@ function executeStep(actionId) {
         requestAnimationFrame(moveShot);
       } else {
         shotLiquidMesh.visible = false;
-        const nextColor = state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314;
-        animatePour(nextColor, 0.92, () => {
+        const nextColor = opts.pourColor || (state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314);
+        animatePour(nextColor, Math.max(state.liquidLevel, 0.92), () => {
           foamCapMesh.material.color.setHex(state.recipeKey === 'iced_latte' ? 0xf5e6d3 : 0xc68b59);
           foamCapMesh.visible = true;
           const backStart = performance.now();
@@ -1720,13 +2211,14 @@ function executeStep(actionId) {
     requestAnimationFrame(moveShot);
   } else if (actionId === 'cup') {
     focusPrepActionCamera(false);
-    playCupPlaceSound(recipe.cupType);
+    const placedType = opts.cupType || recipe.cupType;
+    playCupPlaceSound(placedType);
     drinkGroup.visible = true;
     drinkGroup.position.set(PREP_POS.x, COUNTER_Y + 0.02, PREP_POS.z);
-    activeCupModels.mug.visible = recipe.cupType === 'mug';
-    activeCupModels.glass.visible = recipe.cupType === 'glass';
-    activeCupModels.tea.visible = recipe.cupType === 'tea';
-    configureCupLiquidProfile(recipe.cupType);
+    activeCupModels.mug.visible = placedType === 'mug';
+    activeCupModels.glass.visible = placedType === 'glass';
+    activeCupModels.tea.visible = placedType === 'tea';
+    configureCupLiquidProfile(placedType);
     liquidMesh.visible = false;
     foamCapMesh.visible = false;
     iceGroup.visible = false;
@@ -1752,9 +2244,10 @@ function executeStep(actionId) {
     };
     requestAnimationFrame(animCup);
   } else if (actionId === 'ice') {
-    focusPrepActionCamera(state.recipeKey === 'strawberry_smoothie');
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : (state.recipeKey === 'strawberry_smoothie');
+    focusPrepActionCamera(toBlender);
     playIceSound();
-    if (state.recipeKey === 'strawberry_smoothie') {
+    if (toBlender) {
       animateDropIntoTarget('ice', new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.28, blenderJarBounds.z), () => {
         animateBlenderFill(0xf7b2c4, 0.85, finishStep, false);
       });
@@ -1778,9 +2271,10 @@ function executeStep(actionId) {
       requestAnimationFrame(animIce);
     }
   } else if (actionId === 'strawberry') {
-    focusPrepActionCamera(state.recipeKey === 'strawberry_smoothie');
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : (state.recipeKey === 'strawberry_smoothie');
+    focusPrepActionCamera(toBlender);
     playIngredientSound('strawberry');
-    if (state.recipeKey === 'strawberry_smoothie') {
+    if (toBlender) {
       animateDropIntoTarget('strawberry', new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.28, blenderJarBounds.z), () => {
         animateBlenderFill(0xf48fb1, 0.65, finishStep, false);
       });
@@ -1812,9 +2306,10 @@ function executeStep(actionId) {
       animatePour(0x7fb069, 0.22, () => finishStep(), true);
     });
   } else if (actionId === 'milk') {
-    focusPrepActionCamera(state.recipeKey === 'strawberry_smoothie');
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : (state.recipeKey === 'strawberry_smoothie');
+    focusPrepActionCamera(toBlender);
     playPourSound(0.66, 480, 920);
-    if (state.recipeKey === 'strawberry_smoothie') {
+    if (toBlender) {
       animateBlenderFill(0xfaf6ee, 0.42, finishStep, true);
     } else {
       const milkMixColors = {
@@ -1963,73 +2458,178 @@ function getStepDisplay(step) {
   return step ? { label: step.label, prompt: step.prompt } : { label: '', prompt: '' };
 }
 
+function renderPracticumStatus() {
+  const bar = document.getElementById('practicumStatusBar');
+  if (!bar) return;
+  if (state.practiceMode !== 'practicum') {
+    bar.classList.add('hidden');
+    return;
+  }
+  bar.classList.remove('hidden');
+  const c = state.craft;
+  const cupLabel = { mug: '머그컵', glass: '유리컵', tea: '찻잔' }[c.cupPlaced] || '없음';
+  const beanTxt = c.beansGround ? (c.beansTamped ? '갈고 다짐✓' : '갈림(미다짐)') : '안 갈림';
+  const shotTxt = c.shotPoured ? '컵에 부음✓' : (c.shotExtracted ? '추출됨' : '대기');
+  bar.innerHTML =
+    `<span class="prac-pill">☕ 컵: ${cupLabel}</span>` +
+    `<span class="prac-pill">🫘 원두: ${beanTxt}</span>` +
+    `<span class="prac-pill">🥃 샷: ${shotTxt}</span>` +
+    (c.spilled ? `<span class="prac-pill warn">💦 쟁반 흘림!</span>` : '') +
+    (c.mistakes.length ? `<span class="prac-pill warn">⚠️ 실수 ${c.mistakes.length}건</span>` : '') +
+    `<button type="button" class="prac-reset-btn" id="pracClearTrayBtn">🧽 쟁반 닦고 다시 담기</button>`;
+  const clr = document.getElementById('pracClearTrayBtn');
+  if (clr) clr.addEventListener('click', clearTraySpillAndCup);
+}
+
+function renderManualChoiceBar() {
+  const bar = document.getElementById('manualChoiceBar');
+  if (!bar) return;
+
+  // 실습모드 컵 선택 팝업
+  if (state.practiceMode === 'practicum' && state.awaitingCupPick) {
+    bar.classList.remove('hidden');
+    bar.innerHTML =
+      `<div class="manual-choice-title">☕ 어떤 컵을 쟁반에 올릴까요?</div>` +
+      `<div class="manual-choice-grid">` +
+        `<button type="button" class="manual-choice-btn" data-cup="mug">☕ 머그컵</button>` +
+        `<button type="button" class="manual-choice-btn" data-cup="glass">🥛 투명 유리컵</button>` +
+        `<button type="button" class="manual-choice-btn" data-cup="tea">🍵 찻잔</button>` +
+      `</div>`;
+    bar.querySelectorAll('[data-cup]').forEach((b) => {
+      b.addEventListener('click', () => handlePracticumAction('cup', b.dataset.cup));
+    });
+    return;
+  }
+
+  // 수동연습모드 다음 단계 선택
+  if (state.practiceMode === 'manual' && state.awaitingNextChoice && state.manualChoices.length) {
+    const prevStep = getCurrentRecipe().steps[state.stepIndex - 1];
+    bar.classList.remove('hidden');
+    bar.innerHTML =
+      `<div class="manual-choice-title">🧭 ${prevStep ? `"${prevStep.label}" 완료! ` : ''}다음엔 어떤 것을 해야 할까요?</div>` +
+      `<div class="manual-choice-grid">` +
+        state.manualChoices.map((ch) =>
+          `<button type="button" class="manual-choice-btn" data-choice="${ch.id}"><span>${ch.emoji}</span><span>${ch.label}</span></button>`
+        ).join('') +
+      `</div>`;
+    bar.querySelectorAll('[data-choice]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const expected = getCurrentStep();
+        if (expected && btn.dataset.choice !== expected.target) {
+          btn.classList.remove('wrong-shake');
+          void btn.offsetWidth;
+          btn.classList.add('wrong-shake');
+        }
+        handleAction(btn.dataset.choice);
+      });
+    });
+    return;
+  }
+
+  bar.classList.add('hidden');
+}
+
 function renderUI() {
   const recipe = getCurrentRecipe();
   const currentStep = getCurrentStep();
   const nextStep = recipe.steps[state.stepIndex + 1] || null;
+  const isAuto = state.practiceMode === 'auto';
+  const isManual = state.practiceMode === 'manual';
+  const isPracticum = state.practiceMode === 'practicum';
+  const showStepGuide = isAuto || (isManual && !state.awaitingNextChoice);
 
   document.getElementById('scoreBadge').textContent = `★ ${state.completedCount}`;
   const recipeLabelEl = document.getElementById('currentRecipeLabel');
   if (recipeLabelEl) recipeLabelEl.textContent = `${recipe.emoji} ${recipe.name}`;
 
-  // 시각적 과제 분석표 (상단 순서 카드)
+  // 모드 버튼 active 동기화
+  document.querySelectorAll('.pmode-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.pmode === state.practiceMode);
+  });
+
+  // 시각적 과제 분석표 (실습모드에서는 순서를 가리고 목표 음료 안내)
   const strip = document.getElementById('scheduleStrip');
   strip.innerHTML = '';
-  let currentCardEl = null;
-  recipe.steps.forEach((step, idx) => {
-    const disp = getStepDisplay(step);
-    const card = document.createElement('div');
-    card.className = 'step-card';
-    if (idx < state.stepIndex) card.classList.add('done');
-    else if (idx === state.stepIndex) {
-      card.classList.add('current');
-      currentCardEl = card;
-    }
-    card.innerHTML = `<span class="step-num">${idx < state.stepIndex ? '✓' : idx + 1}</span><span>${step.emoji} ${disp.label}</span>`;
-    strip.appendChild(card);
+  if (isPracticum) {
+    const cupHint = { mug: '머그컵', glass: '투명 유리컵', tea: '찻잔' }[recipe.cupType] || '컵';
+    strip.innerHTML =
+      `<div class="step-card current"><span class="step-num">🧪</span><span>실전 주문: ${recipe.emoji} ${recipe.name} (${cupHint}) · 실수해도 괜찮아요! 직접 순서대로 만들어 손님께 드려보세요.</span></div>`;
+  } else {
+    let currentCardEl = null;
+    recipe.steps.forEach((step, idx) => {
+      const disp = getStepDisplay(step);
+      const card = document.createElement('div');
+      card.className = 'step-card';
+      if (idx < state.stepIndex) card.classList.add('done');
+      else if (idx === state.stepIndex && !state.awaitingNextChoice) {
+        card.classList.add('current');
+        currentCardEl = card;
+      }
+      const label = (isManual && idx > state.stepIndex) ? '❓ 다음 단계' : `${step.emoji} ${disp.label}`;
+      card.innerHTML = `<span class="step-num">${idx < state.stepIndex ? '✓' : idx + 1}</span><span>${label}</span>`;
+      strip.appendChild(card);
 
-    if (idx < recipe.steps.length - 1) {
-      const arrow = document.createElement('span');
-      arrow.className = 'step-arrow';
-      arrow.textContent = '→';
-      strip.appendChild(arrow);
+      if (idx < recipe.steps.length - 1) {
+        const arrow = document.createElement('span');
+        arrow.className = 'step-arrow';
+        arrow.textContent = '→';
+        strip.appendChild(arrow);
+      }
+    });
+    if (currentCardEl) {
+      currentCardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
-  });
-  if (currentCardEl) {
-    currentCardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 
   // 지금 -> 다음 한눈에 보기 바
   const ftBar = document.getElementById('firstThenBar');
   if (ftBar) {
-    if (currentStep) {
+    if (isPracticum) {
+      ftBar.innerHTML =
+        `<span class="ft-pill now">🧪 자유 실습 중: ${recipe.emoji} ${recipe.name}</span>` +
+        `<span>→</span>` +
+        `<span class="ft-pill next">완료 후 🔔 손님께 드리기</span>`;
+    } else if (isManual && state.awaitingNextChoice) {
+      ftBar.innerHTML =
+        `<span class="ft-pill now">🧭 방금 단계 완료!</span>` +
+        `<span>→</span>` +
+        `<span class="ft-pill next">아래에서 다음 행동을 직접 골라요!</span>`;
+    } else if (currentStep) {
       const curDisp = getStepDisplay(currentStep);
       const nextDisp = nextStep ? getStepDisplay(nextStep) : null;
       ftBar.innerHTML =
         `<span class="ft-pill now">지금: ${currentStep.emoji} ${curDisp.label}</span>` +
         `<span>→</span>` +
-        `<span class="ft-pill next">다음: ${nextStep ? `${nextStep.emoji} ${nextDisp.label}` : '🎉 음료 완성!'}</span>`;
+        `<span class="ft-pill next">${isManual ? '다음: 직접 선택하기 🧭' : `다음: ${nextStep ? `${nextStep.emoji} ${nextDisp.label}` : '🎉 음료 완성!'}`}</span>`;
     } else {
       ftBar.innerHTML = '<span class="ft-pill next">🎉 음료가 완성되었어요!</span>';
     }
   }
 
   // 현재 단계 배너
-  if (currentStep) {
+  if (isPracticum) {
+    if (state.craft.log.length === 0 && !state.craft.spilled && !state.awaitingCupPick) {
+      showGuidance(`실습모드! ${recipe.name} 주문을 받았어요. 아래 도구와 3D 기구를 자유롭게 눌러 직접 만들어보세요!`, '🧪', false);
+    }
+  } else if (isManual && state.awaitingNextChoice) {
+    showGuidance('방금 단계를 완료했어요! 아래 선택지나 3D 카운터에서 다음에 할 일을 골라보세요.', '🧭', false);
+  } else if (currentStep) {
     const curDisp = getStepDisplay(currentStep);
     showGuidance(curDisp.prompt, currentStep.emoji, false);
     if (state.guidedMode) speakKorean(curDisp.prompt);
   }
 
-  // 하단 큰 동작 버튼 (현재 레시피에 필요한 도구들만 깔끔하게 표시하여 인지 부하 감소)
-  const neededIds = [...new Set(recipe.steps.map((s) => s.target))];
+  // 하단 큰 동작 버튼 (실습모드에서는 전체 15종 도구 표시, 자동/수동에서는 레시피 도구 표시)
+  const neededIds = isPracticum
+    ? TOOL_BUTTONS.map((b) => b.id)
+    : [...new Set(recipe.steps.map((s) => s.target))];
   const actionBar = document.getElementById('actionBar');
   actionBar.innerHTML = '';
   let highlightedBtnEl = null;
   TOOL_BUTTONS.filter((b) => neededIds.includes(b.id)).forEach((btnInfo) => {
     const btn = document.createElement('button');
     btn.className = 'tool-btn';
-    if (state.guidedMode && currentStep && currentStep.target === btnInfo.id) {
+    if (showStepGuide && state.guidedMode && currentStep && currentStep.target === btnInfo.id) {
       btn.classList.add('highlighted');
       highlightedBtnEl = btn;
     }
@@ -2042,8 +2642,11 @@ function renderUI() {
     highlightedBtnEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 
-  // 3D 강조 링 & 부유 비콘 위치 업데이트
-  if (state.guidedMode && currentStep && targetAnchors[currentStep.target]) {
+  renderManualChoiceBar();
+  renderPracticumStatus();
+
+  // 3D 강조 링 & 부유 비콘 위치 업데이트 (자동모드 또는 수동모드 선택 완료 후에만 표시)
+  if (showStepGuide && state.guidedMode && currentStep && targetAnchors[currentStep.target]) {
     const anchor = targetAnchors[currentStep.target];
     highlightRing.position.copy(anchor);
     highlightRing.visible = true;
@@ -2057,30 +2660,60 @@ function renderUI() {
     highlightBeacon.visible = false;
   }
 
-  // 단계별 자동 카메라 워킹 (작은 화면에서도 대상 오브젝트를 크게 클로즈업)
-  if (state.autoCamera && currentStep) {
-    focusStepCamera(currentStep.target, 540);
+  // 단계별 자동 카메라 워킹
+  if (state.autoCamera) {
+    if (isPracticum || (isManual && state.awaitingNextChoice)) {
+      focusOverviewCamera(520);
+    } else if (currentStep) {
+      focusStepCamera(currentStep.target, 540);
+    }
   }
 }
 
-function showGuidance(text, emoji, isGentleHint) {
+function showGuidance(text, emoji, isGentleHint, isMistake = false) {
   const banner = document.getElementById('guidanceBanner');
   document.getElementById('guidanceEmoji').textContent = emoji;
   document.getElementById('guidanceText').textContent = text;
   banner.classList.toggle('gentle-hint', Boolean(isGentleHint));
+  banner.classList.toggle('mistake-hint', Boolean(isMistake));
 }
 
-function showCompletionModal(recipe) {
+function showCompletionModal(recipe, evalRes = null) {
   document.getElementById('completeEmoji').textContent = recipe.emoji;
-  document.getElementById('completeTitle').textContent = `${recipe.name} 완성!`;
+  const reportEl = document.getElementById('practicumReport');
+  if (evalRes) {
+    const starStr = '⭐'.repeat(evalRes.stars) + '☆'.repeat(3 - evalRes.stars);
+    document.getElementById('completeTitle').textContent =
+      evalRes.stars === 3 ? `${recipe.name} 완벽 제조!` : `${recipe.name} 실습 결과`;
+    document.getElementById('completeDesc').textContent =
+      evalRes.stars === 3
+        ? '실수 없이 진짜 바리스타처럼 훌륭하게 만들었어요!'
+        : '직접 만들면서 겪은 경험을 확인하고 한 번 더 도전해봐요.';
+    if (reportEl) {
+      reportEl.classList.remove('hidden');
+      reportEl.innerHTML =
+        `<div class="prac-stars">${starStr}</div>` +
+        evalRes.checks.map((c) =>
+          `<div class="prac-item ${c.ok ? 'ok' : 'warn'}">${c.ok ? '✅' : '⚠️'} ${c.text}</div>`
+        ).join('');
+    }
+  } else {
+    document.getElementById('completeTitle').textContent = `${recipe.name} 완성!`;
+    document.getElementById('completeDesc').textContent = '차분하게 순서대로 정말 잘 만들었어요.';
+    if (reportEl) reportEl.classList.add('hidden');
+  }
   document.getElementById('completeModal').classList.remove('hidden');
 }
 
 function resetDrink() {
   state.stepIndex = 0;
   state.busy = false;
+  state.awaitingNextChoice = false;
+  state.manualChoices = [];
+  state.awaitingCupPick = false;
   state.liquidLevel = 0;
   state.hasIce = false;
+  state.craft = createInitialCraft();
   drinkGroup.visible = false;
   drinkGroup.position.set(PREP_POS.x, COUNTER_Y + 0.02, PREP_POS.z);
   drinkGroup.scale.set(1, 1, 1);
@@ -2095,6 +2728,8 @@ function resetDrink() {
   blenderMixMesh.visible = false;
   blenderMixMesh.scale.y = 0.01;
   pourStream.visible = false;
+  spillPuddleMesh.visible = false;
+  spillIceGroup.visible = false;
   if (portafilterCoffee) portafilterCoffee.visible = false;
   if (shotLiquidMesh) shotLiquidMesh.visible = false;
   if (shotGlassGroup) {
@@ -2191,6 +2826,22 @@ document.addEventListener('pointerdown', (e) => {
     recipeDrawer.classList.add('hidden');
     recipePickerBtn.setAttribute('aria-expanded', 'false');
   }
+});
+
+document.querySelectorAll('.pmode-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const nextMode = btn.dataset.pmode;
+    if (!nextMode || state.practiceMode === nextMode) return;
+    state.practiceMode = nextMode;
+    playSoftTone(680, 0.12, 'sine', 0.045);
+    resetDrink();
+    const modeNames = {
+      auto: '자동연습모드로 시작해요. 순서대로 안내해 드릴게요.',
+      manual: '수동연습모드예요. 단계가 끝나면 다음 행동을 직접 골라보세요.',
+      practicum: '실습모드예요. 실제 카페처럼 자유롭게 음료를 만들어 보세요.'
+    };
+    speakKorean(modeNames[nextMode] || '');
+  });
 });
 
 document.getElementById('autoCamBtn').addEventListener('click', (e) => {

@@ -45,6 +45,18 @@ function taConfetti(){
  document.body.append(box);setTimeout(()=>box.remove(),2600);
 }
 function taStatus(stage,html){const p=stage.querySelector('.ta-status');if(p)p.innerHTML=html}
+const EM_GALLERY_KEY = 'safe_mover.emotion.gallery.v1';
+function taLoadCreations(){
+ try{const raw=localStorage.getItem(EM_GALLERY_KEY);const arr=raw?JSON.parse(raw):[];return Array.isArray(arr)?arr:[]}catch(e){return[]}
+}
+function taSaveCreation(kind,title,body,extra){
+ try{
+  const arr=taLoadCreations();
+  arr.unshift({id:Date.now(),kind,title,body,extra:extra||'',date:new Date().toLocaleDateString('ko-KR')});
+  localStorage.setItem(EM_GALLERY_KEY,JSON.stringify(arr.slice(0,24)));
+  if(typeof window.refreshMindGalleryBadge==='function')window.refreshMindGalleryBadge();
+ }catch(e){}
+}
 function taDone(stage,msg,party=true){
  if(stage.querySelector('.ta-done')){taStatus(stage,msg);return}
  const d=document.createElement('div');d.className='ta-done';
@@ -55,25 +67,36 @@ function taDone(stage,msg,party=true){
  stage.classList.add('ta-flash');setTimeout(()=>stage.classList.remove('ta-flash'),600);
 }
 const TABLET_ACT={
- breathe:{name:'숨 고르기',hint:'큰 원을 눌러 3번 숨 쉬어요',
-  html:`<div class="ta-breathe"><button class="ta-breath-circle" type="button" aria-label="숨 고르기 시작"><span class="lbl">시작</span><span class="sub">눌러서 숨 고르기</span></button><div class="dots"><span></span><span></span><span></span></div><p class="ta-status" aria-live="polite">천천히 준비해요. 원을 눌러 주세요.</p></div>`,
+ breathe:{name:'숨 고르기',hint:'속도를 고르고 큰 원을 눌러 천천히 숨 쉬어요',
+  html:`<div class="ta-breathe"><div class="ta-row" style="justify-content:center;margin-top:0" data-bmode><button class="ta-chip on" type="button" data-speed="normal">🌱 편안한 호흡 (3-1-4)</button><button class="ta-chip" type="button" data-speed="deep">🌊 깊은 호흡 (4-2-6)</button></div><button class="ta-breath-circle" type="button" aria-label="숨 고르기 시작"><span class="lbl">시작</span><span class="sub">눌러서 숨 고르기</span></button><div class="dots"><span></span><span></span><span></span></div><p class="ta-status" aria-live="polite">원하는 속도를 고르고 원을 눌러 주세요.</p></div>`,
   init(stage){
-   const circle=stage.querySelector('.ta-breath-circle'),lbl=stage.querySelector('.lbl'),sub=stage.querySelector('.sub'),dots=[...stage.querySelectorAll('.dots span')];
-   const steps=[{d:4000,label:'들이쉬어요',sub:'코로 하나, 둘, 셋',from:.74,to:1},{d:1500,label:'멈춰요',sub:'잠깐 숨을 참아요',from:1,to:1},{d:6000,label:'내쉬어요',sub:'입으로 하나, 둘, 셋, 넷',from:1,to:.74}];
-   let idx=0,t0=0,cycle=0,raf=0,running=false;
+   const circle=stage.querySelector('.ta-breath-circle'),lbl=stage.querySelector('.lbl'),sub=stage.querySelector('.sub'),dots=[...stage.querySelectorAll('.dots span')],modeBtns=[...stage.querySelectorAll('[data-bmode] .ta-chip')];
+   const presets={
+    normal:[{d:3200,label:'들이쉬어요',sub:'코로 하나, 둘, 셋',from:.74,to:1,tone:523.25},{d:1200,label:'멈춰요',sub:'잠깐 숨을 머금어요',from:1,to:1,tone:0},{d:4500,label:'내쉬어요',sub:'입으로 하나, 둘, 셋, 넷',from:1,to:.74,tone:392}],
+    deep:[{d:4200,label:'깊게 들이쉬어요',sub:'코로 천천히 넷까지',from:.74,to:1,tone:523.25},{d:1800,label:'멈춰요',sub:'마음을 고요히 멈춰요',from:1,to:1,tone:0},{d:6000,label:'길게 내쉬어요',sub:'입으로 여섯까지 내쉬어요',from:1,to:.74,tone:349.23}]
+   };
+   let mode='normal',idx=0,t0=0,cycle=0,raf=0,running=false;
    const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-   function phaseStart(){const s=steps[idx];lbl.textContent=s.label;sub.textContent=s.sub;taStatus(stage,s.label+' · '+s.sub);t0=performance.now()}
+   modeBtns.forEach(b=>b.addEventListener('click',()=>{
+    modeBtns.forEach(x=>x.classList.remove('on'));b.classList.add('on');mode=b.dataset.speed;
+    if(running){idx=0;phaseStart();}
+   }));
+   function phaseStart(){
+    const s=presets[mode][idx];lbl.textContent=s.label;sub.textContent=s.sub;taStatus(stage,s.label+' · '+s.sub);t0=performance.now();
+    if(s.tone)taTone(s.tone,.32,'sine',.035);
+   }
    function frame(now){
     if(!running)return;
-    const s=steps[idx],p=Math.min(1,(now-t0)/s.d);
+    const steps=presets[mode],s=steps[idx],p=Math.min(1,(now-t0)/s.d);
     circle.style.transform='scale('+(s.from+(s.to-s.from)*ease(p)).toFixed(3)+')';
     if(p>=1){
      idx++;
      if(idx>=steps.length){
-      idx=0;cycle++;dots.forEach((d,i)=>d.classList.toggle('on',i<cycle));
-      if(cycle>=3){running=false;circle.style.transform='scale(.74)';lbl.textContent='완료!';sub.textContent='마음이 조금 편안해졌어요';taDone(stage,'3번 숨을 고르며 마음을 살펴봤어요. 정말 잘했어요!');return}
-      phaseStart();
+      idx=0;cycle++;dots.forEach((d,i)=>d.classList.toggle('on',i<Math.min(3,cycle)));
+      if(cycle===3){taDone(stage,'3번 숨을 고르며 마음을 살펴봤어요. 원하면 계속 이어서 쉬어도 좋아요!')}
+      if(cycle>=3){running=false;circle.style.transform='scale(.74)';lbl.textContent='다시 하기';sub.textContent='한 번 더 숨 고르려면 눌러요';cycle=0;return}
      }
+     phaseStart();
     }
     raf=requestAnimationFrame(frame);
    }
@@ -84,33 +107,57 @@ const TABLET_ACT={
    });
    return ()=>{running=false;cancelAnimationFrame(raf)};
   }},
- music:{name:'소리 따라하기',hint:'패드를 눌러 소리를 듣고 따라 해요',
-  html:`<div><div class="ta-pads"><button class="ta-pad" type="button" data-note="0">♪<small>도</small></button><button class="ta-pad" type="button" data-note="1">♫<small>미</small></button><button class="ta-pad" type="button" data-note="2">♬<small>솔</small></button><button class="ta-pad" type="button" data-note="3">♪<small>높은 도</small></button></div><div class="ta-notes" aria-hidden="true"></div><div class="ta-row"><button class="ta-btn soft" type="button" data-play>▶ 따라하기 시작</button><span class="ta-status" style="margin:0">먼저 마음에 드는 소리를 눌러봐요.</span></div></div>`,
+ music:{name:'자유 소리 & 멜로디 놀이터',hint:'8음계 건반으로 자유롭게 작곡하거나 따라하기를 해요',
+  html:`<div><div class="ta-row" style="margin-top:0;margin-bottom:9px" data-inst><button class="ta-chip on" type="button" data-wave="sine">🎹 피아노</button><button class="ta-chip" type="button" data-wave="triangle">🎵 실로폰</button><button class="ta-chip" type="button" data-wave="bell">🔔 오르골</button></div><div class="ta-pads ta-pads-8"><button class="ta-pad" type="button" data-note="0">도<small>C</small></button><button class="ta-pad" type="button" data-note="1">레<small>D</small></button><button class="ta-pad" type="button" data-note="2">미<small>E</small></button><button class="ta-pad" type="button" data-note="3">파<small>F</small></button><button class="ta-pad" type="button" data-note="4">솔<small>G</small></button><button class="ta-pad" type="button" data-note="5">라<small>A</small></button><button class="ta-pad" type="button" data-note="6">시<small>B</small></button><button class="ta-pad" type="button" data-note="7">도+<small>C5</small></button></div><div class="ta-notes" aria-hidden="true"></div><div class="ta-row"><button class="ta-btn" type="button" data-rec>⏺️ 내 멜로디 녹음</button><button class="ta-btn soft" type="button" data-replay>▶ 내 곡 듣기</button><button class="ta-btn gold" type="button" data-play>🎯 따라하기 게임</button></div><p class="ta-status" aria-live="polite">8가지 음계 건반을 자유롭게 눌러 나만의 소리를 만들어봐요!</p></div>`,
   init(stage){
    const pads=[...stage.querySelectorAll('.ta-pad')],notes=stage.querySelector('.ta-notes');
-   const freqs=[523.25,659.25,783.99,1046.5],pattern=[0,2,1,3],timers=[];
-   let accept=false,user=0;
+   const recBtn=stage.querySelector('[data-rec]'),replayBtn=stage.querySelector('[data-replay]'),playBtn=stage.querySelector('[data-play]');
+   const freqs=[523.25,587.33,659.25,698.46,783.99,880,987.77,1046.5],names=['도','레','미','파','솔','라','시','높은도'],pattern=[0,2,4,7],timers=[];
+   let wave='sine',accept=false,user=0,recording=false,recorded=[],recStart=0,freeHits=0;
    const later=(fn,ms)=>{const t=setTimeout(fn,ms);timers.push(t);return t};
    const hit=p=>{p.classList.add('hit');later(()=>p.classList.remove('hit'),150)};
+   function playNote(n){
+    if(wave==='bell'){taTone(freqs[n],.9,'sine',.055);taTone(freqs[n]*2,.45,'sine',.02,.01)}
+    else taTone(freqs[n],.65,wave,.06);
+    hit(pads[n]);
+    notes.insertAdjacentHTML('beforeend','<span>'+['♩','♪','♫','♬'][n%4]+' '+names[n]+'</span>');
+    while(notes.children.length>7)notes.firstElementChild.remove();
+   }
+   stage.querySelectorAll('[data-inst] .ta-chip').forEach(b=>b.addEventListener('click',()=>{
+    stage.querySelectorAll('[data-inst] .ta-chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');wave=b.dataset.wave;
+   }));
    pads.forEach(p=>p.addEventListener('click',()=>{
     const n=+p.dataset.note;
-    taTone(freqs[n],.7,'sine',.06);hit(p);
-    notes.insertAdjacentHTML('beforeend','<span>'+['♪','♫','♬','♪'][n]+'</span>');
-    while(notes.children.length>7)notes.firstElementChild.remove();
-    if(!accept)return;
-    if(n===pattern[user]){
-     p.classList.add('ok');later(()=>p.classList.remove('ok'),520);user++;
-     if(user>=pattern.length){accept=false;taDone(stage,'네 소리를 귀 기울여 듣고 잘 따라 했어요!')}
-     else taStatus(stage,'좋아요! 다음 소리를 눌러봐요 ('+user+' / '+pattern.length+')');
+    playNote(n);
+    if(recording){recorded.push({n,t:performance.now()-recStart});}
+    if(accept){
+     if(n===pattern[user]){
+      p.classList.add('ok');later(()=>p.classList.remove('ok'),520);user++;
+      if(user>=pattern.length){accept=false;taDone(stage,'소리를 귀 기울여 듣고 끝까지 잘 따라 했어요!')}
+      else taStatus(stage,'좋아요! 다음 소리를 눌러봐요 ('+user+' / '+pattern.length+')');
+     }else{
+      p.classList.add('bad');later(()=>p.classList.remove('bad'),420);user=0;
+      taStatus(stage,'괜찮아요. 다시 듣고 처음부터 눌러볼까요?');
+     }
     }else{
-     p.classList.add('bad');later(()=>p.classList.remove('bad'),420);user=0;
-     taStatus(stage,'괜찮아요. 다시 듣고 처음부터 눌러볼까요?');
+     freeHits++;
+     if(freeHits===6)taDone(stage,'나만의 멜로디를 자유롭게 연주했어요! 계속 연주해 보세요.',false);
     }
    }));
-   stage.querySelector('[data-play]').addEventListener('click',()=>{
-    accept=false;user=0;taStatus(stage,'잘 들어보세요. 소리가 반짝일 거예요…');
-    pattern.forEach((n,i)=>later(()=>{const p=pads[n];taTone(freqs[n],.6);hit(p)},500+i*680));
-    later(()=>{accept=true;taStatus(stage,'이제 들은 순서대로 눌러봐요! (0 / '+pattern.length+')')},500+pattern.length*680+250);
+   recBtn.addEventListener('click',()=>{
+    recording=!recording;
+    if(recording){recorded=[];recStart=performance.now();recBtn.textContent='⏹️ 녹음 멈추기';taStatus(stage,'녹음 중이에요! 건반을 자유롭게 눌러보세요.')}
+    else{recBtn.textContent='⏺️ 내 멜로디 녹음';taStatus(stage,recorded.length?recorded.length+'개의 음을 녹음했어요! "▶ 내 곡 듣기"를 눌러봐요.':'녹음된 음이 없어요.');if(recorded.length>=3)taDone(stage,'나만의 마음 멜로디를 만들었어요!')}
+   });
+   replayBtn.addEventListener('click',()=>{
+    if(!recorded.length){taStatus(stage,'먼저 "⏺️ 내 멜로디 녹음"을 눌러 자유롭게 연주해 보세요.');return}
+    taStatus(stage,'내가 만든 마음 멜로디를 재생하고 있어요 ♪');
+    recorded.forEach(ev=>later(()=>playNote(ev.n),ev.t));
+   });
+   playBtn.addEventListener('click',()=>{
+    accept=false;user=0;taStatus(stage,'잘 들어보세요. 4개의 음이 반짝일 거예요…');
+    pattern.forEach((n,i)=>later(()=>playNote(n),450+i*620));
+    later(()=>{accept=true;taStatus(stage,'이제 들은 순서대로 눌러봐요! (0 / '+pattern.length+')')},450+pattern.length*620+200);
    });
    return ()=>timers.forEach(clearTimeout);
   }},
@@ -207,52 +254,89 @@ const TABLET_ACT={
    reset.addEventListener('click',()=>{word='';chips.forEach(x=>x.classList.remove('on'));bubble.innerHTML='지금 나는 <b>___</b>한 기분이에요';taStatus(stage,'천천히 다시 골라봐요.')});
    return null;
   }},
- draw:{name:'마음 그림 그리기',hint:'손가락으로 색과 모양을 그려요',
-  html:`<div class="ta-draw-wrap"><div class="ta-draw-tools"><button class="ta-swatch on" type="button" data-c="#f28c8c" style="background:#f28c8c" aria-label="분홍"></button><button class="ta-swatch" type="button" data-c="#f7c85f" style="background:#f7c85f" aria-label="노랑"></button><button class="ta-swatch" type="button" data-c="#8bc985" style="background:#8bc985" aria-label="초록"></button><button class="ta-swatch" type="button" data-c="#7cc8e6" style="background:#7cc8e6" aria-label="하늘"></button><button class="ta-swatch" type="button" data-c="#b39ddb" style="background:#b39ddb" aria-label="보라"></button><button class="ta-swatch" type="button" data-c="#6b5a52" style="background:#6b5a52" aria-label="갈색"></button><button class="ta-size on" type="button" data-s="5" aria-label="가는 붓"><i style="width:5px;height:5px"></i></button><button class="ta-size" type="button" data-s="11" aria-label="중간 붓"><i style="width:11px;height:11px"></i></button><button class="ta-size" type="button" data-s="20" aria-label="굵은 붓"><i style="width:20px;height:20px"></i></button><button class="ta-chip" type="button" data-eraser>🧽 지우개</button><button class="ta-chip" type="button" data-undo>↩ 되돌리기</button><button class="ta-chip" type="button" data-clear>🗑 지우기</button><button class="ta-chip" type="button" data-save>⬇ 저장</button></div><canvas id="drawCanvas" aria-label="손가락으로 그리는 마음 그림판"></canvas><p class="ta-status" aria-live="polite">손가락으로 자유롭게 그려보세요. 잘 그리지 않아도 괜찮아요.</p></div>`,
+ draw:{name:'자유 마음 화실',hint:'색연필·무지개 붓·스티커 도장으로 자유롭게 표현해요',
+  html:`<div class="ta-draw-wrap"><div class="ta-draw-tools"><button class="ta-swatch on" type="button" data-c="#f28c8c" style="background:#f28c8c" aria-label="분홍"></button><button class="ta-swatch" type="button" data-c="#f7c85f" style="background:#f7c85f" aria-label="노랑"></button><button class="ta-swatch" type="button" data-c="#8bc985" style="background:#8bc985" aria-label="초록"></button><button class="ta-swatch" type="button" data-c="#7cc8e6" style="background:#7cc8e6" aria-label="하늘"></button><button class="ta-swatch" type="button" data-c="#b39ddb" style="background:#b39ddb" aria-label="보라"></button><button class="ta-swatch" type="button" data-c="#6b5a52" style="background:#6b5a52" aria-label="갈색"></button><button class="ta-chip" type="button" data-rainbow>🌈 무지개</button><button class="ta-size on" type="button" data-s="5" aria-label="가는 붓"><i style="width:5px;height:5px"></i></button><button class="ta-size" type="button" data-s="11" aria-label="중간 붓"><i style="width:11px;height:11px"></i></button><button class="ta-size" type="button" data-s="20" aria-label="굵은 붓"><i style="width:20px;height:20px"></i></button><button class="ta-chip" type="button" data-eraser>🧽 지우개</button><button class="ta-chip" type="button" data-undo>↩ 되돌리기</button><button class="ta-chip" type="button" data-clear>🗑 지우기</button><button class="ta-chip" type="button" data-gallery>🗂️ 보관함 저장</button><button class="ta-chip" type="button" data-save>⬇ 파일 저장</button></div><div class="ta-row" style="margin-top:0" data-stamps><span style="font-size:12px;color:#7a7489;font-weight:700">도장:</span><button class="ta-chip" type="button" data-st="☀️">☀️</button><button class="ta-chip" type="button" data-st="🌈">🌈</button><button class="ta-chip" type="button" data-st="⭐">⭐</button><button class="ta-chip" type="button" data-st="💛">💛</button><button class="ta-chip" type="button" data-st="🌸">🌸</button><button class="ta-chip" type="button" data-st="🦋">🦋</button><span style="font-size:12px;color:#7a7489;font-weight:700;margin-left:4px">종이:</span><button class="ta-chip on" type="button" data-bg="#ffffff">흰색</button><button class="ta-chip" type="button" data-bg="#fff8e6">크림</button><button class="ta-chip" type="button" data-bg="#eef9ff">하늘</button><button class="ta-chip" type="button" data-bg="#f7f2ff">보라</button></div><canvas id="drawCanvas" aria-label="손가락으로 그리는 마음 그림판"></canvas><p class="ta-status" aria-live="polite">색·무지개 붓·도장을 골라 자유롭게 꾸며보세요!</p></div>`,
   init(stage){
    const canvas=stage.querySelector('#drawCanvas'),ctx=canvas.getContext('2d');
-   let color='#f28c8c',size=5,eraser=false,drawing=false,last=null,strokes=0,snaps=[],w=1,h=1;
+   let color='#f28c8c',bgColor='#ffffff',size=5,eraser=false,rainbow=false,stamp='',hue=0,drawing=false,last=null,strokes=0,snaps=[],w=1,h=1;
    function fit(){
     const r=canvas.getBoundingClientRect();if(!r.width)return;
     const dpr=Math.min(2,window.devicePixelRatio||1),old=canvas.width?canvas.toDataURL():'';
     w=r.width;h=r.height;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.fillStyle=bgColor;ctx.fillRect(0,0,w,h);ctx.lineCap='round';ctx.lineJoin='round';
     if(old){const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,w,h);img.src=old}
    }
    const raf=requestAnimationFrame(fit);
    const pos=e=>{const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
    canvas.addEventListener('pointerdown',e=>{
     e.preventDefault();try{canvas.setPointerCapture(e.pointerId)}catch(x){}
-    drawing=true;snaps.push(canvas.toDataURL());if(snaps.length>10)snaps.shift();
-    const p=pos(e);last=p;ctx.fillStyle=eraser?'#fff':color;
-    ctx.beginPath();ctx.arc(p.x,p.y,size/2,0,Math.PI*2);ctx.fill();
+    snaps.push(canvas.toDataURL());if(snaps.length>12)snaps.shift();
+    const p=pos(e);
+    if(stamp){
+     ctx.font='32px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+     ctx.fillText(stamp,p.x,p.y);taTone(740,.14,'sine',.035);strokes++;
+     if(strokes===3)taStatus(stage,'도장과 그림으로 멋진 작품을 만들고 있어요!');
+     return;
+    }
+    drawing=true;last=p;
+    const col=eraser?bgColor:(rainbow?'hsl('+(hue=(hue+15)%360)+',82%,60%)':color);
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.x,p.y,size/2,0,Math.PI*2);ctx.fill();
    });
    canvas.addEventListener('pointermove',e=>{
     if(!drawing)return;
-    const p=pos(e);ctx.strokeStyle=eraser?'#fff':color;ctx.lineWidth=size;
+    const p=pos(e);
+    const col=eraser?bgColor:(rainbow?'hsl('+(hue=(hue+8)%360)+',82%,60%)':color);
+    ctx.strokeStyle=col;ctx.lineWidth=size;
     ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;
    });
    ['pointerup','pointercancel','pointerleave'].forEach(t=>canvas.addEventListener(t,()=>{
     if(!drawing)return;drawing=false;strokes++;
-    if(strokes===3)taStatus(stage,'좋아요! 색과 모양으로 마음을 표현하고 있어요.');
+    if(strokes===3)taStatus(stage,'좋아요! 색과 모양으로 마음을 자유롭게 표현하고 있어요.');
    }));
+   function clearToolsActive(){
+    stage.querySelector('[data-eraser]').classList.remove('on');
+    stage.querySelector('[data-rainbow]').classList.remove('on');
+    stage.querySelectorAll('[data-st]').forEach(x=>x.classList.remove('on'));
+   }
    stage.querySelectorAll('.ta-swatch').forEach(b=>b.addEventListener('click',()=>{
     stage.querySelectorAll('.ta-swatch').forEach(x=>x.classList.remove('on'));b.classList.add('on');
-    color=b.dataset.c;eraser=false;stage.querySelector('[data-eraser]').classList.remove('on');
+    color=b.dataset.c;eraser=false;rainbow=false;stamp='';clearToolsActive();
+   }));
+   stage.querySelector('[data-rainbow]').addEventListener('click',e=>{
+    rainbow=!rainbow;eraser=false;stamp='';clearToolsActive();
+    if(rainbow)e.currentTarget.classList.add('on');
+   });
+   stage.querySelectorAll('[data-st]').forEach(b=>b.addEventListener('click',()=>{
+    const same=stamp===b.dataset.st;clearToolsActive();eraser=false;rainbow=false;
+    stamp=same?'':b.dataset.st;if(stamp)b.classList.add('on');
+    taStatus(stage,stamp?stamp+' 도장을 그림판 위에 콕콕 찍어보세요!':'붓 모드로 돌아왔어요.');
+   }));
+   stage.querySelectorAll('[data-bg]').forEach(b=>b.addEventListener('click',()=>{
+    stage.querySelectorAll('[data-bg]').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    bgColor=b.dataset.bg;snaps.push(canvas.toDataURL());
+    ctx.fillStyle=bgColor;ctx.fillRect(0,0,w,h);
+    taStatus(stage,'새 색깔 도화지를 꺼냈어요!');
    }));
    stage.querySelectorAll('.ta-size').forEach(b=>b.addEventListener('click',()=>{
-    stage.querySelectorAll('.ta-size').forEach(x=>x.classList.remove('on'));b.classList.add('on');size=+b.dataset.s;
+    stage.querySelectorAll('.ta-size').forEach(x=>x.classList.remove('on'));b.classList.add('on');size=+b.dataset.s;stamp='';
+    stage.querySelectorAll('[data-st]').forEach(x=>x.classList.remove('on'));
    }));
-   stage.querySelector('[data-eraser]').addEventListener('click',e=>{eraser=!eraser;e.currentTarget.classList.toggle('on',eraser)});
-   stage.querySelector('[data-clear]').addEventListener('click',()=>{snaps.push(canvas.toDataURL());ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);taStatus(stage,'새 종이에 다시 그려볼까요?')});
+   stage.querySelector('[data-eraser]').addEventListener('click',e=>{
+    eraser=!eraser;rainbow=false;stamp='';clearToolsActive();if(eraser)e.currentTarget.classList.add('on');
+   });
+   stage.querySelector('[data-clear]').addEventListener('click',()=>{snaps.push(canvas.toDataURL());ctx.fillStyle=bgColor;ctx.fillRect(0,0,w,h);taStatus(stage,'새 종이에 다시 그려볼까요?')});
    stage.querySelector('[data-undo]').addEventListener('click',()=>{
     const s=snaps.pop();if(!s){taStatus(stage,'되돌릴 그림이 없어요.');return}
-    const img=new Image();img.onload=()=>{ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h)};img.src=s;
+    const img=new Image();img.onload=()=>{ctx.fillStyle=bgColor;ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h)};img.src=s;
+   });
+   stage.querySelector('[data-gallery]').addEventListener('click',()=>{
+    taSaveCreation('draw','마음 그림 작품','<img src="'+canvas.toDataURL('image/png')+'" alt="내 마음 그림" style="max-width:100%;border-radius:10px;border:1px solid #eadfc8">');
+    taDone(stage,'내 마음 보관함에 그림을 저장했어요!');
    });
    stage.querySelector('[data-save]').addEventListener('click',()=>{
     try{const a=document.createElement('a');a.download='마음그림.png';a.href=canvas.toDataURL('image/png');a.click()}catch(e){}
-    taDone(stage,'나만의 마음 그림을 저장했어요. 그림은 나를 이해하는 멋진 언어예요.');
+    taDone(stage,'나만의 마음 그림을 파일로 저장했어요.');
    });
    return ()=>cancelAnimationFrame(raf);
   }},
@@ -297,23 +381,28 @@ const TABLET_ACT={
    });
    return null;
   }},
- jar:{name:'고마움 항아리',hint:'고마운 일을 적어 항아리에 담아요',
-  html:`<div class="ta-jar-wrap"><div class="ta-jar"><div class="lid"></div></div><div><div class="ta-row"><input class="ta-input" type="text" maxlength="24" placeholder="고마운 일을 적어요" aria-label="고마운 일"><button class="ta-btn" type="button" data-add>담기</button></div><div class="ta-row"><button class="ta-chip" type="button">가족</button><button class="ta-chip" type="button">친구</button><button class="ta-chip" type="button">선생님</button><button class="ta-chip" type="button">맛있는 간식</button></div><div class="ta-jarlist" aria-live="polite"></div></div></div><p class="ta-status">작은 고마움도 소중한 선물이에요.</p>`,
+ jar:{name:'고마움 항아리',hint:'쪽지 색을 고르고 고마운 일을 자유롭게 담아요',
+  html:`<div class="ta-jar-wrap"><div class="ta-jar"><div class="lid"></div></div><div><div class="ta-row" style="margin-top:0" data-ncolors><span style="font-size:12px;color:#7a7489;font-weight:700">쪽지 색:</span><button class="ta-chip on" type="button" data-nc="#fff3b0">노랑</button><button class="ta-chip" type="button" data-nc="#ffd6e0">분홍</button><button class="ta-chip" type="button" data-nc="#d6f0ff">하늘</button><button class="ta-chip" type="button" data-nc="#dcfce7">민트</button></div><div class="ta-row"><input class="ta-input" type="text" maxlength="32" placeholder="고마운 일을 자유롭게 적어요" aria-label="고마운 일"><button class="ta-btn" type="button" data-add>담기</button></div><div class="ta-row"><button class="ta-chip" type="button" data-q>가족</button><button class="ta-chip" type="button" data-q>친구</button><button class="ta-chip" type="button" data-q>선생님</button><button class="ta-chip" type="button" data-q>맛있는 간식</button></div><div class="ta-jarlist" aria-live="polite"></div></div></div><p class="ta-status">작은 고마움도 소중한 선물이에요. 저장된 쪽지는 마음 보관함에서도 볼 수 있어요.</p>`,
   init(stage){
-   const jar=stage.querySelector('.ta-jar'),input=stage.querySelector('.ta-input'),list=stage.querySelector('.ta-jarlist'),add=stage.querySelector('[data-add]'),chips=[...stage.querySelectorAll('.ta-row .ta-chip')];
-   let n=0;
+   const jar=stage.querySelector('.ta-jar'),input=stage.querySelector('.ta-input'),list=stage.querySelector('.ta-jarlist'),add=stage.querySelector('[data-add]'),chips=[...stage.querySelectorAll('[data-q]')];
+   let n=0,noteCol='#fff3b0';
+   stage.querySelectorAll('[data-nc]').forEach(b=>b.addEventListener('click',()=>{
+    stage.querySelectorAll('[data-nc]').forEach(x=>x.classList.remove('on'));b.classList.add('on');noteCol=b.dataset.nc;
+   }));
    function put(txt){
-    txt=(txt||'').trim();if(!txt){input.focus();return}
-    if(n>=6){taStatus(stage,'항아리가 가득 찼어요. 마음이 따뜻해졌어요.');return}
+    txt=(txt||'').trim().replace(/[<>&]/g,'');if(!txt){input.focus();return}
     n++;
-    const note=document.createElement('div');note.className='note';
-    note.style.left=(8+(n%3)*26)+'px';note.style.bottom=(6+Math.floor((n-1)/3)*26)+'px';
-    note.style.transform='rotate('+((n%2?-1:1)*(4+n*2))+'deg)';
-    jar.append(note);
-    list.insertAdjacentHTML('beforeend','<b>'+n+'. '+txt+'</b>');
+    if(jar.querySelectorAll('.note').length<9){
+     const note=document.createElement('div');note.className='note';note.style.background=noteCol;
+     note.style.left=(8+((n-1)%3)*26)+'px';note.style.bottom=(6+Math.floor(((n-1)%9)/3)*26)+'px';
+     note.style.transform='rotate('+((n%2?-1:1)*(4+n*2))+'deg)';
+     jar.append(note);
+    }
+    list.insertAdjacentHTML('afterbegin','<b style="background:'+noteCol+'">'+n+'. '+txt+'</b>');
+    taSaveCreation('jar','고마움 쪽지',txt);
     input.value='';input.focus();taTone(740,.3,'sine',.04);
-    taStatus(stage,'고마운 마음을 '+n+'개 담았어요.');
-    if(n>=2)taDone(stage,'고마운 마음을 항아리에 담았어요. 힘든 날 꺼내 읽어봐요.');
+    taStatus(stage,'고마운 마음을 '+n+'개 담았어요! 계속 자유롭게 담을 수 있어요.');
+    if(n>=2)taDone(stage,'고마운 마음을 항아리에 담았어요. 힘든 날 마음 보관함에서 꺼내 읽어봐요.');
    }
    add.addEventListener('click',()=>put(input.value));
    input.addEventListener('keydown',e=>{if(e.key==='Enter')put(input.value)});
@@ -373,22 +462,25 @@ const TABLET_ACT={
    });
    return null;
   }},
- write:{name:'마음 메모',hint:'오늘의 마음을 짧게 적어 남겨요',
-  html:`<div class="ta-write"><textarea class="ta-textarea" maxlength="160" placeholder="오늘 마음에 남은 일을 적어보세요. 짧아도 괜찮아요." aria-label="마음 메모"></textarea><div class="ta-row" data-feels><button class="ta-chip" type="button">기쁨</button><button class="ta-chip" type="button">슬픔</button><button class="ta-chip" type="button">화남</button><button class="ta-chip" type="button">놀람</button><button class="ta-chip" type="button">평온</button></div><div class="ta-row"><button class="ta-btn" type="button" data-save>메모 저장</button><span class="ta-status" style="margin:0">0 / 160</span></div><div class="saved-wrap"></div></div>`,
+ write:{name:'마음 메모',hint:'오늘의 마음 온도와 생각을 자유롭게 적어 남겨요',
+  html:`<div class="ta-write"><div class="ta-thermo"><label>🌡️ 오늘 내 마음 온도: <b data-tval>50</b>℃</label><input type="range" min="0" max="100" value="50" data-thermo aria-label="마음 온도"></div><textarea class="ta-textarea" maxlength="180" placeholder="오늘 마음에 남은 일을 자유롭게 적어보세요. 짧아도 괜찮아요." aria-label="마음 메모"></textarea><div class="ta-row" data-feels><button class="ta-chip" type="button">기쁨</button><button class="ta-chip" type="button">슬픔</button><button class="ta-chip" type="button">화남</button><button class="ta-chip" type="button">놀람</button><button class="ta-chip" type="button">걱정</button><button class="ta-chip" type="button">피곤</button><button class="ta-chip" type="button">평온</button></div><div class="ta-row"><button class="ta-btn" type="button" data-save>💾 마음 보관함에 저장</button><span class="ta-status" style="margin:0">0 / 180</span></div><div class="saved-wrap"></div></div>`,
   init(stage){
-   const ta=stage.querySelector('.ta-textarea'),counter=stage.querySelector('.ta-row .ta-status'),save=stage.querySelector('[data-save]'),wrap=stage.querySelector('.saved-wrap'),chips=[...stage.querySelectorAll('[data-feels] .ta-chip')];
+   const ta=stage.querySelector('.ta-textarea'),counter=stage.querySelector('.ta-row .ta-status'),save=stage.querySelector('[data-save]'),wrap=stage.querySelector('.saved-wrap'),chips=[...stage.querySelectorAll('[data-feels] .ta-chip')],thermo=stage.querySelector('[data-thermo]'),tval=stage.querySelector('[data-tval]');
    let feel='';
-   ta.addEventListener('input',()=>{counter.textContent=ta.value.length+' / 160'});
+   thermo.addEventListener('input',()=>{tval.textContent=thermo.value});
+   ta.addEventListener('input',()=>{counter.textContent=ta.value.length+' / 180'});
    chips.forEach(c=>c.addEventListener('click',()=>{
     chips.forEach(x=>x.classList.remove('on'));c.classList.toggle('on');feel=c.classList.contains('on')?c.textContent:'';
    }));
    save.addEventListener('click',()=>{
-    const v=ta.value.trim();
-    if(v.length<3){taStatus(stage,'두세 글자보다 조금 더 적어볼까요?');ta.focus();return}
-    const stamp={'기쁨':'☀️','슬픔':'🌧️','화남':'🔥','놀람':'✨','평온':'🌿'}[feel]||'💛';
-    wrap.innerHTML='<div class="ta-note-preview"><span class="stamp">'+stamp+'</span>'+v.replace(/[<>&]/g,'')+'<div style="margin-top:7px;font-size:11px;color:#a2946f">'+new Date().toLocaleDateString('ko-KR')+' · 나의 마음 메모</div></div>';
+    const v=ta.value.trim().replace(/[<>&]/g,'');
+    if(v.length<2){taStatus(stage,'두 글자 이상 적어볼까요?');ta.focus();return}
+    const stamp={'기쁨':'☀️','슬픔':'🌧️','화남':'🔥','놀람':'✨','걱정':'😟','피곤':'😪','평온':'🌿'}[feel]||'💛';
+    const temp=thermo.value;
+    wrap.innerHTML='<div class="ta-note-preview"><span class="stamp">'+stamp+' '+temp+'℃</span>'+v+'<div style="margin-top:7px;font-size:11px;color:#a2946f">'+new Date().toLocaleDateString('ko-KR')+' · 나의 마음 메모</div></div>';
+    taSaveCreation('write',(feel||'오늘의 마음')+' ('+temp+'℃)',stamp+' '+v);
     taTone(880,.35,'sine',.05);
-    taDone(stage,'마음을 적어 남겼어요. 메모는 나를 이해하는 작은 지도가 돼요.');
+    taDone(stage,'마음을 적어 마음 보관함에 남겼어요! 메모는 나를 이해하는 멋진 지도예요.');
    });
    return null;
   }}

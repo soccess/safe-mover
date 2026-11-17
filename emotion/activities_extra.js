@@ -12,22 +12,35 @@
    ============================================================ */
 Object.assign(TABLET_ACT, {
   garden: {
-    name: "행복 꽃밭 가꾸기",
-    hint: "화분을 눌러 씨앗을 심고 꽃을 피워요",
+    name: "자유 행복 꽃밭 가꾸기",
+    hint: "원하는 씨앗을 골라 화분에 심고 물을 줘서 꽃을 피워요",
     html: `
       <div class="ta-garden">
+        <div class="ta-row" style="margin-top:0;margin-bottom:9px;justify-content:center" data-seeds>
+          <span style="font-size:12px;color:#7a7489;font-weight:700">씨앗 고르기:</span>
+          <button class="ta-chip on" type="button" data-seed="0">🌷 분홍꽃</button>
+          <button class="ta-chip" type="button" data-seed="1">🌻 해바라기</button>
+          <button class="ta-chip" type="button" data-seed="2">🌹 장미</button>
+          <button class="ta-chip" type="button" data-seed="3">🪻 라벤더</button>
+        </div>
         <div class="ta-pots">
           <button class="ta-pot" type="button" data-pot="0"><span class="plant"></span><small>1번 화분</small></button>
           <button class="ta-pot" type="button" data-pot="1"><span class="plant"></span><small>2번 화분</small></button>
           <button class="ta-pot" type="button" data-pot="2"><span class="plant"></span><small>3번 화분</small></button>
           <button class="ta-pot" type="button" data-pot="3"><span class="plant"></span><small>4번 화분</small></button>
         </div>
-        <p class="ta-status" aria-live="polite">화분을 눌러 씨앗 → 새싹 → 꽃으로 키워보세요! (0 / 4)</p>
+        <div class="ta-row" style="justify-content:center">
+          <button class="ta-btn soft" type="button" data-waterall>🚿 전체 물 주기</button>
+          <button class="ta-chip" type="button" data-replant>🌱 새 씨앗 심기</button>
+        </div>
+        <p class="ta-status" aria-live="polite">원하는 꽃 색깔을 고르고 화분을 눌러 키워보세요! (0 / 4)</p>
       </div>`,
     init(stage) {
       const potColors = ["#f472b6", "#fbbf24", "#fb7185", "#a78bfa"];
-      const potSvg = (lv, idx) => {
-        const col = potColors[idx % potColors.length];
+      let selectedColorIdx = 0;
+      const potColorMap = [0, 1, 2, 3];
+      const potSvg = (lv, colIdx) => {
+        const col = potColors[colIdx % potColors.length];
         if (lv === 0) {
           return `<svg viewBox="0 0 64 64" width="52" height="52"><ellipse cx="32" cy="52" rx="18" ry="5" fill="#d6c5b3"/><path d="M18 38h28l-4 15H22z" fill="#e5987e" stroke="#b96d54" stroke-width="2" stroke-linejoin="round"/><rect x="16" y="34" width="32" height="6" rx="2" fill="#f0ab93" stroke="#b96d54" stroke-width="2"/><ellipse cx="32" cy="34" rx="5" ry="3" fill="#8d6e63"/></svg>`;
         }
@@ -41,23 +54,44 @@ Object.assign(TABLET_ACT, {
       };
       const pots = [...stage.querySelectorAll(".ta-pot")];
       const levels = [0, 0, 0, 0];
+      stage.querySelectorAll("[data-seed]").forEach((sb) => {
+        sb.addEventListener("click", () => {
+          stage.querySelectorAll("[data-seed]").forEach((x) => x.classList.remove("on"));
+          sb.classList.add("on");
+          selectedColorIdx = Number(sb.dataset.seed);
+        });
+      });
+      function growPot(idx) {
+        if (levels[idx] === 0) potColorMap[idx] = selectedColorIdx;
+        if (levels[idx] < 3) {
+          levels[idx]++;
+          const btn = pots[idx];
+          btn.querySelector(".plant").innerHTML = potSvg(levels[idx], potColorMap[idx]);
+          btn.classList.toggle("bloom", levels[idx] === 3);
+          btn.classList.add("pop");
+          setTimeout(() => btn.classList.remove("pop"), 260);
+          taTone(520 + levels[idx] * 140, 0.2, "triangle", 0.05);
+        }
+        const doneCount = levels.filter((v) => v >= 3).length;
+        taStatus(stage, "꽃이 무럭무럭 자라고 있어요! (활짝 핀 꽃 " + doneCount + " / 4)");
+        if (doneCount >= 4) {
+          taDone(stage, "나만의 색깔로 예쁜 행복 꽃밭을 완성했어요! 다시 심어볼 수도 있어요.");
+        }
+      }
       pots.forEach((btn, idx) => {
         btn.querySelector(".plant").innerHTML = potSvg(0, idx);
-        btn.addEventListener("click", () => {
-          if (levels[idx] < 3) {
-            levels[idx]++;
-            btn.querySelector(".plant").innerHTML = potSvg(levels[idx], idx);
-            btn.classList.toggle("bloom", levels[idx] === 3);
-            btn.classList.add("pop");
-            setTimeout(() => btn.classList.remove("pop"), 260);
-            taTone(520 + levels[idx] * 140, 0.2, "triangle", 0.05);
-          }
-          const doneCount = levels.filter((v) => v >= 3).length;
-          taStatus(stage, "꽃이 피어나고 있어요! (활짝 핀 꽃 " + doneCount + " / 4)");
-          if (doneCount >= 4) {
-            taDone(stage, "예쁜 행복 꽃밭을 완성했어요! 기쁜 마음이 가득 피어났어요.");
-          }
-        });
+        btn.addEventListener("click", () => growPot(idx));
+      });
+      stage.querySelector("[data-waterall]").addEventListener("click", () => {
+        for (let i = 0; i < 4; i++) growPot(i);
+      });
+      stage.querySelector("[data-replant]").addEventListener("click", () => {
+        for (let i = 0; i < 4; i++) {
+          levels[i] = 0;
+          pots[i].classList.remove("bloom");
+          pots[i].querySelector(".plant").innerHTML = potSvg(0, selectedColorIdx);
+        }
+        taStatus(stage, "화분을 비우고 새 씨앗을 심을 준비를 했어요!");
       });
       return null;
     }
@@ -65,59 +99,81 @@ Object.assign(TABLET_ACT, {
 
   bubble: {
     name: "마음 비눗방울 날리기",
-    hint: "속상한 마음을 담아 비눗방울을 톡 터뜨려요",
+    hint: "내 생각을 직접 적거나 골라서 비눗방울을 불고 톡톡 터뜨려요",
     html: `
       <div class="ta-bubble-wrap">
-        <div class="ta-row" data-presets>
-          <button class="ta-chip" type="button">속상한 기분</button>
+        <div class="ta-row" style="margin-top:0">
+          <input class="ta-input" type="text" maxlength="16" placeholder="비눗방울에 담을 생각 적기" aria-label="비눗방울에 담을 생각">
+          <button class="ta-btn" type="button" data-blow>🫧 불기</button>
+          <button class="ta-btn soft" type="button" data-wind>💨 바람!</button>
+        </div>
+        <div class="ta-row" data-presets style="margin-top:0">
+          <button class="ta-chip on" type="button">속상한 기분</button>
           <button class="ta-chip" type="button">걱정되는 일</button>
           <button class="ta-chip" type="button">서운한 마음</button>
+          <button class="ta-chip" type="button">무거운 생각</button>
         </div>
         <div class="ta-bubble-sky" aria-label="비눗방울 하늘"></div>
-        <div class="ta-row">
-          <button class="ta-btn" type="button" data-blow>🫧 비눗방울 불기</button>
-          <p class="ta-status" style="margin:0">버튼을 눌러 비눗방울을 띄우고 톡 눌러 날려 보내요! (0 / 4)</p>
-        </div>
+        <p class="ta-status" style="margin:0">비눗방울을 톡톡 눌러 날려 보내요! (날린 방울 0개)</p>
       </div>`,
     init(stage) {
       const sky = stage.querySelector(".ta-bubble-sky");
       const blow = stage.querySelector("[data-blow]");
+      const wind = stage.querySelector("[data-wind]");
+      const input = stage.querySelector(".ta-input");
       const chips = [...stage.querySelectorAll("[data-presets] .ta-chip")];
-      let label = "속상함";
+      let label = "속상한 기분";
       let popped = 0;
 
       chips.forEach((c) => c.addEventListener("click", () => {
         chips.forEach((x) => x.classList.remove("on"));
         c.classList.add("on");
         label = c.textContent;
+        input.value = "";
       }));
 
-      function spawnBubble() {
+      function popBubble(b) {
+        if (b.dataset.popped) return;
+        b.dataset.popped = "1";
+        b.classList.add("pop-out");
+        popped++;
+        taTone(740 + (popped % 8) * 55, 0.16, "sine", 0.05);
+        setTimeout(() => b.remove(), 220);
+        taStatus(stage, "비눗방울을 톡 날려 보냈어요! (날린 방울 " + popped + "개)");
+        if (popped === 4) {
+          taDone(stage, "무거운 생각을 비눗방울에 담아 하늘로 보냈어요. 더 날려도 좋아요!");
+        }
+      }
+
+      function spawnBubble(customText) {
+        const text = (customText || input.value.trim() || label).replace(/[<>&]/g, "");
         const b = document.createElement("button");
         b.type = "button";
         b.className = "ta-float-bub";
-        b.textContent = "🫧 " + label;
-        b.style.left = (12 + Math.random() * 62) + "%";
-        b.style.top = (16 + Math.random() * 52) + "%";
-        b.addEventListener("click", () => {
-          b.classList.add("pop-out");
-          popped++;
-          taTone(740 + popped * 60, 0.16, "sine", 0.05);
-          setTimeout(() => b.remove(), 220);
-          taStatus(stage, "비눗방울을 톡 날려 보냈어요! (" + popped + " / 4)");
-          if (popped >= 4) {
-            taDone(stage, "무거운 생각을 비눗방울에 담아 하늘로 보냈어요. 한결 가벼워졌죠?");
-          }
-        });
+        b.textContent = "🫧 " + text;
+        b.style.left = (8 + Math.random() * 64) + "%";
+        b.style.top = (14 + Math.random() * 58) + "%";
+        b.style.animationDelay = (Math.random() * 1.5).toFixed(2) + "s";
+        b.addEventListener("click", () => popBubble(b));
         sky.append(b);
       }
 
       blow.addEventListener("click", () => {
-        if (sky.children.length < 6) spawnBubble();
+        if (sky.children.length < 10) spawnBubble();
+        if (input.value.trim()) input.value = "";
         taTone(480, 0.15, "sine", 0.04);
       });
-      spawnBubble();
-      spawnBubble();
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); blow.click(); }
+      });
+      wind.addEventListener("click", () => {
+        const list = [...sky.querySelectorAll(".ta-float-bub")];
+        if (!list.length) spawnBubble();
+        list.forEach((b, idx) => setTimeout(() => popBubble(b), idx * 90));
+      });
+      spawnBubble("속상한 기분");
+      spawnBubble("걱정되는 일");
+      spawnBubble("답답한 마음");
       return null;
     }
   },
@@ -168,12 +224,14 @@ Object.assign(TABLET_ACT, {
         </div>
         <div class="ta-row" style="justify-content:center">
           <button class="ta-btn" type="button" data-cool>🌬️ 후~ 바람 불기</button>
+          <button class="ta-chip" type="button" data-relight>🔥 다시 연습</button>
         </div>
         <p class="ta-status">뜨거운 불꽃을 5번 불어 시원하게 식혀봐요! (0 / 5)</p>
       </div>`,
     init(stage) {
       const flame = stage.querySelector(".ta-flame");
       const cool = stage.querySelector("[data-cool]");
+      const relight = stage.querySelector("[data-relight]");
       let count = 0;
       const svgs = [
         `<svg class="svg-anim" viewBox="0 0 110 100" width="96" height="88"><circle cx="55" cy="54" r="36" fill="#ffedd5" class="pulse"/><g class="flameFlicker" transform="translate(55 62)"><path d="M0-36c16 16 22 30 0 46c-22-16-16-30 0-46z" fill="#fb923c"/><path d="M0-22c10 10 13 20 0 30c-13-10-10-20 0-30z" fill="#fde047"/></g></svg>`,
@@ -193,6 +251,12 @@ Object.assign(TABLET_ACT, {
         if (count >= 5) {
           taDone(stage, "뜨거웠던 마음 불꽃이 시원하고 평온하게 식었어요!");
         }
+      });
+      relight.addEventListener("click", () => {
+        count = 0;
+        flame.innerHTML = svgs[0];
+        flame.style.transform = "scale(1)";
+        taStatus(stage, "다시 바람을 불어 식혀볼까요? (0 / 5)");
       });
       return null;
     }
@@ -264,39 +328,63 @@ Object.assign(TABLET_ACT, {
 
   letter: {
     name: "응원 엽서 꾸미기",
-    hint: "스티커와 응원 문장을 골라 엽서를 완성해요",
+    hint: "배경 색과 스티커, 나만의 응원 말을 자유롭게 담아 엽서를 만들어요",
     html: `
       <div class="ta-letter">
-        <div class="ta-row" data-stickers>
-          <button class="ta-chip" type="button">🌟 반짝별</button>
+        <div class="ta-row" style="margin-top:0" data-stickers>
+          <span style="font-size:12px;color:#7a7489;font-weight:700">스티커:</span>
+          <button class="ta-chip on" type="button">🌟 반짝별</button>
           <button class="ta-chip" type="button">🌷 꽃다발</button>
           <button class="ta-chip" type="button">💛 하트</button>
           <button class="ta-chip" type="button">🌈 무지개</button>
+          <button class="ta-chip" type="button">🦋 나비</button>
+        </div>
+        <div class="ta-row" style="margin-top:0" data-cardbg>
+          <span style="font-size:12px;color:#7a7489;font-weight:700">엽서 색:</span>
+          <button class="ta-chip on" type="button" data-cbg="linear-gradient(135deg,#fffef7,#fff5db)">크림</button>
+          <button class="ta-chip" type="button" data-cbg="linear-gradient(135deg,#fff0f6,#ffe0ec)">분홍</button>
+          <button class="ta-chip" type="button" data-cbg="linear-gradient(135deg,#effaff,#ddf2ff)">하늘</button>
+          <button class="ta-chip" type="button" data-cbg="linear-gradient(135deg,#f0fdf4,#dcfce7)">연두</button>
         </div>
         <div class="ta-row" data-msgs>
           <button class="ta-chip" type="button">오늘도 정말 잘했어!</button>
           <button class="ta-chip" type="button">천천히 해도 괜찮아</button>
           <button class="ta-chip" type="button">네가 있어서 든든해</button>
         </div>
+        <div class="ta-row">
+          <input class="ta-input" type="text" maxlength="34" placeholder="직접 응원 한 마디 적어보기" aria-label="직접 응원 문장">
+          <button class="ta-btn" type="button" data-send>💌 엽서 완성 · 보관함 저장</button>
+        </div>
         <div class="ta-postcard">
           <div class="pc-sticker">🌟</div>
-          <div class="pc-msg">위에서 스티커와 응원 문장을 골라보세요!</div>
+          <div class="pc-msg">위에서 스티커를 고르고 직접 응원 말을 적어보세요!</div>
         </div>
-        <button class="ta-btn" type="button" data-send>💌 응원 엽서 완성하기</button>
         <p class="ta-status" aria-live="polite">나와 친구에게 다정한 마음을 전해봐요.</p>
       </div>`,
     init(stage) {
       const sEl = stage.querySelector(".pc-sticker");
       const mEl = stage.querySelector(".pc-msg");
+      const card = stage.querySelector(".ta-postcard");
+      const input = stage.querySelector(".ta-input");
       const send = stage.querySelector("[data-send]");
-      let chosenMsg = false;
+      let chosenMsg = "";
+      let chosenStickers = ["🌟"];
 
       stage.querySelectorAll("[data-stickers] .ta-chip").forEach((c) => {
         c.addEventListener("click", () => {
-          stage.querySelectorAll("[data-stickers] .ta-chip").forEach((x) => x.classList.remove("on"));
-          c.classList.add("on");
-          sEl.textContent = c.textContent.split(" ")[0];
+          c.classList.toggle("on");
+          const active = [...stage.querySelectorAll("[data-stickers] .ta-chip.on")].map((x) => x.textContent.split(" ")[0]);
+          chosenStickers = active.length ? active : ["🌟"];
+          sEl.textContent = chosenStickers.join(" ");
           taTone(660, 0.14, "sine", 0.04);
+        });
+      });
+
+      stage.querySelectorAll("[data-cbg]").forEach((c) => {
+        c.addEventListener("click", () => {
+          stage.querySelectorAll("[data-cbg]").forEach((x) => x.classList.remove("on"));
+          c.classList.add("on");
+          card.style.background = c.dataset.cbg;
         });
       });
 
@@ -304,18 +392,27 @@ Object.assign(TABLET_ACT, {
         c.addEventListener("click", () => {
           stage.querySelectorAll("[data-msgs] .ta-chip").forEach((x) => x.classList.remove("on"));
           c.classList.add("on");
-          mEl.textContent = "“" + c.textContent + "”";
-          chosenMsg = true;
+          chosenMsg = c.textContent;
+          input.value = chosenMsg;
+          mEl.textContent = "“" + chosenMsg + "”";
           taTone(740, 0.14, "sine", 0.04);
         });
       });
 
+      input.addEventListener("input", () => {
+        const v = input.value.trim().replace(/[<>&]/g, "");
+        chosenMsg = v;
+        mEl.textContent = v ? "“" + v + "”" : "위에서 스티커를 고르고 직접 응원 말을 적어보세요!";
+      });
+
       send.addEventListener("click", () => {
-        if (!chosenMsg) {
-          mEl.textContent = "“오늘도 정말 잘했어!”";
+        const finalMsg = (input.value.trim() || chosenMsg || "오늘도 정말 잘했어!").replace(/[<>&]/g, "");
+        mEl.textContent = "“" + finalMsg + "”";
+        if (typeof taSaveCreation === "function") {
+          taSaveCreation("letter", "응원 엽서", chosenStickers.join("") + " “" + finalMsg + "”");
         }
         taTone(880, 0.3, "triangle", 0.05);
-        taDone(stage, "따뜻한 응원 엽서를 완성했어요! 마음이 포근해져요.");
+        taDone(stage, "따뜻한 응원 엽서를 완성해 마음 보관함에 저장했어요!");
       });
       return null;
     }
