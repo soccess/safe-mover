@@ -11,25 +11,35 @@
     <div id="topbar">
       <a id="homeLink" href="./index.html">🏠 목록</a>
       <div id="title">
-        <svg class="title-svg" viewBox="0 0 28 28" width="22" height="22" aria-hidden="true">
-          <path d="M14 2L24 6v7c0 6.5-4.2 11-10 13C8.2 24 4 19.5 4 13V6z" fill="#38bdf8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M9.5 13.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 귀여운 맞춤법 요정 연필 마스코트 아이콘 -->
+        <svg class="title-svg" viewBox="0 0 36 36" width="24" height="24" aria-hidden="true">
+          <circle cx="18" cy="21" r="11" fill="#FDE68A" stroke="#fff" stroke-width="2"/>
+          <path d="M11 13h14l-3.5-8h-7z" fill="#FACC15" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+          <rect x="14.5" y="2" width="7" height="3.5" rx="1.7" fill="#F472B6"/>
+          <circle cx="14.5" cy="20" r="1.6" fill="#1E293B"/>
+          <circle cx="21.5" cy="20" r="1.6" fill="#1E293B"/>
+          <circle cx="12.5" cy="22.5" r="1.6" fill="#FB7185" opacity="0.7"/>
+          <circle cx="23.5" cy="22.5" r="1.6" fill="#FB7185" opacity="0.7"/>
+          <path d="M15.5 24.5q2.5 2.5 5 0" fill="none" stroke="#B45309" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
         <span>읽걷이의 맞춤법 모험</span>
       </div>
       <div id="chips"></div>
+      <button class="btn" id="btnReview" title="단계별 맞춤법 단어를 복습하고 퀴즈로 연습해요">📖 단어 복습</button>
       <button class="btn" id="btnPracticeMode" title="속도를 낮추고 방해 요소를 줄여 차분히 연습해요">🐢 천천히 OFF</button>
       <button class="btn" id="btnPause" title="잠시 멈추고 숨을 고릅니다">⏸️ 쉬기</button>
       <button class="btn" id="btnVoice" title="단어와 안내를 소리 내어 읽어줘요">🗣️ 음성 ON</button>
       <button class="btn" id="btnSound" title="효과음을 켜거나 꺼요">🔔 효과음 ON</button>
       <button class="btn" id="btnRestart">↻ 처음부터</button>
     </div>
-    <div id="banner">⭕ 캐릭터를 움직여 바른 맞춤법 단어를 잡고, ❌ 틀린 단어를 든 적은 피하세요!</div>
+    <div id="banner">⭕ 글자 요정 읽걷이를 움직여 바른 맞춤법 단어를 잡고, ❌ 틀린 단어를 든 적은 피하세요!</div>
     <div id="progs">
       <div id="stageProgWrap">
         <span id="stageLabel">1단계 🌱</span>
+        <span id="gimmickBadge" class="gimmick-badge">✨ 황금 첫걸음</span>
         <div class="barOuter"><div class="barInner" id="stageBar"></div></div>
-        <span id="stageStat">⭕ 단어 0개 · 🛡️ 회피 0회</span>
+        <span id="buffBadges" class="buff-badges"></span>
+        <span id="stageStat">⭐ 0점 · ⭕ 0개 · 🛡️ 0회</span>
       </div>
       <div id="totalProgWrap">
         <span>🗺️ 전체 코스</span>
@@ -39,11 +49,14 @@
     </div>
     <div id="cvWrap">
       <canvas id="cv"></canvas>
-      <div id="hint">⬅️➡️ 좌우로 움직여 바른 단어 잡기! · ❌ 깜빡이는 오타 적은 피하기!</div>
+      <div id="hint">⬅️➡️ 좌우로 움직여 바른 단어 잡기! · ❌ 오타 적은 피하기!</div>
       <button class="padBtn" id="padL">◀ 왼쪽</button>
       <button class="padBtn" id="padR">오른쪽 ▶</button>
       <div id="floatMsg"></div>
       <div id="overlay"><div id="card"></div></div>
+      <div id="reviewModal" aria-hidden="true">
+        <div id="reviewCard"></div>
+      </div>
     </div>
   </div>
 

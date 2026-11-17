@@ -122,6 +122,9 @@ window.SafeMoverAudio = (() => {
       if (sfxOn) this.tap();
       return sfxOn;
     },
+    toggleSfx() {
+      return this.toggle();
+    },
     toggleVoice() {
       voiceOn = !voiceOn;
       if (voiceOn) this.tap();
@@ -140,23 +143,40 @@ window.SafeMoverAudio = (() => {
       noiseBurst(0.07, 0.04, 1800);
     },
     spawnCorrect() {
-      // 멀리서 바른 단어가 나타날 때 부드러운 주의 집중음
       tone(784, 988, 0.10, "sine", 0.05);
       tone(1174, 1318, 0.11, "triangle", 0.04, 0.05);
     },
-    collect(word) {
+    collect(word, comboN) {
+      const pitchShift = 1 + Math.min(8, Math.max(0, (comboN || 1) - 1)) * 0.045;
       [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-        tone(f, f * 1.02, 0.16, "triangle", 0.16, i * 0.045);
+        const freq = f * pitchShift;
+        tone(freq, freq * 1.03, 0.16, "triangle", 0.16, i * 0.04);
       });
       if (word) {
-        setTimeout(() => speak(word), 160);
+        setTimeout(() => speak(word), 150);
       }
+    },
+    powerup() {
+      [587.33, 739.99, 880, 1174.66].forEach((f, i) => {
+        tone(f, f * 1.08, 0.14, "sine", 0.15, i * 0.045);
+      });
+    },
+    jump() {
+      tone(290, 860, 0.22, "sine", 0.16);
+      tone(440, 1120, 0.18, "triangle", 0.1, 0.03);
+    },
+    splash() {
+      noiseBurst(0.18, 0.12, 1600);
+      tone(480, 260, 0.16, "sine", 0.11);
+    },
+    shieldBlock() {
+      tone(660, 990, 0.15, "triangle", 0.16);
+      tone(990, 1320, 0.18, "sine", 0.14, 0.06);
     },
     dodge() {
       tone(784, 1046, 0.10, "sine", 0.10);
     },
     wrongTap() {
-      // 부드러운 하강 안내음
       tone(392, 311, 0.18, "sine", 0.10);
       tone(330, 262, 0.18, "triangle", 0.08, 0.07);
     },
@@ -170,8 +190,8 @@ window.SafeMoverAudio = (() => {
       });
     },
     fanfare() {
-      [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-        tone(f, f, 0.26, "triangle", 0.16, i * 0.10);
+      [392, 523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
+        tone(f, f, 0.26, "triangle", 0.16, i * 0.09);
       });
     },
     tap() { tone(520, 780, 0.07, "sine", 0.12); }
