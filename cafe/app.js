@@ -3,19 +3,28 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ============================================================================
-// 1. 레시피 및 특수교육(무오류 학습/과제분석) 데이터 정의
+// 1. 레시피 및 특수교육(무오류 학습/과제분석) 데이터 정의 (한국 카페 인기 메뉴 18종)
 // ============================================================================
+const RECIPE_CATEGORIES = [
+  { id: 'coffee', title: '☕ 에스프레소 커피' },
+  { id: 'latte_tea', title: '🥛 라떼 · 전통차' },
+  { id: 'ade_smoothie', title: '🫧 에이드 · 스무디 · 프라페' }
+];
+
 const RECIPES = {
   hot_americano: {
     name: '따뜻한 아메리카노',
     emoji: '☕',
+    category: 'coffee',
     cupType: 'mug',
+    isHot: true,
+    usesBlender: false,
     steps: [
       { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 포터필터에 갈아 담아요.' },
       { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두 가루를 평평하고 단단하게 다져요.' },
       { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신을 눌러 에스프레소 샷을 추출해요.' },
       { target: 'cup', label: '머그컵 놓기', emoji: '☕', prompt: '머그컵을 클릭해서 쟁반 위에 올려놓아요.' },
-      { target: 'water', label: '뜨거운 물 붓기', emoji: '💧', prompt: '물병을 눌러 머그컵에 뜨거운 물을 먼저 부어요.' },
+      { target: 'water', temp: 'hot', label: '뜨거운 물 붓기', emoji: '💧', prompt: '물병을 눌러 머그컵에 뜨거운 물을 먼저 부어요.' },
       { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '추출한 에스프레소 샷을 물 위에 부어요.' },
       { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '따뜻한 아메리카노 완성! 손님께 드려요.' }
     ]
@@ -23,91 +32,285 @@ const RECIPES = {
   iced_americano: {
     name: '아이스 아메리카노',
     emoji: '🧊',
+    category: 'coffee',
     cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
     steps: [
       { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 포터필터에 갈아 담아요.' },
       { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두 가루를 수평으로 다져요.' },
       { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신을 눌러 에스프레소 샷을 추출해요.' },
       { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 클릭해서 쟁반 위에 올려놓아요.' },
       { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 시원한 얼음을 넣어요.' },
-      { target: 'water', label: '차가운 물 붓기', emoji: '💧', prompt: '물병을 눌러 차가운 물을 채워요.' },
+      { target: 'water', temp: 'cold', label: '차가운 물 붓기', emoji: '💧', prompt: '물병을 눌러 차가운 물을 채워요.' },
       { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '에스프레소 샷을 얼음물 위에 부어요.' },
       { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '시원한 아이스 아메리카노 완성! 손님께 드려요.' }
+    ]
+  },
+  hot_latte: {
+    name: '따뜻한 카페라떼',
+    emoji: '☕',
+    category: 'coffee',
+    cupType: 'mug',
+    isHot: true,
+    usesBlender: false,
+    steps: [
+      { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 포터필터에 갈아 담아요.' },
+      { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두 가루를 평평하게 다져요.' },
+      { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신을 눌러 에스프레소 샷을 추출해요.' },
+      { target: 'cup', label: '머그컵 놓기', emoji: '☕', prompt: '따뜻한 머그컵을 쟁반 위에 올려놓아요.' },
+      { target: 'milk', temp: 'hot', label: '따뜻한 우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 따뜻한 스팀 우유를 부어요.' },
+      { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '추출한 에스프레소 샷을 따뜻한 우유 위에 부어요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '부드러운 따뜻한 카페라떼 완성! 손님께 드려요.' }
     ]
   },
   iced_latte: {
     name: '아이스 카페라떼',
     emoji: '🥛',
+    category: 'coffee',
     cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
     steps: [
       { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 포터필터에 갈아 담아요.' },
       { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두 가루를 수평으로 다져요.' },
       { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신을 눌러 에스프레소 샷을 추출해요.' },
       { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 클릭해서 쟁반 위에 올려놓아요.' },
       { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 얼음을 먼저 넣어요.' },
-      { target: 'milk', label: '우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 고소한 우유를 부어요.' },
+      { target: 'milk', temp: 'cold', label: '우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 고소한 차가운 우유를 부어요.' },
       { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '에스프레소 샷을 우유 위에 천천히 부어요.' },
-      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '부드러운 카페라떼 완성! 손님께 드려요.' }
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '부드러운 아이스 카페라떼 완성! 손님께 드려요.' }
     ]
   },
-  strawberry_smoothie: {
-    name: '딸기 스무디',
-    emoji: '🍓',
+  iced_vanilla_latte: {
+    name: '아이스 바닐라라떼',
+    emoji: '🌼',
+    category: 'coffee',
     cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
     steps: [
-      { target: 'milk', label: '우유 넣기(믹서)', emoji: '🥛', prompt: '칼날이 잘 돌도록 우유팩을 눌러 믹서기에 우유를 먼저 넣어요.' },
-      { target: 'strawberry', label: '딸기 넣기(믹서)', emoji: '🍓', prompt: '신선한 딸기를 눌러 믹서기에 넣어요.' },
-      { target: 'ice', label: '얼음 넣기(믹서)', emoji: '🧊', prompt: '아이스박스를 눌러 믹서기에 얼음을 넣어요.' },
-      { target: 'blender', label: '얼음·딸기 갈기', emoji: '🌀', prompt: '믹서기(얼음 분쇄 블렌더)를 눌러 얼음과 딸기를 곱게 갈아요.' },
+      { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 갈아 담아요.' },
+      { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두 가루를 고르게 다져요.' },
+      { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신을 눌러 에스프레소 샷을 추출해요.' },
       { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
-      { target: 'pour_blender', label: '컵에 따르기', emoji: '🥤', prompt: '믹서기를 다시 눌러 갈린 스무디를 컵에 따라요.' },
-      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '시원하고 달콤한 딸기 스무디 완성! 손님께 드려요.' }
+      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 얼음을 넣어요.' },
+      { target: 'vanilla', label: '바닐라 시럽', emoji: '🌼', prompt: '바닐라 시럽 펌프를 눌러 달콤한 시럽을 넣어요.' },
+      { target: 'milk', temp: 'cold', label: '우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 차가운 우유를 채워요.' },
+      { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '에스프레소 샷을 부어 향긋하게 완성해요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '달콤한 아이스 바닐라라떼 완성! 손님께 드려요.' }
     ]
   },
-  iced_lemonade: {
-    name: '아이스 레몬에이드',
-    emoji: '🍋',
+  iced_caramel_macchiato: {
+    name: '카라멜 마끼아또',
+    emoji: '🍯',
+    category: 'coffee',
     cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
     steps: [
-      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 클릭해서 올려놓아요.' },
-      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 시원한 얼음을 넣어요.' },
-      { target: 'lemon', label: '레몬 넣기', emoji: '🍋', prompt: '상큼한 레몬을 눌러 컵에 넣어요.' },
-      { target: 'water', label: '시원한 물 붓기', emoji: '💧', prompt: '물병을 눌러 시원한 물을 채워요.' },
-      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '상큼한 레몬에이드 완성! 손님께 드려요.' }
+      { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 갈아 담아요.' },
+      { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두 가루를 다져요.' },
+      { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신으로 에스프레소 샷을 추출해요.' },
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '시원한 얼음을 컵에 넣어요.' },
+      { target: 'vanilla', label: '바닐라 시럽', emoji: '🌼', prompt: '바닐라 시럽을 컵에 먼저 넣어요.' },
+      { target: 'milk', temp: 'cold', label: '우유 붓기', emoji: '🥛', prompt: '차가운 우유를 부어 층을 만들어요.' },
+      { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '우유 위로 에스프레소 샷을 천천히 부어요.' },
+      { target: 'caramel', label: '카라멜 드리즐', emoji: '🍯', prompt: '카라멜 소스를 맨 위에 달콤하게 뿌려요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '달콤한 카라멜 마끼아또 완성! 손님께 드려요.' }
+    ]
+  },
+  iced_cafe_mocha: {
+    name: '아이스 카페모카',
+    emoji: '🍫',
+    category: 'coffee',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
+    steps: [
+      { target: 'grinder', label: '원두 갈기', emoji: '🫘', prompt: '그라인더를 눌러 원두를 갈아 담아요.' },
+      { target: 'tamper', label: '탬핑하기', emoji: '🔨', prompt: '탬퍼를 눌러 원두를 다져요.' },
+      { target: 'machine', label: '샷 추출', emoji: '⚙️', prompt: '커피 머신으로 에스프레소 샷을 추출해요.' },
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '시원한 얼음을 넣어요.' },
+      { target: 'choco', label: '초코 넣기', emoji: '🍫', prompt: '달콤한 초콜릿을 컵에 넣어요.' },
+      { target: 'milk', temp: 'cold', label: '우유 붓기', emoji: '🥛', prompt: '차가운 우유를 채워요.' },
+      { target: 'shot', label: '샷 붓기', emoji: '🥃', prompt: '에스프레소 샷을 부어 모카를 만들어요.' },
+      { target: 'whip', label: '휘핑크림 올리기', emoji: '🍦', prompt: '휘핑크림을 풍성하게 올려 마무리해요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '진하고 달콤한 아이스 카페모카 완성! 손님께 드려요.' }
     ]
   },
   hot_choco: {
     name: '따뜻한 핫초코',
     emoji: '🍫',
+    category: 'latte_tea',
     cupType: 'mug',
+    isHot: true,
+    usesBlender: false,
     steps: [
       { target: 'cup', label: '머그컵 놓기', emoji: '☕', prompt: '머그컵을 클릭해서 쟁반 위에 올려놓아요.' },
       { target: 'choco', label: '초코 넣기', emoji: '🍫', prompt: '초콜릿을 눌러 달콤한 초코를 넣어요.' },
-      { target: 'milk', label: '따뜻한 우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 따뜻한 우유를 부어요.' },
+      { target: 'milk', temp: 'hot', label: '따뜻한 우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 따뜻한 우유를 부어요.' },
       { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '달콤한 핫초코 완성! 손님께 드려요.' }
     ]
   },
   hot_tea: {
     name: '따뜻한 녹차',
     emoji: '🍵',
+    category: 'latte_tea',
     cupType: 'tea',
+    isHot: true,
+    usesBlender: false,
     steps: [
       { target: 'cup', label: '찻잔 놓기', emoji: '🍵', prompt: '찻잔을 클릭해서 쟁반 위에 올려놓아요.' },
       { target: 'tea', label: '녹차 티백 넣기', emoji: '🍃', prompt: '녹차 상자를 눌러 티백을 넣어요.' },
-      { target: 'water', label: '뜨거운 물 붓기', emoji: '💧', prompt: '물병을 눌러 뜨거운 물을 부어요.' },
+      { target: 'water', temp: 'hot', label: '뜨거운 물 붓기', emoji: '💧', prompt: '물병을 눌러 뜨거운 물을 부어요.' },
       { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '향긋한 녹차 완성! 손님께 드려요.' }
+    ]
+  },
+  hot_yuja_tea: {
+    name: '따뜻한 유자차',
+    emoji: '🍊',
+    category: 'latte_tea',
+    cupType: 'tea',
+    isHot: true,
+    usesBlender: false,
+    steps: [
+      { target: 'cup', label: '찻잔 놓기', emoji: '🍵', prompt: '따뜻한 찻잔을 쟁반 위에 올려놓아요.' },
+      { target: 'yuja', label: '유자청 넣기', emoji: '🍊', prompt: '달콤한 유자청 병을 눌러 찻잔에 넣어요.' },
+      { target: 'water', temp: 'hot', label: '뜨거운 물 붓기', emoji: '💧', prompt: '물병을 눌러 뜨거운 물을 부어 우려내요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '향긋하고 달콤한 유자차 완성! 손님께 드려요.' }
+    ]
+  },
+  iced_matcha_latte: {
+    name: '아이스 말차라떼',
+    emoji: '🌿',
+    category: 'latte_tea',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
+    steps: [
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '시원한 얼음을 컵에 넣어요.' },
+      { target: 'matcha', label: '말차 파우더', emoji: '🌿', prompt: '진한 초록빛 말차 파우더를 넣어요.' },
+      { target: 'milk', temp: 'cold', label: '우유 붓기', emoji: '🥛', prompt: '차가운 우유를 부어 부드럽게 섞어요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '고소하고 진한 아이스 말차라떼 완성! 손님께 드려요.' }
     ]
   },
   strawberry_latte: {
     name: '딸기 라떼',
     emoji: '🍓',
+    category: 'latte_tea',
     cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
     steps: [
       { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 클릭해서 올려놓아요.' },
       { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 얼음을 먼저 넣어요.' },
       { target: 'strawberry', label: '딸기 넣기', emoji: '🍓', prompt: '딸기를 눌러 달콤한 딸기청을 넣어요.' },
-      { target: 'milk', label: '우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 고소한 우유를 채워요.' },
+      { target: 'milk', temp: 'cold', label: '우유 붓기', emoji: '🥛', prompt: '우유팩을 눌러 고소한 우유를 채워요.' },
       { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '달콤한 딸기 라떼 완성! 손님께 드려요.' }
+    ]
+  },
+  iced_lemonade: {
+    name: '아이스 레몬에이드',
+    emoji: '🍋',
+    category: 'ade_smoothie',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
+    steps: [
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 클릭해서 올려놓아요.' },
+      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 시원한 얼음을 넣어요.' },
+      { target: 'lemon', label: '레몬 넣기', emoji: '🍋', prompt: '상큼한 레몬을 눌러 컵에 넣어요.' },
+      { target: 'sparkling', label: '탄산수 붓기', emoji: '🫧', prompt: '탄산수 병을 눌러 톡 쏘는 탄산수를 채워요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '상큼한 레몬에이드 완성! 손님께 드려요.' }
+    ]
+  },
+  grapefruit_ade: {
+    name: '아이스 자몽에이드',
+    emoji: '🍊',
+    category: 'ade_smoothie',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: false,
+    steps: [
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'ice', label: '얼음 넣기', emoji: '🧊', prompt: '아이스박스를 눌러 얼음을 넣어요.' },
+      { target: 'grapefruit', label: '자몽 넣기', emoji: '🍊', prompt: '상큼한 자몽 접시를 눌러 자몽청을 넣어요.' },
+      { target: 'sparkling', label: '탄산수 붓기', emoji: '🫧', prompt: '탄산수 병을 눌러 톡 쏘는 탄산수를 채워요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '새콤달콤 자몽에이드 완성! 손님께 드려요.' }
+    ]
+  },
+  strawberry_smoothie: {
+    name: '딸기 스무디',
+    emoji: '🍓',
+    category: 'ade_smoothie',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: true,
+    steps: [
+      { target: 'milk', toBlender: true, temp: 'cold', label: '우유 넣기(믹서)', emoji: '🥛', prompt: '칼날이 잘 돌도록 우유팩을 눌러 믹서기에 우유를 먼저 넣어요.' },
+      { target: 'strawberry', toBlender: true, label: '딸기 넣기(믹서)', emoji: '🍓', prompt: '신선한 딸기를 눌러 믹서기에 넣어요.' },
+      { target: 'ice', toBlender: true, label: '얼음 넣기(믹서)', emoji: '🧊', prompt: '아이스박스를 눌러 믹서기에 얼음을 넣어요.' },
+      { target: 'blender', label: '얼음·딸기 갈기', emoji: '🌀', prompt: '믹서기(얼음 분쇄 블렌더)를 눌러 얼음과 딸기를 곱게 갈아요.' },
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'pour_blender', label: '컵에 따르기', emoji: '🥤', prompt: '믹서기를 다시 눌러 갈린 스무디를 컵에 따라요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '시원하고 달콤한 딸기 스무디 완성! 손님께 드려요.' }
+    ]
+  },
+  mango_smoothie: {
+    name: '망고 스무디',
+    emoji: '🥭',
+    category: 'ade_smoothie',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: true,
+    steps: [
+      { target: 'milk', toBlender: true, temp: 'cold', label: '우유 넣기(믹서)', emoji: '🥛', prompt: '우유팩을 눌러 믹서기에 우유를 먼저 넣어요.' },
+      { target: 'mango', toBlender: true, label: '망고 넣기(믹서)', emoji: '🥭', prompt: '달콤한 망고를 눌러 믹서기에 넣어요.' },
+      { target: 'ice', toBlender: true, label: '얼음 넣기(믹서)', emoji: '🧊', prompt: '아이스박스를 눌러 믹서기에 얼음을 넣어요.' },
+      { target: 'blender', label: '얼음·망고 갈기', emoji: '🌀', prompt: '믹서기를 눌러 망고와 얼음을 곱게 갈아요.' },
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'pour_blender', label: '컵에 따르기', emoji: '🥤', prompt: '갈린 망고 스무디를 컵에 예쁘게 따라요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '달콤시원한 망고 스무디 완성! 손님께 드려요.' }
+    ]
+  },
+  choco_frappe: {
+    name: '초코 휘핑 프라페',
+    emoji: '🍫',
+    category: 'ade_smoothie',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: true,
+    steps: [
+      { target: 'milk', toBlender: true, temp: 'cold', label: '우유 넣기(믹서)', emoji: '🥛', prompt: '우유팩을 눌러 믹서기에 우유를 먼저 넣어요.' },
+      { target: 'choco', toBlender: true, label: '초코 넣기(믹서)', emoji: '🍫', prompt: '진한 초콜릿을 눌러 믹서기에 넣어요.' },
+      { target: 'ice', toBlender: true, label: '얼음 넣기(믹서)', emoji: '🧊', prompt: '아이스박스를 눌러 믹서기에 얼음을 넣어요.' },
+      { target: 'blender', label: '얼음·초코 갈기', emoji: '🌀', prompt: '믹서기를 눌러 얼음과 초코를 시원하게 갈아요.' },
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'pour_blender', label: '컵에 따르기', emoji: '🥤', prompt: '갈린 초코 프라페를 컵에 따라요.' },
+      { target: 'whip', label: '휘핑크림 올리기', emoji: '🍦', prompt: '휘핑크림을 눌러 프라페 위에 봉긋하게 올려요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '달콤바삭 초코 휘핑 프라페 완성! 손님께 드려요.' }
+    ]
+  },
+  green_tea_frappe: {
+    name: '말차 휘핑 프라페',
+    emoji: '🌿',
+    category: 'ade_smoothie',
+    cupType: 'glass',
+    isHot: false,
+    usesBlender: true,
+    steps: [
+      { target: 'milk', toBlender: true, temp: 'cold', label: '우유 넣기(믹서)', emoji: '🥛', prompt: '우유팩을 눌러 믹서기에 우유를 먼저 넣어요.' },
+      { target: 'matcha', toBlender: true, label: '말차 넣기(믹서)', emoji: '🌿', prompt: '말차 파우더를 눌러 믹서기에 넣어요.' },
+      { target: 'ice', toBlender: true, label: '얼음 넣기(믹서)', emoji: '🧊', prompt: '아이스박스를 눌러 믹서기에 얼음을 넣어요.' },
+      { target: 'blender', label: '얼음·말차 갈기', emoji: '🌀', prompt: '믹서기를 눌러 얼음과 말차를 곱게 갈아요.' },
+      { target: 'cup', label: '투명 컵 놓기', emoji: '🥛', prompt: '투명 유리컵을 쟁반 위에 올려놓아요.' },
+      { target: 'pour_blender', label: '컵에 따르기', emoji: '🥤', prompt: '갈린 말차 프라페를 컵에 따라요.' },
+      { target: 'whip', label: '휘핑크림 올리기', emoji: '🍦', prompt: '휘핑크림을 올려 예쁘게 마무리해요.' },
+      { target: 'serve', label: '손님께 드리기', emoji: '😊', prompt: '진하고 시원한 말차 휘핑 프라페 완성! 손님께 드려요.' }
     ]
   }
 };
@@ -119,12 +322,20 @@ const TOOL_BUTTONS = [
   { id: 'shot', label: '샷 붓기', emoji: '🥃' },
   { id: 'cup', label: '컵 놓기', emoji: '☕' },
   { id: 'ice', label: '얼음 넣기', emoji: '🧊' },
-  { id: 'strawberry', label: '딸기 넣기', emoji: '🍓' },
-  { id: 'lemon', label: '레몬 넣기', emoji: '🍋' },
-  { id: 'choco', label: '초코 넣기', emoji: '🍫' },
-  { id: 'tea', label: '녹차 티백', emoji: '🍃' },
-  { id: 'milk', label: '우유 붓기', emoji: '🥛' },
   { id: 'water', label: '물 붓기', emoji: '💧' },
+  { id: 'sparkling', label: '탄산수 붓기', emoji: '🫧' },
+  { id: 'milk', label: '우유 붓기', emoji: '🥛' },
+  { id: 'vanilla', label: '바닐라 시럽', emoji: '🌼' },
+  { id: 'caramel', label: '카라멜 소스', emoji: '🍯' },
+  { id: 'choco', label: '초코 넣기', emoji: '🍫' },
+  { id: 'whip', label: '휘핑크림', emoji: '🍦' },
+  { id: 'strawberry', label: '딸기 넣기', emoji: '🍓' },
+  { id: 'mango', label: '망고 넣기', emoji: '🥭' },
+  { id: 'lemon', label: '레몬 넣기', emoji: '🍋' },
+  { id: 'grapefruit', label: '자몽 넣기', emoji: '🍊' },
+  { id: 'yuja', label: '유자청 넣기', emoji: '🍯' },
+  { id: 'tea', label: '녹차 티백', emoji: '🍃' },
+  { id: 'matcha', label: '말차 파우더', emoji: '🌿' },
   { id: 'blender', label: '블렌더 갈기', emoji: '🌀' },
   { id: 'pour_blender', label: '스무디 따르기', emoji: '🥤' },
   { id: 'serve', label: '손님께 드리기', emoji: '😊' }
@@ -136,14 +347,22 @@ const EASY_STEP_MAP = {
   tamper: { label: '가루 꾹 누르기', prompt: '누르개로 커피 가루를 꾹 다져요.' },
   machine: { label: '진한 커피 내리기', prompt: '버튼을 눌러 따뜻한 진한 커피를 내려요.' },
   shot: { label: '커피 붓기', prompt: '진한 커피를 컵에 천천히 부어요.' },
-  ice: { label: '얼음 넣기', prompt: '시원한 얼음을 컵에 넣어요.' },
-  strawberry: { label: '딸기 넣기', prompt: '달콤한 딸기를 넣어요.' },
-  lemon: { label: '레몬 넣기', prompt: '상큼한 레몬을 넣어요.' },
-  choco: { label: '초코 넣기', prompt: '달콤한 초코 가루를 넣어요.' },
-  tea: { label: '녹차 티백 넣기', prompt: '녹차 티백을 컵에 넣어요.' },
-  milk: { label: '우유 붓기', prompt: '하얀 우유를 컵에 부어요.' },
+  ice: { label: '얼음 넣기', prompt: '시원한 얼음을 넣어요.' },
   water: { label: '물 붓기', prompt: '깨끗한 물을 컵에 부어요.' },
-  blender: { label: '믹서기 돌리기', prompt: '믹서기를 눌러 과일을 부드럽게 갈아요.' },
+  sparkling: { label: '탄산수 붓기', prompt: '톡 쏘는 탄산수를 컵에 부어요.' },
+  milk: { label: '우유 붓기', prompt: '하얀 우유를 부어요.' },
+  vanilla: { label: '바닐라 시럽', prompt: '달콤한 바닐라 시럽을 넣어요.' },
+  caramel: { label: '카라멜 뿌리기', prompt: '달콤한 카라멜 소스를 뿌려요.' },
+  choco: { label: '초코 넣기', prompt: '달콤한 초코를 넣어요.' },
+  whip: { label: '생크림 올리기', prompt: '하얀 휘핑크림을 위에 올려요.' },
+  strawberry: { label: '딸기 넣기', prompt: '달콤한 딸기를 넣어요.' },
+  mango: { label: '망고 넣기', prompt: '노란 망고를 넣어요.' },
+  lemon: { label: '레몬 넣기', prompt: '상큼한 레몬을 넣어요.' },
+  grapefruit: { label: '자몽 넣기', prompt: '상큼한 자몽을 넣어요.' },
+  yuja: { label: '유자청 넣기', prompt: '달콤한 유자청을 컵에 넣어요.' },
+  tea: { label: '녹차 티백 넣기', prompt: '녹차 티백을 컵에 넣어요.' },
+  matcha: { label: '말차 가루 넣기', prompt: '초록빛 말차 가루를 넣어요.' },
+  blender: { label: '믹서기 돌리기', prompt: '믹서기를 눌러 재료를 부드럽게 갈아요.' },
   pour_blender: { label: '음료 따르기', prompt: '갈아진 음료를 컵에 부어요.' },
   serve: { label: '손님께 드리기', prompt: '다 만든 음료를 손님께 웃으며 드려요!' }
 };
@@ -172,13 +391,26 @@ function createInitialCraft() {
     shotExtracted: false,
     shotQuality: 'good', // 'good' | 'weak_untamped' | 'watery_nobeans'
     shotPoured: false,
+    shotCount: 0,
     iceInCup: false,
+    iceCount: 0,
     waterPoured: false,
+    waterTemp: null, // 'hot' | 'cold'
+    waterCount: 0,
+    sparklingPoured: false,
+    sparklingCount: 0,
     milkPoured: false,
+    milkTemp: null, // 'hot' | 'cold'
+    milkCount: 0,
+    whipAdded: false,
+    caramelAdded: false,
     ingredientsInCup: [],
     blenderItems: [],
     blended: false,
     smoothiePoured: false,
+    smoothieColor: 0xf2849e,
+    smoothieIngredients: [],
+    isHotDrink: false,
     spilled: false,
     mistakes: [],
     log: []
@@ -188,10 +420,12 @@ function createInitialCraft() {
 const state = {
   recipeKey: 'hot_americano',
   practiceMode: 'auto', // 'auto' | 'manual' | 'practicum'
+  practicumTarget: 'cup', // 'cup' | 'blender'
   stepIndex: 0,
   awaitingNextChoice: false,
   manualChoices: [],
   awaitingCupPick: false,
+  awaitingTempPick: null, // null | { actionId: 'water' | 'milk' }
   guidedMode: true,
   autoCamera: true,
   cameraViewMode: 'step', // 'step' | 'overview'
@@ -339,10 +573,31 @@ function playPourSound(duration = 0.68, pitchStart = 520, pitchEnd = 1050) {
   playSoftTone(440, duration * 0.45, 'sine', 0.02, duration * 0.45);
 }
 
+function playSparklingSound() {
+  playFilteredNoise(0.75, 1600, 3200, 1.5, 0.048);
+  [0.05, 0.14, 0.25, 0.36, 0.48].forEach((d, i) => {
+    playSoftTone(1400 + i * 220, 0.06, 'sine', 0.022, d);
+  });
+}
+
+function playWhipSound() {
+  playFilteredNoise(0.42, 1200, 2200, 2.8, 0.052);
+  playSoftTone(540, 0.14, 'sine', 0.03, 0.05);
+}
+
+function playSyrupSound() {
+  playSoftTone(380, 0.11, 'triangle', 0.045);
+  playSoftTone(560, 0.13, 'sine', 0.035, 0.08);
+}
+
 function playIngredientSound(kind) {
   if (kind === 'tea') {
     playSoftTone(520, 0.09, 'sine', 0.04);
     playSoftTone(660, 0.11, 'sine', 0.035, 0.09);
+  } else if (kind === 'vanilla' || kind === 'caramel') {
+    playSyrupSound();
+  } else if (kind === 'whip') {
+    playWhipSound();
   } else {
     playSoftTone(460, 0.08, 'sine', 0.045);
     playSoftTone(780, 0.11, 'sine', 0.04, 0.07);
@@ -479,7 +734,7 @@ function getOverviewPreset() {
   const mult = getAspectMultiplier();
   return {
     target: new THREE.Vector3(0, 1.04, 0.04),
-    pos: new THREE.Vector3(0, 1.04 + 0.78 * mult, 2.28 * mult)
+    pos: new THREE.Vector3(0, 1.04 + 0.86 * mult, 2.58 * mult)
   };
 }
 
@@ -492,16 +747,19 @@ function focusOverviewCamera(duration = 480) {
 
 function getStepCameraPreset(targetId) {
   const mult = getAspectMultiplier();
-  const isSmoothie = state.recipeKey === 'strawberry_smoothie';
+  const recipe = getCurrentRecipe();
+  const curStep = getCurrentStep();
+  const isBlenderStep = Boolean(curStep && curStep.toBlender) ||
+    (recipe && recipe.usesBlender && (targetId === 'milk' || targetId === 'strawberry' || targetId === 'mango' || targetId === 'choco' || targetId === 'matcha' || targetId === 'ice'));
   const bounds = targetBounds[targetId];
 
   // Blender-based steps frame both the ingredient/ice and blender or blender + prep tray
-  if (isSmoothie && (targetId === 'milk' || targetId === 'strawberry' || targetId === 'ice')) {
+  if (isBlenderStep) {
     const bBounds = targetBounds['blender'];
     if (bounds && bBounds) {
       const mid = bounds.center.clone().lerp(bBounds.center, 0.5);
       mid.y = Math.max(COUNTER_Y + 0.14, (bounds.center.y + bBounds.center.y) * 0.5);
-      const span = bounds.center.distanceTo(bBounds.center) + 0.25;
+      const span = bounds.center.distanceTo(bBounds.center) + 0.28;
       const dist = Math.max(0.88, span * 1.15) * mult;
       return {
         target: mid,
@@ -547,8 +805,8 @@ function focusPrepActionCamera(isBlender = false) {
   const mult = getAspectMultiplier();
   if (isBlender) {
     animateCameraTo(
-      new THREE.Vector3(0.62, COUNTER_Y + 0.22 + 0.28 * mult, -0.08 + 0.6 * mult),
-      new THREE.Vector3(0.62, COUNTER_Y + 0.22, -0.08),
+      new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.22 + 0.28 * mult, blenderJarBounds.z + 0.62 * mult),
+      new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.22, blenderJarBounds.z),
       360
     );
   } else {
@@ -615,11 +873,11 @@ wallTrim.position.set(0, 0.475, -1.63);
 wallTrim.receiveShadow = true;
 scene.add(wallTrim);
 
-// 벽면 카페 메뉴 보드 (CanvasTexture)
+// 벽면 카페 메뉴 보드 (CanvasTexture - 18종 전체 메뉴 자동 표시)
 function createMenuBoard() {
   const cv = document.createElement('canvas');
-  cv.width = 768;
-  cv.height = 384;
+  cv.width = 1152;
+  cv.height = 512;
   const ctx = cv.getContext('2d');
   ctx.fillStyle = '#29372d';
   ctx.fillRect(0, 0, cv.width, cv.height);
@@ -627,33 +885,28 @@ function createMenuBoard() {
   ctx.lineWidth = 14;
   ctx.strokeRect(12, 12, cv.width - 24, cv.height - 24);
   ctx.fillStyle = '#fef3c7';
-  ctx.font = 'bold 46px "Malgun Gothic", sans-serif';
+  ctx.font = 'bold 44px "Malgun Gothic", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('☕ 마음카페 MENU', cv.width / 2, 76);
+  ctx.fillText('☕ 마음카페 MENU (18종)', cv.width / 2, 70);
   ctx.strokeStyle = 'rgba(254, 243, 199, 0.35)';
   ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(90, 104); ctx.lineTo(cv.width - 90, 104); ctx.stroke();
-  ctx.font = 'bold 28px "Malgun Gothic", sans-serif';
+  ctx.beginPath(); ctx.moveTo(64, 94); ctx.lineTo(cv.width - 64, 94); ctx.stroke();
+  ctx.font = 'bold 25px "Malgun Gothic", sans-serif';
   ctx.textAlign = 'left';
-  const items = [
-    '☕ 따뜻한 아메리카노', '🧊 아이스 아메리카노',
-    '🥛 아이스 카페라떼', '🍓 딸기 스무디',
-    '🍋 아이스 레몬에이드', '🍫 따뜻한 핫초코',
-    '🍵 따뜻한 녹차', '🍓 딸기 라떼'
-  ];
+  const items = Object.values(RECIPES).map((r) => `${r.emoji} ${r.name}`);
   items.forEach((txt, idx) => {
-    const col = idx % 2;
-    const row = Math.floor(idx / 2);
-    ctx.fillStyle = idx % 2 === 0 ? '#fde68a' : '#e2f2e6';
-    ctx.fillText(txt, 74 + col * 340, 165 + row * 52);
+    const col = idx % 3;
+    const row = Math.floor(idx / 3);
+    ctx.fillStyle = col === 0 ? '#fde68a' : (col === 1 ? '#e2f2e6' : '#fed7aa');
+    ctx.fillText(txt, 56 + col * 365, 148 + row * 56);
   });
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   const board = new THREE.Mesh(
-    new THREE.BoxGeometry(1.55, 0.78, 0.045),
+    new THREE.BoxGeometry(2.15, 0.94, 0.045),
     new THREE.MeshStandardMaterial({ map: tex, roughness: 0.65 })
   );
-  board.position.set(0, 2.02, -1.61);
+  board.position.set(0, 2.04, -1.61);
   board.castShadow = true;
   scene.add(board);
 }
@@ -866,24 +1119,90 @@ let blenderModel = null;
 let grinderModel = null;
 let serveBellMesh = null;
 let machineLedMat = null;
-let blenderJarBounds = { baseY: COUNTER_Y + 0.13, height: 0.15, x: 0.70, z: -0.10 };
+let blenderJarBounds = { baseY: COUNTER_Y + 0.13, height: 0.15, x: 0.68, z: -0.12 };
 const SHOT_HOME_POS = new THREE.Vector3(-0.24, COUNTER_Y, 0.18);
-const MACHINE_SPOUT_POS = new THREE.Vector3(-0.66, COUNTER_Y + 0.03, 0.02);
+const MACHINE_SPOUT_POS = new THREE.Vector3(-0.98, COUNTER_Y + 0.03, 0.02);
 
-// 믹서기 내부 스무디/재료 시각화 메쉬
+// 샷잔 넘침 3D 시각화
+const shotOverflowMesh = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.085, 0.09, 0.004, 24),
+  new THREE.MeshStandardMaterial({ color: 0x3b2314, roughness: 0.2, transparent: true, opacity: 0.85 })
+);
+shotOverflowMesh.position.set(SHOT_HOME_POS.x, COUNTER_Y + 0.004, SHOT_HOME_POS.z);
+shotOverflowMesh.visible = false;
+scene.add(shotOverflowMesh);
+
+// 믹서기 내부 스무디/액체 & 고체 알갱이(얼음·과일·초코) 시각화
 const blenderMixMesh = new THREE.Mesh(
   new THREE.CylinderGeometry(0.048, 0.038, 0.14, 24),
-  new THREE.MeshStandardMaterial({ color: 0xfaf6ee, roughness: 0.3, transparent: true, opacity: 0.92 })
+  new THREE.MeshStandardMaterial({ color: 0xfaf6ee, roughness: 0.3, transparent: true, opacity: 0.9 })
 );
-blenderMixMesh.position.set(0.70, COUNTER_Y + 0.14, -0.10);
+blenderMixMesh.position.set(0.68, COUNTER_Y + 0.14, -0.12);
 blenderMixMesh.scale.y = 0.01;
 blenderMixMesh.visible = false;
 scene.add(blenderMixMesh);
 
-// 컵 내부 토핑/재료(레몬 슬라이스, 딸기, 초콜릿, 녹차 티백) 그룹
+const blenderChunksGroup = new THREE.Group();
+blenderChunksGroup.position.set(0.68, COUNTER_Y + 0.14, -0.12);
+blenderChunksGroup.visible = false;
+scene.add(blenderChunksGroup);
+
+// 컵 내부 토핑/재료 그룹
 const cupToppingGroup = new THREE.Group();
 cupToppingGroup.visible = false;
 drinkGroup.add(cupToppingGroup);
+
+// 휘핑크림 3D 스월 그룹
+const whipGroup = new THREE.Group();
+for (let i = 0; i < 4; i++) {
+  const r = 0.044 - i * 0.01;
+  const h = 0.022 - i * 0.002;
+  const layer = new THREE.Mesh(
+    new THREE.TorusGeometry(Math.max(r * 0.55, 0.008), Math.max(h * 0.55, 0.007), 10, 20),
+    new THREE.MeshStandardMaterial({ color: 0xfffdf8, roughness: 0.48 })
+  );
+  layer.rotation.x = Math.PI / 2;
+  layer.position.y = i * 0.014;
+  whipGroup.add(layer);
+}
+const whipTip = new THREE.Mesh(
+  new THREE.ConeGeometry(0.018, 0.028, 16),
+  new THREE.MeshStandardMaterial({ color: 0xfffdf8, roughness: 0.45 })
+);
+whipTip.position.y = 0.056;
+whipGroup.add(whipTip);
+whipGroup.visible = false;
+drinkGroup.add(whipGroup);
+
+// 카라멜 드리즐 3D 그룹
+const drizzleGroup = new THREE.Group();
+for (let i = 0; i < 3; i++) {
+  const bar = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.003, 0.003, 0.068, 8),
+    new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.25 })
+  );
+  bar.rotation.z = Math.PI / 2;
+  bar.rotation.y = i * 0.65 - 0.5;
+  bar.position.set(0, 0.003, (i - 1) * 0.014);
+  drizzleGroup.add(bar);
+}
+drizzleGroup.visible = false;
+drinkGroup.add(drizzleGroup);
+
+// 탄산수 톡톡 기포 그룹
+const fizzGroup = new THREE.Group();
+const fizzBubbles = [];
+for (let i = 0; i < 10; i++) {
+  const b = new THREE.Mesh(
+    new THREE.SphereGeometry(0.0045, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 })
+  );
+  b.position.set((Math.sin(i * 2.1)) * 0.028, 0.04 + (i % 4) * 0.025, (Math.cos(i * 1.7)) * 0.028);
+  fizzGroup.add(b);
+  fizzBubbles.push(b);
+}
+fizzGroup.visible = false;
+drinkGroup.add(fizzGroup);
 
 // 공중 낙하 연출용 임시 아이템 그룹
 const fallingItemGroup = new THREE.Group();
@@ -1000,53 +1319,53 @@ async function initCafeScene() {
       loadGLB('donut-chocolate.glb')
     ]);
 
-    placeModel(barLeft, COUNTER_Y - 0.03, -0.92, 0, 0);
+    placeModel(barLeft, COUNTER_Y - 0.03, -1.08, 0, 0);
     placeModel(barCenter, COUNTER_Y - 0.03, 0, 0, 0);
-    placeModel(barRight, COUNTER_Y - 0.03, 0.92, 0, 0);
-    placeModel(barEndL, COUNTER_Y - 0.03, -1.46, 0, 0);
-    placeModel(barEndR, COUNTER_Y - 0.03, 1.46, 0, 0, Math.PI);
+    placeModel(barRight, COUNTER_Y - 0.03, 1.08, 0, 0);
+    placeModel(barEndL, COUNTER_Y - 0.03, -1.68, 0, 0);
+    placeModel(barEndR, COUNTER_Y - 0.03, 1.68, 0, 0, Math.PI);
 
-    // 틈 없이 넓고 매끈한 우드·크림 카운터 상판 (x: -1.52..+1.52, z: -0.34..+0.44)
+    // 틈 없이 넓고 매끈한 우드·크림 카운터 상판 (x: -1.82..+1.82, z: -0.40..+0.48)
     const counterTop = new THREE.Mesh(
-      new THREE.BoxGeometry(3.04, 0.038, 0.78),
+      new THREE.BoxGeometry(3.64, 0.038, 0.88),
       new THREE.MeshStandardMaterial({ color: 0xf3eadc, roughness: 0.42, metalness: 0.04 })
     );
-    counterTop.position.set(0, COUNTER_Y - 0.019, 0.05);
+    counterTop.position.set(0, COUNTER_Y - 0.019, 0.04);
     counterTop.receiveShadow = true;
     counterTop.castShadow = true;
     scene.add(counterTop);
 
     const counterFrontTrim = new THREE.Mesh(
-      new THREE.BoxGeometry(3.06, 0.022, 0.03),
+      new THREE.BoxGeometry(3.66, 0.022, 0.03),
       new THREE.MeshStandardMaterial({ color: 0x8d6346, roughness: 0.5 })
     );
-    counterFrontTrim.position.set(0, COUNTER_Y - 0.026, 0.44);
+    counterFrontTrim.position.set(0, COUNTER_Y - 0.026, 0.48);
     scene.add(counterFrontTrim);
 
-    placeModel(cabinetLeft, COUNTER_Y, -0.82, 0, -1.12);
-    placeModel(cabinetRight, COUNTER_Y, 0.82, 0, -1.12);
-    placeModel(fridge, 1.48, -1.95, 0, -0.78, 0.22);
-    placeModel(plant, 1.05, 1.98, 0, -0.82);
+    placeModel(cabinetLeft, COUNTER_Y, -0.98, 0, -1.16);
+    placeModel(cabinetRight, COUNTER_Y, 0.98, 0, -1.16);
+    placeModel(fridge, 1.48, -2.18, 0, -0.78, 0.22);
+    placeModel(plant, 1.05, 2.18, 0, -0.82);
 
     // 손님 테이블 & 의자 (배경 분위기)
-    placeModel(table, 0.72, 2.25, 0, 0.95);
-    placeModel(chair1, 0.75, 1.72, 0, 0.95, Math.PI / 2);
-    placeModel(chair2, 0.75, 2.78, 0, 0.95, -Math.PI / 2);
+    placeModel(table, 0.72, 2.38, 0, 0.98);
+    placeModel(chair1, 0.75, 1.85, 0, 0.98, Math.PI / 2);
+    placeModel(chair2, 0.75, 2.91, 0, 0.98, -Math.PI / 2);
 
     // 진열용 빵 유리 돔 (카운터 오른쪽 끝)
     const pastryStand = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.16, 0.14, 0.02, 24),
+      new THREE.CylinderGeometry(0.15, 0.13, 0.02, 24),
       new THREE.MeshStandardMaterial({ color: 0x9c7252, roughness: 0.55 })
     );
-    pastryStand.position.set(1.34, COUNTER_Y + 0.01, 0.18);
+    pastryStand.position.set(1.66, COUNTER_Y + 0.01, 0.20);
     pastryStand.receiveShadow = true;
     scene.add(pastryStand);
-    placeModelFitted(croissant, { maxW: 0.14, maxH: 0.09, maxD: 0.16 }, 1.32, COUNTER_Y + 0.02, 0.12, 0.4);
-    placeModelFitted(donut, { maxW: 0.13, maxH: 0.08, maxD: 0.13 }, 1.36, COUNTER_Y + 0.02, 0.25, -0.3);
+    placeModelFitted(croissant, { maxW: 0.13, maxH: 0.09, maxD: 0.15 }, 1.64, COUNTER_Y + 0.02, 0.14, 0.4);
+    placeModelFitted(donut, { maxW: 0.12, maxH: 0.08, maxD: 0.12 }, 1.67, COUNTER_Y + 0.02, 0.27, -0.3);
 
     // 2) 상호작용 도구들 (바리스타 작업대 위 — 겹침 없이 깔끔하게 배치)
     const [
-      machine, blender, milk, strawberry, lemon, choco,
+      machine, blender, milk, strawberry, lemon, choco, sodaBottle,
       standCup, standGlass, standTea, cupMug, cupGlass, cupTea
     ] = await Promise.all([
       loadGLB('kitchenCoffeeMachine.glb'),
@@ -1055,6 +1374,7 @@ async function initCafeScene() {
       loadGLB('strawberry.glb'),
       loadGLB('lemon.glb'),
       loadGLB('chocolate.glb'),
+      loadGLB('soda-bottle.glb'),
       loadGLB('cup-coffee.glb'),
       loadGLB('glass.glb'),
       loadGLB('cup-tea.glb'),
@@ -1064,12 +1384,12 @@ async function initCafeScene() {
     ]);
 
     // 커피 머신 (뒷줄 좌측)
-    placeModelFitted(machine, { maxW: 0.36, maxH: 0.35, maxD: 0.36 }, -0.66, COUNTER_Y, -0.12);
+    placeModelFitted(machine, { maxW: 0.35, maxH: 0.35, maxD: 0.35 }, -0.98, COUNTER_Y, -0.14);
     machineLedMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.8 });
     const machineLed = new THREE.Mesh(new THREE.SphereGeometry(0.013, 12, 12), machineLedMat);
-    machineLed.position.set(-0.66, COUNTER_Y + 0.27, 0.05);
+    machineLed.position.set(-0.98, COUNTER_Y + 0.27, 0.02);
     scene.add(machineLed);
-    registerInteractive(machine, 'machine', '커피 머신 (샷 추출)', new THREE.Vector3(-0.66, COUNTER_Y + 0.012, -0.10));
+    registerInteractive(machine, 'machine', '커피 머신 (샷 추출)', new THREE.Vector3(-0.98, COUNTER_Y + 0.012, -0.12));
 
     // 원두 그라인더 (뒷줄 맨 왼쪽 - 메탈 베이스 + 투명 호퍼 + 원두 알갱이)
     grinderModel = new THREE.Group();
@@ -1116,9 +1436,9 @@ async function initCafeScene() {
     dial.rotation.x = Math.PI / 2;
     dial.position.set(0.045, 0.11, 0.095);
     grinderModel.add(gBase, grinderBody, hopper, hopperLid, chute, dial);
-    grinderModel.position.set(-1.18, COUNTER_Y, -0.10);
+    grinderModel.position.set(-1.46, COUNTER_Y, -0.14);
     scene.add(grinderModel);
-    registerInteractive(grinderModel, 'grinder', '원두 그라인더 (원두 갈기)', new THREE.Vector3(-1.18, COUNTER_Y + 0.012, -0.10));
+    registerInteractive(grinderModel, 'grinder', '원두 그라인더 (원두 갈기)', new THREE.Vector3(-1.46, COUNTER_Y + 0.012, -0.14));
 
     // 탬핑 매트 + 포터필터 + 탬퍼 (앞줄 좌측-중앙)
     const tamperStation = new THREE.Group();
@@ -1159,9 +1479,9 @@ async function initCafeScene() {
     tamperMesh.position.set(0.06, 0.026, 0);
 
     tamperStation.add(mat, pfBasket, pfHandle, portafilterCoffee, tamperMesh);
-    tamperStation.position.set(-0.78, COUNTER_Y, 0.22);
+    tamperStation.position.set(-0.98, COUNTER_Y, 0.24);
     scene.add(tamperStation);
-    registerInteractive(tamperStation, 'tamper', '탬퍼 (원두 다지기)', new THREE.Vector3(-0.78, COUNTER_Y + 0.012, 0.22));
+    registerInteractive(tamperStation, 'tamper', '탬퍼 (원두 다지기)', new THREE.Vector3(-0.98, COUNTER_Y + 0.012, 0.24));
 
     // 에스프레소 샷잔 (눈금 + 손잡이 있는 투명 유리 샷잔)
     shotGlassGroup = new THREE.Group();
@@ -1194,7 +1514,7 @@ async function initCafeScene() {
 
     // 믹서기 (얼음 분쇄 블렌더)
     blenderModel = blender;
-    placeModelFitted(blender, { maxW: 0.22, maxH: 0.38, maxD: 0.22 }, 0.70, COUNTER_Y, -0.10);
+    placeModelFitted(blender, { maxW: 0.22, maxH: 0.38, maxD: 0.22 }, 0.68, COUNTER_Y, -0.12);
     blender.updateMatrixWorld(true);
     const bBox = new THREE.Box3().setFromObject(blender);
     const bSize = new THREE.Vector3();
@@ -1202,124 +1522,316 @@ async function initCafeScene() {
     blenderJarBounds = {
       baseY: bBox.min.y + bSize.y * 0.36,
       height: bSize.y * 0.38,
-      x: 0.70,
-      z: -0.10
+      x: 0.68,
+      z: -0.12
     };
-    blenderMixMesh.position.set(0.70, blenderJarBounds.baseY, -0.10);
-    registerInteractive(blender, 'blender', '얼음 분쇄 블렌더 (믹서기)', new THREE.Vector3(0.70, COUNTER_Y + 0.012, -0.10));
+    blenderMixMesh.position.set(0.68, blenderJarBounds.baseY, -0.12);
+    blenderChunksGroup.position.set(0.68, blenderJarBounds.baseY + 0.02, -0.12);
+    registerInteractive(blender, 'blender', '얼음 분쇄 블렌더 (믹서기)', new THREE.Vector3(0.68, COUNTER_Y + 0.012, -0.12));
     targetAnchors['pour_blender'] = targetAnchors['blender'];
     targetBounds['pour_blender'] = targetBounds['blender'];
 
-    // 우유팩 (뒷줄 중앙 우측 - 가리는 물체 없이 선명하게)
-    placeModelFitted(milk, { maxW: 0.16, maxH: 0.27, maxD: 0.16 }, 0.26, COUNTER_Y, -0.16);
-    registerInteractive(milk, 'milk', '신선한 우유', new THREE.Vector3(0.26, COUNTER_Y + 0.012, -0.16));
+    // 우유팩 (뒷줄 중앙 우측)
+    placeModelFitted(milk, { maxW: 0.15, maxH: 0.26, maxD: 0.15 }, 0.30, COUNTER_Y, -0.18);
+    registerInteractive(milk, 'milk', '신선한 우유', new THREE.Vector3(0.30, COUNTER_Y + 0.012, -0.18));
 
-    // 투명 유리 물병 / 워터 피처 (맑은 파란 물이 보이는 유리 물병)
+    // 투명 유리 물병 / 워터 피처
     const waterPitcher = new THREE.Group();
     const pitcherGlass = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.056, 0.068, 0.23, 24),
+      new THREE.CylinderGeometry(0.052, 0.064, 0.22, 24),
       new THREE.MeshStandardMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.45, roughness: 0.08, depthWrite: false })
     );
-    pitcherGlass.position.y = 0.115;
+    pitcherGlass.position.y = 0.11;
     const pitcherWater = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.05, 0.06, 0.16, 22),
+      new THREE.CylinderGeometry(0.046, 0.056, 0.15, 22),
       new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.65, roughness: 0.15 })
     );
-    pitcherWater.position.y = 0.085;
+    pitcherWater.position.y = 0.08;
     const pitcherLid = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.059, 0.059, 0.022, 24),
+      new THREE.CylinderGeometry(0.055, 0.055, 0.02, 24),
       new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 })
     );
-    pitcherLid.position.y = 0.235;
+    pitcherLid.position.y = 0.225;
     const pitcherHandle = new THREE.Mesh(
-      new THREE.TorusGeometry(0.048, 0.009, 10, 18, Math.PI),
+      new THREE.TorusGeometry(0.044, 0.008, 10, 18, Math.PI),
       new THREE.MeshStandardMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.72 })
     );
     pitcherHandle.rotation.z = -Math.PI / 2;
-    pitcherHandle.position.set(0.062, 0.13, 0);
+    pitcherHandle.position.set(0.058, 0.125, 0);
     waterPitcher.add(pitcherWater, pitcherGlass, pitcherLid, pitcherHandle);
-    waterPitcher.position.set(-0.26, COUNTER_Y, -0.16);
+    waterPitcher.position.set(-0.50, COUNTER_Y, -0.18);
     scene.add(waterPitcher);
-    registerInteractive(waterPitcher, 'water', '깨끗한 물병', new THREE.Vector3(-0.26, COUNTER_Y + 0.012, -0.16));
+    registerInteractive(waterPitcher, 'water', '깨끗한 물병', new THREE.Vector3(-0.50, COUNTER_Y + 0.012, -0.18));
 
-    // 신선한 딸기 그릇 (세라믹 볼 + 탐스러운 딸기)
+    // 탄산수 병 (soda-bottle.glb + 시원한 하늘색 캡 받침)
+    const sparklingGroup = new THREE.Group();
+    const sparkCoaster = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.052, 0.052, 0.01, 20),
+      new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.4 })
+    );
+    sparkCoaster.position.y = 0.005;
+    sparklingGroup.add(sparkCoaster);
+    placeModelFitted(sodaBottle, { maxW: 0.095, maxH: 0.24, maxD: 0.095 }, 0, 0.01, 0);
+    scene.remove(sodaBottle);
+    sparklingGroup.add(sodaBottle);
+    sparklingGroup.position.set(-0.30, COUNTER_Y, -0.18);
+    scene.add(sparklingGroup);
+    registerInteractive(sparklingGroup, 'sparkling', '톡 쏘는 탄산수', new THREE.Vector3(-0.30, COUNTER_Y + 0.012, -0.18));
+
+    // 시럽 & 소스 받침대 (뒷줄 중앙)
+    const syrupRack = new THREE.Mesh(
+      new THREE.BoxGeometry(0.36, 0.018, 0.14),
+      new THREE.MeshStandardMaterial({ color: 0x8d6346, roughness: 0.5 })
+    );
+    syrupRack.position.set(-0.01, COUNTER_Y + 0.009, -0.24);
+    syrupRack.receiveShadow = true;
+    scene.add(syrupRack);
+
+    // 바닐라 시럽 펌프 병
+    const vanillaGroup = new THREE.Group();
+    const vanBottle = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.036, 0.038, 0.17, 20),
+      new THREE.MeshStandardMaterial({ color: 0xfde68a, roughness: 0.25, transparent: true, opacity: 0.9 })
+    );
+    vanBottle.position.y = 0.085;
+    const vanLabel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.038, 0.038, 0.07, 20),
+      new THREE.MeshStandardMaterial({ color: 0xfffbeb, roughness: 0.5 })
+    );
+    vanLabel.position.y = 0.085;
+    const vanNeck = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.013, 0.016, 0.04, 14),
+      new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.3 })
+    );
+    vanNeck.position.y = 0.19;
+    const vanPump = new THREE.Mesh(
+      new THREE.BoxGeometry(0.045, 0.012, 0.014),
+      new THREE.MeshStandardMaterial({ color: 0xf5f5f4, roughness: 0.3 })
+    );
+    vanPump.position.set(0.012, 0.212, 0);
+    vanillaGroup.add(vanBottle, vanLabel, vanNeck, vanPump);
+    vanillaGroup.position.set(-0.10, COUNTER_Y + 0.018, -0.24);
+    scene.add(vanillaGroup);
+    registerInteractive(vanillaGroup, 'vanilla', '바닐라 시럽', new THREE.Vector3(-0.10, COUNTER_Y + 0.024, -0.24));
+
+    // 카라멜 소스 스퀴즈 보틀
+    const caramelGroup = new THREE.Group();
+    const carBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.034, 0.036, 0.15, 20),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.24 })
+    );
+    carBody.position.y = 0.075;
+    const carLabel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.036, 0.036, 0.055, 20),
+      new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.5 })
+    );
+    carLabel.position.y = 0.078;
+    const carNozzle = new THREE.Mesh(
+      new THREE.ConeGeometry(0.022, 0.052, 16),
+      new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.35 })
+    );
+    carNozzle.position.y = 0.175;
+    caramelGroup.add(carBody, carLabel, carNozzle);
+    caramelGroup.position.set(0.08, COUNTER_Y + 0.018, -0.24);
+    scene.add(caramelGroup);
+    registerInteractive(caramelGroup, 'caramel', '카라멜 소스', new THREE.Vector3(0.08, COUNTER_Y + 0.024, -0.24));
+
+    // 신선한 딸기 그릇
     const berryGroup = new THREE.Group();
     const berryBowl = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.105, 0.072, 0.055, 24),
+      new THREE.CylinderGeometry(0.098, 0.068, 0.052, 24),
       new THREE.MeshStandardMaterial({ color: 0xfffaf0, roughness: 0.3 })
     );
-    berryBowl.position.y = 0.0275;
+    berryBowl.position.y = 0.026;
     berryBowl.castShadow = true;
     berryGroup.add(berryBowl);
-    placeModelFitted(strawberry, { maxW: 0.13, maxH: 0.14, maxD: 0.13 }, 0, 0.04, 0);
+    placeModelFitted(strawberry, { maxW: 0.125, maxH: 0.135, maxD: 0.125 }, 0, 0.038, 0);
     scene.remove(strawberry);
     berryGroup.add(strawberry);
-    berryGroup.position.set(1.08, COUNTER_Y, -0.12);
+    berryGroup.position.set(1.06, COUNTER_Y, -0.16);
     scene.add(berryGroup);
-    registerInteractive(berryGroup, 'strawberry', '신선한 딸기', new THREE.Vector3(1.08, COUNTER_Y + 0.012, -0.12));
+    registerInteractive(berryGroup, 'strawberry', '신선한 딸기', new THREE.Vector3(1.06, COUNTER_Y + 0.012, -0.16));
+
+    // 달콤한 망고 그릇
+    const mangoGroup = new THREE.Group();
+    const mangoBowl = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.092, 0.065, 0.05, 24),
+      new THREE.MeshStandardMaterial({ color: 0xfff7ed, roughness: 0.3 })
+    );
+    mangoBowl.position.y = 0.025;
+    mangoBowl.castShadow = true;
+    mangoGroup.add(mangoBowl);
+    for (let m = 0; m < 6; m++) {
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(0.034, 0.028, 0.034),
+        new THREE.MeshStandardMaterial({ color: m % 2 === 0 ? 0xfbbf24 : 0xf59e0b, roughness: 0.32 })
+      );
+      const ang = (m / 6) * Math.PI * 2;
+      cube.position.set(Math.cos(ang) * 0.032, 0.055 + (m % 2) * 0.015, Math.sin(ang) * 0.032);
+      cube.rotation.set(m * 0.4, m * 0.7, 0.25);
+      mangoGroup.add(cube);
+    }
+    mangoGroup.position.set(1.36, COUNTER_Y, -0.16);
+    scene.add(mangoGroup);
+    registerInteractive(mangoGroup, 'mango', '달콤한 망고', new THREE.Vector3(1.36, COUNTER_Y + 0.012, -0.16));
+
+    // 황금 유자청 유리병
+    const yujaGroup = new THREE.Group();
+    const yujaJar = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.055, 0.055, 0.13, 22),
+      new THREE.MeshStandardMaterial({ color: 0xfef9c3, transparent: true, opacity: 0.48, roughness: 0.12, depthWrite: false })
+    );
+    yujaJar.position.y = 0.065;
+    const yujaJam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.048, 0.048, 0.095, 20),
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.22 })
+    );
+    yujaJam.position.y = 0.052;
+    const yujaLid = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.057, 0.057, 0.022, 22),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.35 })
+    );
+    yujaLid.position.y = 0.138;
+    yujaGroup.add(yujaJam, yujaJar, yujaLid);
+    yujaGroup.position.set(1.62, COUNTER_Y, -0.16);
+    scene.add(yujaGroup);
+    registerInteractive(yujaGroup, 'yuja', '달콤한 유자청', new THREE.Vector3(1.62, COUNTER_Y + 0.012, -0.16));
 
     // 상큼한 레몬 접시
     const lemonGroup = new THREE.Group();
     const lemonPlate = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.1, 0.085, 0.018, 24),
+      new THREE.CylinderGeometry(0.092, 0.078, 0.016, 24),
       new THREE.MeshStandardMaterial({ color: 0xc2956b, roughness: 0.55 })
     );
-    lemonPlate.position.y = 0.009;
+    lemonPlate.position.y = 0.008;
     lemonGroup.add(lemonPlate);
-    placeModelFitted(lemon, { maxW: 0.14, maxH: 0.15, maxD: 0.14 }, 0, 0.018, 0);
+    placeModelFitted(lemon, { maxW: 0.13, maxH: 0.14, maxD: 0.13 }, 0, 0.016, 0);
     scene.remove(lemon);
     lemonGroup.add(lemon);
-    lemonGroup.position.set(1.04, COUNTER_Y, 0.22);
+    lemonGroup.position.set(1.14, COUNTER_Y, 0.24);
     scene.add(lemonGroup);
-    registerInteractive(lemonGroup, 'lemon', '상큼한 레몬', new THREE.Vector3(1.04, COUNTER_Y + 0.012, 0.22));
+    registerInteractive(lemonGroup, 'lemon', '상큼한 레몬', new THREE.Vector3(1.14, COUNTER_Y + 0.012, 0.24));
 
-    // 달콤한 초콜릿 (비율 보정 + 세라믹 접시 위에 비스듬히 세워 선명하게 표시)
+    // 루비 자몽 접시
+    const grapefruitGroup = new THREE.Group();
+    const gfPlate = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.092, 0.078, 0.016, 24),
+      new THREE.MeshStandardMaterial({ color: 0xfff1f2, roughness: 0.38 })
+    );
+    gfPlate.position.y = 0.008;
+    grapefruitGroup.add(gfPlate);
+    for (let g = 0; g < 3; g++) {
+      const slice = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.044, 0.044, 0.014, 20),
+        new THREE.MeshStandardMaterial({ color: 0xfb7185, roughness: 0.3 })
+      );
+      const rind = new THREE.Mesh(
+        new THREE.TorusGeometry(0.044, 0.005, 8, 20),
+        new THREE.MeshStandardMaterial({ color: 0xfdba74, roughness: 0.45 })
+      );
+      rind.rotation.x = Math.PI / 2;
+      const sliceUnit = new THREE.Group();
+      sliceUnit.add(slice, rind);
+      sliceUnit.position.set((g - 1) * 0.026, 0.025 + g * 0.008, (g % 2 === 0 ? 0.012 : -0.012));
+      sliceUnit.rotation.set(0.25 * g, 0.3, 0.2);
+      grapefruitGroup.add(sliceUnit);
+    }
+    grapefruitGroup.position.set(1.40, COUNTER_Y, 0.24);
+    scene.add(grapefruitGroup);
+    registerInteractive(grapefruitGroup, 'grapefruit', '상큼한 자몽', new THREE.Vector3(1.40, COUNTER_Y + 0.012, 0.24));
+
+    // 달콤한 초콜릿
     const chocoGroup = new THREE.Group();
     const chocoPlate = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.11, 0.095, 0.016, 24),
+      new THREE.CylinderGeometry(0.096, 0.082, 0.016, 24),
       new THREE.MeshStandardMaterial({ color: 0xfff8f0, roughness: 0.35 })
     );
     chocoPlate.position.y = 0.008;
     chocoGroup.add(chocoPlate);
-    placeModelFitted(choco, { maxW: 0.17, maxH: 0.08, maxD: 0.12 }, 0, 0.025, 0);
+    placeModelFitted(choco, { maxW: 0.155, maxH: 0.075, maxD: 0.11 }, 0, 0.022, 0);
     scene.remove(choco);
     choco.rotation.x = 0.42;
-    choco.position.y += 0.02;
+    choco.position.y += 0.018;
     chocoGroup.add(choco);
-    chocoGroup.position.set(0.72, COUNTER_Y, 0.22);
+    chocoGroup.position.set(0.66, COUNTER_Y, 0.24);
     scene.add(chocoGroup);
-    registerInteractive(chocoGroup, 'choco', '달콤한 초콜릿', new THREE.Vector3(0.72, COUNTER_Y + 0.012, 0.22));
+    registerInteractive(chocoGroup, 'choco', '달콤한 초콜릿', new THREE.Vector3(0.66, COUNTER_Y + 0.012, 0.24));
 
-    // 녹차 티백 상자 (뚜껑·라벨·나뭇잎 장식 포함)
+    // 휘핑크림 디스펜서
+    const whipDispenser = new THREE.Group();
+    const whipCan = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.042, 0.15, 22),
+      new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.55, roughness: 0.22 })
+    );
+    whipCan.position.y = 0.075;
+    const whipBand = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.041, 0.041, 0.036, 22),
+      new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 })
+    );
+    whipBand.position.y = 0.085;
+    const whipNozzle = new THREE.Mesh(
+      new THREE.ConeGeometry(0.022, 0.055, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+    );
+    whipNozzle.position.y = 0.175;
+    whipDispenser.add(whipCan, whipBand, whipNozzle);
+    whipDispenser.position.set(0.90, COUNTER_Y, 0.22);
+    scene.add(whipDispenser);
+    registerInteractive(whipDispenser, 'whip', '부드러운 휘핑크림', new THREE.Vector3(0.90, COUNTER_Y + 0.012, 0.22));
+
+    // 녹차 티백 상자
     const teaBox = new THREE.Group();
     const teaBody = new THREE.Mesh(
-      new THREE.BoxGeometry(0.15, 0.11, 0.12),
+      new THREE.BoxGeometry(0.135, 0.105, 0.11),
       new THREE.MeshStandardMaterial({ color: 0x4d8b55, roughness: 0.48 })
     );
-    teaBody.position.y = 0.055;
+    teaBody.position.y = 0.0525;
     teaBody.castShadow = true;
     const teaLid = new THREE.Mesh(
-      new THREE.BoxGeometry(0.158, 0.022, 0.128),
+      new THREE.BoxGeometry(0.142, 0.02, 0.118),
       new THREE.MeshStandardMaterial({ color: 0x2e6036, roughness: 0.4 })
     );
-    teaLid.position.y = 0.115;
+    teaLid.position.y = 0.11;
     const teaLabel = new THREE.Mesh(
-      new THREE.BoxGeometry(0.09, 0.055, 0.006),
+      new THREE.BoxGeometry(0.08, 0.05, 0.006),
       new THREE.MeshStandardMaterial({ color: 0xfefce8, roughness: 0.6 })
     );
-    teaLabel.position.set(0, 0.06, 0.061);
+    teaLabel.position.set(0, 0.058, 0.056);
     const teaLeaf = new THREE.Mesh(
-      new THREE.SphereGeometry(0.016, 10, 10),
+      new THREE.SphereGeometry(0.014, 10, 10),
       new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.4 })
     );
     teaLeaf.scale.set(1.3, 0.7, 0.4);
-    teaLeaf.position.set(0, 0.06, 0.066);
+    teaLeaf.position.set(0, 0.058, 0.061);
     teaBox.add(teaBody, teaLid, teaLabel, teaLeaf);
-    teaBox.position.set(-0.50, COUNTER_Y, 0.22);
+    teaBox.position.set(-0.66, COUNTER_Y, 0.24);
     scene.add(teaBox);
-    registerInteractive(teaBox, 'tea', '녹차 티백 상자', new THREE.Vector3(-0.50, COUNTER_Y + 0.012, 0.22));
+    registerInteractive(teaBox, 'tea', '녹차 티백 상자', new THREE.Vector3(-0.66, COUNTER_Y + 0.012, 0.24));
 
-    // 대기 중인 컵들 (머그컵 + 유리컵 + 찻잔 3종을 나무 쟁반에 깔끔히 배치)
+    // 말차 파우더 틴 + 스푼
+    const matchaGroup = new THREE.Group();
+    const matchaTin = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.048, 0.048, 0.085, 22),
+      new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.35 })
+    );
+    matchaTin.position.y = 0.0425;
+    const matchaPowder = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.042, 0.042, 0.012, 20),
+      new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.85 })
+    );
+    matchaPowder.position.y = 0.084;
+    const matchaScoop = new THREE.Mesh(
+      new THREE.BoxGeometry(0.014, 0.008, 0.085),
+      new THREE.MeshStandardMaterial({ color: 0xd6b07c, roughness: 0.6 })
+    );
+    matchaScoop.position.set(0.018, 0.095, 0.015);
+    matchaScoop.rotation.y = 0.4;
+    matchaGroup.add(matchaTin, matchaPowder, matchaScoop);
+    matchaGroup.position.set(-0.44, COUNTER_Y, 0.24);
+    scene.add(matchaGroup);
+    registerInteractive(matchaGroup, 'matcha', '진한 말차 파우더', new THREE.Vector3(-0.44, COUNTER_Y + 0.012, 0.24));
+
+    // 대기 중인 컵들 (머그컵 + 유리컵 + 찻잔 3종)
     const cupRackGroup = new THREE.Group();
     const cupRackBase = new THREE.Mesh(
       new THREE.BoxGeometry(0.36, 0.016, 0.16),
@@ -1336,38 +1848,38 @@ async function initCafeScene() {
     scene.remove(standGlass);
     scene.remove(standTea);
     cupRackGroup.add(standCup, standGlass, standTea);
-    cupRackGroup.position.set(-1.12, COUNTER_Y, 0.22);
+    cupRackGroup.position.set(-1.42, COUNTER_Y, 0.24);
     scene.add(cupRackGroup);
-    registerInteractive(cupRackGroup, 'cup', '컵 올리기', new THREE.Vector3(-1.12, COUNTER_Y + 0.012, 0.22));
+    registerInteractive(cupRackGroup, 'cup', '컵 올리기', new THREE.Vector3(-1.42, COUNTER_Y + 0.012, 0.24));
 
-    // 얼음 통 (실버 림 + 투명 얼음 큐브가 보이는 하늘색 아이스 버킷 + 스쿱)
+    // 얼음 통 (실버 림 + 투명 얼음 큐브가 보이는 하늘색 아이스 버킷)
     const iceBox = new THREE.Group();
     const boxMesh = new THREE.Mesh(
-      new THREE.BoxGeometry(0.21, 0.14, 0.17),
+      new THREE.BoxGeometry(0.20, 0.14, 0.16),
       new THREE.MeshStandardMaterial({ color: 0x67bfe3, roughness: 0.32 })
     );
     boxMesh.position.y = 0.07;
     boxMesh.castShadow = true;
     const iceRim = new THREE.Mesh(
-      new THREE.BoxGeometry(0.22, 0.016, 0.18),
+      new THREE.BoxGeometry(0.21, 0.016, 0.17),
       new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.7, roughness: 0.25 })
     );
     iceRim.position.y = 0.14;
     iceBox.add(boxMesh, iceRim);
     for (let k = 0; k < 6; k++) {
       const cube = new THREE.Mesh(
-        new THREE.BoxGeometry(0.036, 0.036, 0.036),
+        new THREE.BoxGeometry(0.034, 0.034, 0.034),
         new THREE.MeshStandardMaterial({ color: 0xe0f7ff, transparent: true, opacity: 0.85, roughness: 0.1 })
       );
-      cube.position.set(-0.05 + (k % 3) * 0.05, 0.155, (k < 3 ? -0.025 : 0.03));
+      cube.position.set(-0.048 + (k % 3) * 0.048, 0.155, (k < 3 ? -0.024 : 0.028));
       cube.rotation.set(k * 0.4, k * 0.7, 0.2);
       iceBox.add(cube);
     }
-    iceBox.position.set(0.38, COUNTER_Y, 0.20);
+    iceBox.position.set(0.36, COUNTER_Y, 0.22);
     scene.add(iceBox);
-    registerInteractive(iceBox, 'ice', '얼음 통', new THREE.Vector3(0.38, COUNTER_Y + 0.012, 0.20));
+    registerInteractive(iceBox, 'ice', '얼음 통', new THREE.Vector3(0.36, COUNTER_Y + 0.012, 0.22));
 
-    // 손님께 드리기 벨 (우드 코스터 + 반짝이는 서빙 벨)
+    // 손님께 드리기 벨
     const serveGroup = new THREE.Group();
     const bellBase = new THREE.Mesh(
       new THREE.CylinderGeometry(0.078, 0.084, 0.018, 28),
@@ -1385,10 +1897,10 @@ async function initCafeScene() {
     );
     bellBtn.position.y = 0.078;
     serveGroup.add(bellBase, bellDome, bellBtn);
-    serveGroup.position.set(0, COUNTER_Y, 0.36);
+    serveGroup.position.set(0, COUNTER_Y, 0.38);
     scene.add(serveGroup);
     serveBellMesh = serveGroup;
-    registerInteractive(serveGroup, 'serve', '손님께 드리기', new THREE.Vector3(0, COUNTER_Y + 0.012, 0.36));
+    registerInteractive(serveGroup, 'serve', '손님께 드리기', new THREE.Vector3(0, COUNTER_Y + 0.012, 0.38));
 
     // 쟁반 위 동적 컵 모델 준비 (glass만 반투명, mug/tea는 불투명 도자기!)
     prepDynamicCup(cupMug, { maxW: 0.18, maxH: 0.16, maxD: 0.20 }, false);
@@ -1448,11 +1960,11 @@ function getCurrentStep() {
   return recipe.steps[state.stepIndex] || null;
 }
 
-function handleAction(actionId) {
+function handleAction(actionId, sourceOpts = {}) {
   if (state.busy || state.paused) return;
 
   if (state.practiceMode === 'practicum') {
-    handlePracticumAction(actionId);
+    handlePracticumAction(actionId, { from3D: Boolean(sourceOpts.from3D) });
     return;
   }
 
@@ -1470,7 +1982,7 @@ function handleAction(actionId) {
       state.manualChoices = [];
       playSoftTone(784, 0.12, 'sine', 0.05);
       showGuidance(`좋아요! "${currentStep.label}"을(를) 직접 골랐어요!`, currentStep.emoji, false);
-      executeStep(actionId);
+      executeStep(actionId, { step: currentStep });
     } else {
       playGentleHintSound();
       const reason = getManualMismatchReason(actionId, currentStep);
@@ -1488,7 +2000,7 @@ function handleAction(actionId) {
     return;
   }
 
-  executeStep(actionId);
+  executeStep(actionId, { step: currentStep });
 }
 
 function getManualMismatchReason(pickedId, expectedStep) {
@@ -1497,14 +2009,17 @@ function getManualMismatchReason(pickedId, expectedStep) {
   if (expectedStep.target === 'tamper' && pickedId === 'machine') {
     return `"${pickedLabel}" 전에 먼저 방금 간 원두를 탬퍼로 다져야 샷이 맛있게 추출돼요!`;
   }
-  if ((pickedId === 'water' || pickedId === 'milk' || pickedId === 'shot' || pickedId === 'ice') && expectedStep.target === 'cup') {
+  if (['water', 'sparkling', 'milk', 'shot', 'ice', 'whip', 'caramel'].includes(pickedId) && expectedStep.target === 'cup') {
     return `아직 컵이 쟁반에 없어서 "${pickedLabel}"를 하면 바닥에 쏟아져요! 먼저 컵을 놓아볼까요?`;
   }
   if (pickedId === 'serve') {
     return `아직 음료가 다 만들어지지 않아 손님께 드릴 수 없어요! 다음 순서를 골라봐요.`;
   }
   if (pickedId === 'pour_blender' && expectedStep.target === 'blender') {
-    return `아직 재료를 갈지 않았어요! 먼저 블렌더로 갈아야 스무디가 돼요.`;
+    return `아직 재료를 갈지 않았어요! 먼저 블렌더로 갈아야 스무디/프라페가 돼요.`;
+  }
+  if (pickedId === 'whip' && expectedStep.target !== 'whip') {
+    return `휘핑크림은 음료를 모두 채운 뒤 맨 마지막에 올려야 예쁘게 올라가요!`;
   }
   return `"${pickedLabel}"는 지금 순서가 아니에요. 방금 전 단계 다음에 무엇이 필요할지 다시 골라봐요!`;
 }
@@ -1516,7 +2031,6 @@ function buildManualChoices(recipe, nextIdx) {
   const distractorIds = [...new Set(recipe.steps.map((s) => s.target))].filter((id) => id !== nextStep.target);
   const extraPool = TOOL_BUTTONS.map((b) => b.id).filter((id) => id !== nextStep.target && !distractorIds.includes(id));
   const pool = [...distractorIds, ...extraPool];
-  // 셔플 후 2~3개 오답 후보 추출
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -1531,6 +2045,244 @@ function buildManualChoices(recipe, nextIdx) {
     const dispLabel = (state.easyMode && EASY_STEP_MAP[id]) ? EASY_STEP_MAP[id].label : tb.label;
     return { id, label: dispLabel, emoji: tb.emoji };
   });
+}
+
+const INGREDIENT_META = {
+  ice: { name: '얼음', color: 0xdff6ff },
+  milk: { name: '우유', color: 0xfaf6ee },
+  water: { name: '물', color: 0xbfdbfe },
+  sparkling: { name: '탄산수', color: 0xbae6fd },
+  shot: { name: '에스프레소 샷', color: 0x3b2314 },
+  vanilla: { name: '바닐라 시럽', color: 0xfde68a },
+  caramel: { name: '카라멜 소스', color: 0xd97706 },
+  choco: { name: '초코', color: 0x4e2a14 },
+  whip: { name: '휘핑크림', color: 0xfffdf8 },
+  strawberry: { name: '딸기', color: 0xe11d48 },
+  mango: { name: '망고', color: 0xf59e0b },
+  lemon: { name: '레몬', color: 0xfacc15 },
+  grapefruit: { name: '자몽', color: 0xfb7185 },
+  yuja: { name: '유자청', color: 0xfacc15 },
+  tea: { name: '녹차 티백', color: 0x4d8b55 },
+  matcha: { name: '말차 파우더', color: 0x4ade80 }
+};
+
+function computeBlenderVisuals(items, blended = false) {
+  const hasMilk = items.includes('milk');
+  const hasWater = items.includes('water') || items.includes('sparkling');
+  const hasShot = items.includes('shot');
+  const hasIce = items.includes('ice');
+  const hasLiquid = hasMilk || hasWater || hasShot;
+
+  let colorHex = 0xfaf6ee;
+  let foamHex = 0xffffff;
+  if (items.includes('choco')) {
+    colorHex = hasMilk ? 0x6b3f24 : 0x4a2511;
+    foamHex = 0x8d5524;
+  } else if (items.includes('matcha')) {
+    colorHex = hasMilk ? 0x65a30d : 0x3f6212;
+    foamHex = 0xd9f99d;
+  } else if (items.includes('strawberry')) {
+    colorHex = hasMilk ? (blended ? 0xf2849e : 0xf7b2c4) : 0xe11d48;
+    foamHex = 0xfbcfe8;
+  } else if (items.includes('mango')) {
+    colorHex = hasMilk ? 0xfbbf24 : 0xf59e0b;
+    foamHex = 0xfef08a;
+  } else if (items.includes('grapefruit')) {
+    colorHex = hasMilk ? 0xfda4af : 0xfb7185;
+    foamHex = 0xffe4e6;
+  } else if (items.includes('yuja') || items.includes('lemon')) {
+    colorHex = hasMilk ? 0xfef08a : 0xfacc15;
+    foamHex = 0xfef9c3;
+  } else if (hasShot) {
+    colorHex = hasMilk ? 0xa67b5b : 0x3b2314;
+    foamHex = 0xe7d3bd;
+  } else if (hasMilk) {
+    colorHex = 0xfaf6ee;
+    foamHex = 0xffffff;
+  } else if (hasWater) {
+    colorHex = 0xd9ecff;
+    foamHex = 0xe0f2fe;
+  } else if (hasIce) {
+    colorHex = 0xdbeafe;
+    foamHex = 0xf0f9ff;
+  }
+
+  const levelScale = Math.min(0.24 + items.length * 0.2, 0.92);
+  return { colorHex, foamHex, levelScale, hasLiquid, hasIce };
+}
+
+function syncBlenderChunks3D(items, blended) {
+  while (blenderChunksGroup.children.length > 0) {
+    blenderChunksGroup.remove(blenderChunksGroup.children[0]);
+  }
+  if (blended || items.length === 0) {
+    blenderChunksGroup.visible = false;
+    return;
+  }
+  const solidItems = items.filter((id) => !['milk', 'water', 'sparkling', 'shot', 'vanilla'].includes(id));
+  if (solidItems.length === 0) {
+    blenderChunksGroup.visible = false;
+    return;
+  }
+  solidItems.forEach((id, idx) => {
+    const copies = id === 'ice' ? 3 : 2;
+    for (let c = 0; c < copies; c++) {
+      let geo;
+      if (id === 'strawberry') geo = new THREE.SphereGeometry(0.014, 10, 10);
+      else if (id === 'matcha') geo = new THREE.CylinderGeometry(0.018, 0.022, 0.008, 12);
+      else geo = new THREE.BoxGeometry(0.02, 0.02, 0.02);
+      const col = (INGREDIENT_META[id] && INGREDIENT_META[id].color) || 0xffffff;
+      const mat = new THREE.MeshStandardMaterial({
+        color: col,
+        roughness: id === 'ice' ? 0.12 : 0.4,
+        transparent: id === 'ice',
+        opacity: id === 'ice' ? 0.85 : 1
+      });
+      const m = new THREE.Mesh(geo, mat);
+      const ang = (idx * 2.1 + c * 1.9);
+      m.position.set(
+        Math.cos(ang) * 0.018,
+        Math.min(0.015 + (idx * 0.02 + c * 0.012), 0.10),
+        Math.sin(ang) * 0.018
+      );
+      m.rotation.set(ang * 0.5, ang, 0.3);
+      blenderChunksGroup.add(m);
+    }
+  });
+  blenderChunksGroup.visible = true;
+}
+
+function computeCupVisuals(craft, recipe) {
+  const ing = craft.ingredientsInCup || [];
+  const hasChoco = ing.includes('choco');
+  const hasMatcha = ing.includes('matcha');
+  const hasStrawberry = ing.includes('strawberry');
+  const hasMango = ing.includes('mango');
+  const hasLemon = ing.includes('lemon');
+  const hasGrapefruit = ing.includes('grapefruit');
+  const hasYuja = ing.includes('yuja');
+  const hasTea = ing.includes('tea');
+  const hasVanilla = ing.includes('vanilla');
+
+  const hasMilk = craft.milkPoured;
+  const hasWater = craft.waterPoured;
+  const hasSparkling = craft.sparklingPoured;
+  const hasShot = craft.shotPoured;
+  const hasSmoothie = craft.smoothiePoured;
+
+  let rawLevel = 0;
+  if (hasSmoothie) rawLevel += 0.88;
+  rawLevel += (craft.waterCount || (hasWater ? 1 : 0)) * (recipe && recipe.steps.some((s) => s.target === 'shot') ? 0.58 : 0.82);
+  rawLevel += (craft.sparklingCount || (hasSparkling ? 1 : 0)) * 0.78;
+  rawLevel += (craft.milkCount || (hasMilk ? 1 : 0)) * (hasShot ? 0.58 : 0.76);
+  rawLevel += (craft.shotCount || (hasShot ? 1 : 0)) * 0.28;
+  rawLevel += Math.min(ing.length * 0.08, 0.26);
+
+  const overflow = rawLevel > 1.32;
+  const level = Math.min(Math.max(rawLevel, 0), 0.94);
+
+  let colorHex = 0x3b2314;
+  let foamHex = 0xfef3e2;
+  let showFoam = false;
+
+  if (hasSmoothie && !hasShot && !hasWater && !hasMilk) {
+    colorHex = craft.smoothieColor || 0xf2849e;
+    foamHex = 0xfbcfe8;
+    showFoam = true;
+  } else if (hasChoco && hasShot && hasMilk) {
+    colorHex = 0x5b3420;
+    foamHex = 0x9a6b4c;
+    showFoam = true;
+  } else if (hasChoco && hasMilk) {
+    colorHex = 0x6f3e22;
+    foamHex = 0x8d5524;
+    showFoam = true;
+  } else if (hasChoco && hasShot) {
+    colorHex = 0x3f2010;
+    foamHex = 0x8d5524;
+    showFoam = true;
+  } else if (hasChoco) {
+    colorHex = 0x4e2a14;
+  } else if (hasMatcha && hasMilk) {
+    colorHex = 0x65a30d;
+    foamHex = 0xd9f99d;
+    showFoam = true;
+  } else if (hasMatcha) {
+    colorHex = 0x3f6212;
+  } else if (hasStrawberry && hasMilk) {
+    colorHex = 0xf4b6c2;
+    foamHex = 0xfce7f3;
+    showFoam = true;
+  } else if (hasStrawberry) {
+    colorHex = 0xd94862;
+  } else if (hasMango && hasMilk) {
+    colorHex = 0xfcd34d;
+    foamHex = 0xfef9c3;
+    showFoam = true;
+  } else if (hasMango) {
+    colorHex = 0xf59e0b;
+  } else if (hasShot && hasMilk) {
+    colorHex = hasVanilla ? 0xc8a47e : 0xb5885c;
+    foamHex = 0xf5e6d3;
+    showFoam = true;
+  } else if (hasShot && hasWater) {
+    colorHex = craft.shotQuality === 'good' ? 0x3b2314 : 0x8f6f52;
+    foamHex = 0xc68b59;
+    showFoam = true;
+  } else if (hasShot) {
+    colorHex = craft.shotQuality === 'good' ? 0x2b180e : 0x9c7a5b;
+    foamHex = 0xc68b59;
+    showFoam = true;
+  } else if (hasGrapefruit && (hasSparkling || hasWater)) {
+    colorHex = 0xfb7185;
+  } else if (hasGrapefruit) {
+    colorHex = 0xf43f5e;
+  } else if (hasYuja && (hasWater || hasSparkling)) {
+    colorHex = 0xf4c430;
+  } else if (hasYuja) {
+    colorHex = 0xeab308;
+  } else if (hasLemon && (hasSparkling || hasWater)) {
+    colorHex = 0xf7e98e;
+  } else if (hasLemon) {
+    colorHex = 0xf4d03f;
+  } else if (hasTea && (hasWater || hasMilk)) {
+    colorHex = hasMilk ? 0xa3c987 : 0x84b868;
+  } else if (hasTea) {
+    colorHex = 0x7fb069;
+  } else if (hasSmoothie) {
+    colorHex = craft.smoothieColor || 0xf2849e;
+    foamHex = 0xfbcfe8;
+    showFoam = true;
+  } else if (hasMilk) {
+    colorHex = 0xfaf6ee;
+    foamHex = 0xffffff;
+    showFoam = true;
+  } else if (hasWater || hasSparkling) {
+    colorHex = 0xd9ecff;
+  } else if (hasVanilla) {
+    colorHex = 0xfde68a;
+  }
+
+  return {
+    colorHex,
+    foamHex,
+    showFoam,
+    level,
+    overflow,
+    isHot: Boolean(craft.isHotDrink && !craft.iceInCup && level > 0.18),
+    showFizz: Boolean(hasSparkling && !craft.isHotDrink && level > 0.18)
+  };
+}
+
+function syncCupToppingsPosition(level) {
+  const maxH = drinkGroup.userData.liquidMaxH || 0.145;
+  const topY = 0.022 + maxH * Math.max(level, 0.25);
+  if (whipGroup.visible) {
+    whipGroup.position.y = state.liquidLevel < 0.22 ? 0.025 : topY + 0.008;
+  }
+  if (drizzleGroup.visible) {
+    drizzleGroup.position.y = whipGroup.visible ? whipGroup.position.y + 0.056 : topY + 0.014;
+  }
 }
 
 function recordMistake(code, msg, emoji = '⚠️') {
@@ -1557,23 +2309,25 @@ function triggerTraySpill(colorHex, withIce = false) {
 function clearTraySpillAndCup() {
   if (state.busy) return;
   resetDrink();
-  showGuidance('🧽 쟁반을 깨끗이 닦고 새 컵을 준비했어요! 다시 제조해 보세요.', '✨', false);
+  showGuidance('🧽 쟁반과 블렌더를 깨끗이 정리하고 새로 준비했어요! 다시 제조해 보세요.', '✨', false);
 }
 
-function handlePracticumAction(actionId, chosenCupType = null) {
+function handlePracticumAction(actionId, extra = {}) {
   const recipe = getCurrentRecipe();
   const craft = state.craft;
 
-  // 믹서기 3D 클릭 시: 안에 재료가 이미 갈렸으면 따르기, 아니면 갈기
-  if (actionId === 'blender' && craft.blended && !craft.smoothiePoured) {
+  // 3D 믹서기 직접 클릭 시: 이미 갈렸고 아직 안 따랐으면 따르기, 아니면 갈기
+  if (actionId === 'blender' && extra.from3D && craft.blended && !craft.smoothiePoured) {
     actionId = 'pour_blender';
   }
 
   if (actionId === 'cup') {
+    state.awaitingTempPick = null;
     if (craft.cupPlaced) {
       showGuidance('이미 컵이 쟁반 위에 올라가 있어요! 바꾸려면 🧽 쟁반 닦기를 눌러요.', '☕', true);
       return;
     }
+    const chosenCupType = extra.cupType || null;
     if (!chosenCupType) {
       state.awaitingCupPick = true;
       renderUI();
@@ -1595,6 +2349,9 @@ function handlePracticumAction(actionId, chosenCupType = null) {
   }
 
   state.awaitingCupPick = false;
+  if (actionId !== 'water' && actionId !== 'milk') {
+    state.awaitingTempPick = null;
+  }
 
   if (actionId === 'grinder') {
     if (craft.beansGround) {
@@ -1610,6 +2367,8 @@ function handlePracticumAction(actionId, chosenCupType = null) {
   if (actionId === 'tamper') {
     if (!craft.beansGround) {
       recordMistake('tamp_empty', '아직 원두가 없는데 빈 포터필터를 눌렀어요! 먼저 원두를 갈아야 해요.');
+    } else if (craft.beansTamped) {
+      recordMistake('double_tamp', '이미 다져진 원두를 또 세게 눌렀어요!');
     } else {
       craft.beansTamped = true;
     }
@@ -1619,6 +2378,10 @@ function handlePracticumAction(actionId, chosenCupType = null) {
   }
 
   if (actionId === 'machine') {
+    if (craft.shotExtracted) {
+      shotOverflowMesh.visible = true;
+      recordMistake('shot_overflow', '샷잔이 이미 가득 차 있는데 또 추출해서 커피가 넘쳤어요!', '💦');
+    }
     if (!craft.beansGround) {
       craft.shotQuality = 'watery_nobeans';
       craft.shotExtracted = true;
@@ -1641,6 +2404,20 @@ function handlePracticumAction(actionId, chosenCupType = null) {
       recordMistake('pour_empty_shot', '샷 잔이 비어 있어요! 먼저 커피 머신으로 에스프레소를 추출해야 해요.');
       return;
     }
+    const toBlender = state.practicumTarget === 'blender';
+    if (toBlender) {
+      craft.blenderItems.push('shot');
+      craft.blended = false;
+      craft.shotExtracted = false;
+      craft.log.push('shot_blender');
+      if (!recipe.usesBlender) {
+        recordMistake('unnecessary_blender', `${recipe.name}은(는) 믹서기를 쓰지 않고 컵에 바로 만드는 음료예요!`);
+      } else if (!recipe.steps.some((s) => s.target === 'shot')) {
+        recordMistake('wrong_shot', `${recipe.name}에는 에스프레소 샷이 들어가지 않아요!`);
+      }
+      executeStep('shot', { skipAdvance: true, toBlender: true });
+      return;
+    }
     if (!craft.cupPlaced) {
       shotLiquidMesh.visible = false;
       craft.shotExtracted = false;
@@ -1649,21 +2426,26 @@ function handlePracticumAction(actionId, chosenCupType = null) {
       return;
     }
     craft.shotPoured = true;
+    craft.shotCount = (craft.shotCount || 0) + 1;
     craft.shotExtracted = false;
     craft.log.push('shot');
     const expectsShot = recipe.steps.some((s) => s.target === 'shot');
     if (!expectsShot) {
       recordMistake('wrong_shot', `${recipe.name}에는 커피 샷이 들어가지 않는데 에스프레소가 섞였어요!`);
     }
-    const shotCol = craft.shotQuality === 'good' ? (state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314) : 0x9c7a5b;
-    executeStep('shot', { skipAdvance: true, pourColor: shotCol });
+    executeStep('shot', { skipAdvance: true });
     return;
   }
 
   if (actionId === 'ice') {
-    if (state.recipeKey === 'strawberry_smoothie' && !craft.cupPlaced && !craft.blended) {
+    const toBlender = state.practicumTarget === 'blender';
+    if (toBlender) {
       craft.blenderItems.push('ice');
+      craft.blended = false;
       craft.log.push('ice_blender');
+      if (!recipe.usesBlender) {
+        recordMistake('unnecessary_blender', `${recipe.name}은(는) 얼음을 믹서기로 갈지 않고 컵에 바로 넣어요!`);
+      }
       executeStep('ice', { skipAdvance: true, toBlender: true });
       return;
     }
@@ -1672,102 +2454,218 @@ function handlePracticumAction(actionId, chosenCupType = null) {
       recordMistake('spill_ice', '컵이 없어서 얼음이 쟁반 위로 우르르 굴러떨어졌어요!', '🧊');
       return;
     }
+    if (craft.iceInCup) {
+      recordMistake('duplicate_ice', '컵에 이미 얼음이 들어있는데 얼음을 또 넣었어요!');
+    }
     craft.iceInCup = true;
+    craft.iceCount = (craft.iceCount || 0) + 1;
+    craft.isHotDrink = false;
     craft.log.push('ice');
-    if (['hot_americano', 'hot_choco', 'hot_tea'].includes(state.recipeKey)) {
+    if (recipe.isHot) {
       steamGroup.visible = false;
       recordMistake('ice_in_hot', `따뜻한 ${recipe.name}에 얼음이 들어가 미지근해졌어요!`);
+    } else if (recipe.usesBlender && !craft.smoothiePoured) {
+      recordMistake('ice_in_cup_smoothie', `${recipe.name}의 얼음은 컵이 아니라 🌀 블렌더에 넣고 갈아야 해요!`);
     }
     executeStep('ice', { skipAdvance: true, toBlender: false });
     return;
   }
 
-  if (actionId === 'strawberry') {
-    if (state.recipeKey === 'strawberry_smoothie' && !craft.cupPlaced && !craft.blended) {
-      craft.blenderItems.push('strawberry');
-      craft.log.push('strawberry_blender');
-      executeStep('strawberry', { skipAdvance: true, toBlender: true });
+  if (actionId === 'water' || actionId === 'milk') {
+    const toBlender = state.practicumTarget === 'blender';
+    const isWater = actionId === 'water';
+    const labelKr = isWater ? '물' : '우유';
+    if (toBlender) {
+      craft.blenderItems.push(actionId);
+      craft.blended = false;
+      craft.log.push(`${actionId}_blender`);
+      if (!recipe.usesBlender) {
+        recordMistake('unnecessary_blender', `${recipe.name}은(는) 믹서기를 쓰지 않고 컵에 바로 부어야 해요!`);
+      } else if (!recipe.steps.some((s) => s.target === actionId)) {
+        recordMistake(`wrong_${actionId}_blender`, `${recipe.name} 스무디/프라페에는 ${labelKr} 대신 알맞은 재료를 넣어야 해요!`);
+      }
+      executeStep(actionId, { skipAdvance: true, toBlender: true, temp: 'cold' });
       return;
     }
     if (!craft.cupPlaced) {
-      triggerTraySpill(0xe11d48, false);
-      recordMistake('spill_strawberry', '컵을 놓지 않고 딸기를 넣어서 쟁반에 떨어졌어요!', '💦');
+      state.awaitingTempPick = null;
+      triggerTraySpill(isWater ? 0xbfdbfe : 0xfaf6ee, false);
+      recordMistake(`spill_${actionId}`, `컵을 놓지 않고 ${labelKr}를 부어 쟁반에 쏟아졌어요!`, '💦');
       return;
     }
-    craft.ingredientsInCup.push('strawberry');
-    craft.log.push('strawberry');
-    if (!recipe.steps.some((s) => s.target === 'strawberry')) {
-      recordMistake('wrong_strawberry', `${recipe.name}에는 딸기가 들어가지 않아요!`);
+    if (!extra.temp) {
+      state.awaitingTempPick = { actionId };
+      renderUI();
+      showGuidance(`${isWater ? '💧 뜨거운 물과 차가운 물 중 어느 것을 부을까요?' : '🥛 따뜻한 스팀 우유와 차가운 우유 중 어느 것을 부을까요?'}`, isWater ? '💧' : '🥛', false);
+      return;
     }
-    executeStep('strawberry', { skipAdvance: true, toBlender: false });
+    state.awaitingTempPick = null;
+    const chosenTemp = extra.temp;
+    if (isWater) {
+      craft.waterPoured = true;
+      craft.waterTemp = chosenTemp;
+      craft.waterCount = (craft.waterCount || 0) + 1;
+    } else {
+      craft.milkPoured = true;
+      craft.milkTemp = chosenTemp;
+      craft.milkCount = (craft.milkCount || 0) + 1;
+    }
+    craft.log.push(`${actionId}:${chosenTemp}`);
+
+    const objParticle = isWater ? '을' : '를';
+    const subjParticle = isWater ? '이' : '가';
+    if (chosenTemp === 'hot') {
+      craft.isHotDrink = true;
+      if (craft.iceInCup) {
+        craft.iceInCup = false;
+        iceGroup.visible = false;
+        recordMistake('hot_melted_ice', `얼음 위에 뜨거운 ${labelKr}${objParticle} 부어서 얼음이 녹고 미지근해졌어요!`);
+      } else if (!recipe.isHot) {
+        recordMistake('hot_in_cold', `시원한 ${recipe.name}에 뜨거운 ${labelKr}${objParticle} 부어서 미지근해졌어요!`);
+      }
+    } else {
+      if (recipe.isHot) {
+        craft.isHotDrink = false;
+        recordMistake('cold_in_hot', `따뜻한 ${recipe.name}에 차가운 ${labelKr}${objParticle} 부어서 음료가 식어버렸어요!`);
+      }
+    }
+
+    const expectsThis = recipe.steps.some((s) => s.target === actionId && (!s.toBlender));
+    if (!expectsThis) {
+      if (isWater && recipe.steps.some((s) => s.target === 'sparkling')) {
+        recordMistake('water_instead_sparkling', `${recipe.name}에는 일반 물 대신 🫧 탄산수를 넣어야 톡 쏘고 상큼해요!`);
+      } else if (recipe.usesBlender) {
+        recordMistake(`cup_${actionId}_in_smoothie`, `${recipe.name}의 ${labelKr}는 컵이 아니라 🌀 블렌더에 넣어야 해요!`);
+      } else {
+        recordMistake(`wrong_${actionId}`, `${recipe.name}에는 ${labelKr}${subjParticle} 들어가지 않아요!`);
+      }
+    }
+    executeStep(actionId, { skipAdvance: true, toBlender: false, temp: chosenTemp });
     return;
   }
 
-  if (['lemon', 'choco', 'tea'].includes(actionId)) {
-    const mapColors = { lemon: 0xf4d03f, choco: 0x4e2a14, tea: 0x7fb069 };
-    const mapNames = { lemon: '레몬', choco: '초코', tea: '녹차 티백' };
-    if (!craft.cupPlaced) {
-      triggerTraySpill(mapColors[actionId], false);
-      recordMistake(`spill_${actionId}`, `컵이 없어서 ${mapNames[actionId]}이(가) 쟁반에 떨어졌어요!`, '💦');
+  if (actionId === 'sparkling') {
+    const toBlender = state.practicumTarget === 'blender';
+    if (toBlender) {
+      craft.blenderItems.push('sparkling');
+      craft.blended = false;
+      craft.log.push('sparkling_blender');
+      recordMistake('sparkling_in_blender', '탄산수는 믹서기에 넣고 돌리면 김이 빠져 넘칠 수 있어요!');
+      executeStep('sparkling', { skipAdvance: true, toBlender: true });
       return;
+    }
+    if (!craft.cupPlaced) {
+      triggerTraySpill(0xbae6fd, false);
+      recordMistake('spill_sparkling', '컵을 놓지 않고 탄산수를 부어 쟁반에 쏟아졌어요!', '💦');
+      return;
+    }
+    craft.sparklingPoured = true;
+    craft.sparklingCount = (craft.sparklingCount || 0) + 1;
+    craft.isHotDrink = false;
+    craft.log.push('sparkling');
+    if (recipe.isHot) {
+      recordMistake('sparkling_in_hot', `따뜻한 ${recipe.name}에 차가운 탄산수를 넣어 이상해졌어요!`);
+    } else if (!recipe.steps.some((s) => s.target === 'sparkling')) {
+      recordMistake('wrong_sparkling', `${recipe.name}에는 탄산수가 들어가지 않아요!`);
+    }
+    executeStep('sparkling', { skipAdvance: true });
+    return;
+  }
+
+  if (actionId === 'whip') {
+    if (state.practicumTarget === 'blender') {
+      recordMistake('whip_in_blender', '휘핑크림은 블렌더에 갈지 않고 완성된 음료 위에 올려요!');
+      return;
+    }
+    if (!craft.cupPlaced) {
+      triggerTraySpill(0xfffdf8, false);
+      recordMistake('spill_whip', '컵이 없어서 휘핑크림을 쟁반에 짜버렸어요!', '💦');
+      return;
+    }
+    if (state.liquidLevel < 0.22) {
+      recordMistake('whip_too_early', '음료를 담기 전에 휘핑크림을 먼저 짜서 바닥에 가라앉았어요!');
+    }
+    craft.whipAdded = true;
+    craft.ingredientsInCup.push('whip');
+    craft.log.push('whip');
+    if (!recipe.steps.some((s) => s.target === 'whip')) {
+      recordMistake('wrong_whip', `${recipe.name}에는 휘핑크림이 올라가지 않아요!`);
+    }
+    executeStep('whip', { skipAdvance: true });
+    return;
+  }
+
+  if (['strawberry', 'mango', 'lemon', 'grapefruit', 'yuja', 'choco', 'tea', 'matcha', 'vanilla', 'caramel'].includes(actionId)) {
+    const meta = INGREDIENT_META[actionId] || { name: actionId, color: 0xffffff };
+    const toBlender = state.practicumTarget === 'blender';
+    if (toBlender) {
+      craft.blenderItems.push(actionId);
+      craft.blended = false;
+      craft.log.push(`${actionId}_blender`);
+      if (actionId === 'tea') {
+        recordMistake('tea_in_blender', '녹차 티백은 믹서기에 갈지 않고 따뜻한 물에 우려내야 해요!');
+      } else if (!recipe.usesBlender) {
+        recordMistake('unnecessary_blender', `${recipe.name}은(는) 믹서기를 쓰지 않고 컵에 바로 넣어요!`);
+      } else if (!recipe.steps.some((s) => s.target === actionId)) {
+        recordMistake(`wrong_${actionId}`, `${recipe.name}에는 ${meta.name}이(가) 들어가지 않아요!`);
+      }
+      executeStep(actionId, { skipAdvance: true, toBlender: true });
+      return;
+    }
+
+    if (!craft.cupPlaced) {
+      triggerTraySpill(meta.color, false);
+      recordMistake(`spill_${actionId}`, `컵이 없어서 ${meta.name}이(가) 쟁반에 떨어졌어요!`, '💦');
+      return;
+    }
+    if (actionId === 'caramel') {
+      if (state.liquidLevel < 0.22) {
+        recordMistake('caramel_too_early', '카라멜 소스는 음료를 채운 뒤 맨 위에 뿌려야 예쁜 드리즐이 돼요!');
+      }
+      craft.caramelAdded = true;
     }
     craft.ingredientsInCup.push(actionId);
     craft.log.push(actionId);
     if (!recipe.steps.some((s) => s.target === actionId)) {
-      if (actionId === 'lemon' && craft.milkPoured) {
-        recordMistake('lemon_milk', '우유에 레몬을 넣어서 몽글몽글 뭉쳐버렸어요!');
+      if (['lemon', 'grapefruit', 'yuja'].includes(actionId) && craft.milkPoured) {
+        recordMistake('citrus_milk', `우유에 상큼한 ${meta.name}을(를) 넣어서 몽글몽글 뭉쳐버렸어요!`);
       } else {
-        recordMistake(`wrong_${actionId}`, `${recipe.name}에는 ${mapNames[actionId]}이(가) 들어가지 않아요!`);
+        recordMistake(`wrong_${actionId}`, `${recipe.name}에는 ${meta.name}이(가) 들어가지 않아요!`);
       }
+    } else if (recipe.usesBlender && !craft.smoothiePoured) {
+      recordMistake(`cup_${actionId}_in_smoothie`, `${recipe.name}의 ${meta.name}은(는) 컵이 아니라 🌀 블렌더에 넣고 갈아야 해요!`);
     }
     executeStep(actionId, { skipAdvance: true });
     return;
   }
 
-  if (actionId === 'milk') {
-    if (state.recipeKey === 'strawberry_smoothie' && !craft.cupPlaced && !craft.blended) {
-      craft.blenderItems.push('milk');
-      craft.log.push('milk_blender');
-      executeStep('milk', { skipAdvance: true, toBlender: true });
-      return;
-    }
-    if (!craft.cupPlaced) {
-      triggerTraySpill(0xfaf6ee, false);
-      recordMistake('spill_milk', '컵을 놓지 않고 우유를 부어 쟁반에 하얗게 쏟아졌어요!', '💦');
-      return;
-    }
-    craft.milkPoured = true;
-    craft.log.push('milk');
-    if (!recipe.steps.some((s) => s.target === 'milk')) {
-      recordMistake('wrong_milk', `${recipe.name}에는 우유 대신 물이 들어가야 하는데 우유를 부었어요!`);
-    }
-    executeStep('milk', { skipAdvance: true, toBlender: false });
-    return;
-  }
-
-  if (actionId === 'water') {
-    if (!craft.cupPlaced) {
-      triggerTraySpill(0xbfdbfe, false);
-      recordMistake('spill_water', '컵을 놓지 않고 물을 부어 쟁반에 물바다가 됐어요!', '💦');
-      return;
-    }
-    craft.waterPoured = true;
-    craft.log.push('water');
-    if (!recipe.steps.some((s) => s.target === 'water')) {
-      recordMistake('wrong_water', `${recipe.name}에는 물이 아니라 우유나 스무디가 들어가야 해서 밍밍해졌어요!`);
-    }
-    executeStep('water', { skipAdvance: true });
-    return;
-  }
-
   if (actionId === 'blender') {
     if (craft.blenderItems.length === 0) {
-      recordMistake('empty_blender', '믹서기가 텅 비어 있어요! 우유, 딸기, 얼음을 먼저 넣고 갈아야 해요.');
+      recordMistake('empty_blender', '믹서기가 텅 비어 있어요! 우유나 물, 얼음, 과일을 먼저 넣고 갈아야 해요.');
       playBlenderSound();
+      const baseZ = blenderModel.position.z;
+      const s0 = performance.now();
+      const shakeEmpty = (now) => {
+        const t = (now - s0) / 360;
+        if (t < 1) {
+          blenderModel.position.z = baseZ + Math.sin(t * 42) * 0.006;
+          requestAnimationFrame(shakeEmpty);
+        } else {
+          blenderModel.position.z = baseZ;
+        }
+      };
+      requestAnimationFrame(shakeEmpty);
       return;
     }
-    if (!craft.blenderItems.includes('milk')) {
-      recordMistake('dry_blender', '우유(액체) 없이 얼음만 갈려다 칼날이 헛돌았어요! 우유를 꼭 먼저 넣어요.');
+    const vis = computeBlenderVisuals(craft.blenderItems, true);
+    if (!vis.hasLiquid) {
+      recordMistake('dry_blender', '우유(액체) 없이 얼음/재료만 갈려다 칼날이 거칠게 헛돌았어요! 액체를 꼭 함께 넣어요.');
+    }
+    if (recipe.usesBlender && !vis.hasIce) {
+      recordMistake('no_ice_blender', '얼음 없이 갈아서 시원하고 걸쭉한 스무디/프라페가 되지 않았어요!');
+    }
+    if (!recipe.usesBlender) {
+      recordMistake('unnecessary_blender', `${recipe.name}은(는) 믹서기를 돌릴 필요가 없는 음료예요!`);
     }
     craft.blended = true;
     craft.log.push('blender');
@@ -1780,19 +2678,43 @@ function handlePracticumAction(actionId, chosenCupType = null) {
       recordMistake('pour_empty_blender', '믹서기 안에 담긴 재료가 없어요!');
       return;
     }
-    if (!craft.blended) {
-      recordMistake('pour_unblended', '아직 블렌더로 갈지 않고 부어서 덩어리가 그대로 떨어졌어요!');
-      return;
-    }
+    const vis = computeBlenderVisuals(craft.blenderItems, craft.blended);
     if (!craft.cupPlaced) {
       blenderMixMesh.visible = false;
-      triggerTraySpill(0xf2849e, false);
-      recordMistake('spill_smoothie', '컵을 놓지 않고 스무디를 따라 쟁반에 쏟아졌어요!', '💦');
+      blenderChunksGroup.visible = false;
+      while (blenderChunksGroup.children.length > 0) blenderChunksGroup.remove(blenderChunksGroup.children[0]);
+      if (!craft.blended && vis.hasIce && !vis.hasLiquid) {
+        triggerTraySpill(0xdbeafe, true);
+      } else {
+        triggerTraySpill(vis.colorHex, false);
+      }
+      craft.blenderItems = [];
+      craft.blended = false;
+      recordMistake('spill_smoothie', '컵을 놓지 않고 믹서기 음료를 따라 쟁반에 쏟아졌어요!', '💦');
       return;
     }
+    if (!craft.blended) {
+      recordMistake('pour_unblended', '블렌더로 갈지 않고 부어서 얼음과 재료 덩어리가 그대로 컵에 떨어졌어요!');
+      // 갈지 않고 부은 경우에도 3D로 덩어리가 컵에 들어가도록 반영
+      if (craft.blenderItems.includes('ice')) craft.iceInCup = true;
+      craft.blenderItems.forEach((it) => {
+        if (['strawberry', 'mango', 'lemon', 'grapefruit', 'yuja', 'choco', 'matcha'].includes(it)) {
+          craft.ingredientsInCup.push(it);
+        }
+      });
+    }
     craft.smoothiePoured = true;
+    craft.smoothieColor = vis.colorHex;
+    craft.smoothieIngredients = [...craft.blenderItems];
+    if (craft.blenderItems.includes('milk')) craft.milkCount = Math.max(craft.milkCount, 0);
+    craft.blenderItems = [];
+    craft.blended = false;
+    state.practicumTarget = 'cup';
     craft.log.push('pour_blender');
-    executeStep('pour_blender', { skipAdvance: true });
+    if (!recipe.usesBlender) {
+      recordMistake('wrong_smoothie_in_cup', `${recipe.name}에는 블렌더에서 갈아 만든 음료를 붓지 않아요!`);
+    }
+    executeStep('pour_blender', { skipAdvance: true, pourColor: vis.colorHex, foamColor: vis.foamHex });
     return;
   }
 
@@ -1819,8 +2741,27 @@ function evaluatePracticumDrink(recipe) {
     issues++;
   }
 
-  // 2. 필수 단계 누락 확인
+  // 2. 온도 확인 (뜨거운 음료 vs 차가운 음료)
+  if (recipe.isHot) {
+    if (!c.iceInCup && c.isHotDrink) {
+      checks.push({ ok: true, text: '따뜻한 온도를 알맞게 유지했어요.' });
+    } else {
+      checks.push({ ok: false, text: '따뜻한 음료인데 온도가 차갑거나 식었어요!' });
+      issues++;
+    }
+  } else {
+    if (!c.isHotDrink) {
+      checks.push({ ok: true, text: '시원한 음료 온도에 맞게 만들었어요.' });
+    } else {
+      checks.push({ ok: false, text: '차가운 음료인데 뜨거운 물/우유가 들어갔어요!' });
+      issues++;
+    }
+  }
+
+  // 3. 레시피별 필수 단계/재료 확인 (데이터 기반 범용 검사)
   const stepTargets = recipe.steps.map((s) => s.target);
+  const blenderSource = c.smoothiePoured ? c.smoothieIngredients : c.blenderItems;
+
   if (stepTargets.includes('shot')) {
     if (c.shotPoured && c.shotQuality === 'good') {
       checks.push({ ok: true, text: '원두 갈기 → 탬핑 → 추출 순서로 진한 샷을 잘 내렸어요.' });
@@ -1829,36 +2770,51 @@ function evaluatePracticumDrink(recipe) {
       issues++;
     }
   }
+
   if (stepTargets.includes('ice')) {
-    const hasIce = state.recipeKey === 'strawberry_smoothie' ? c.blenderItems.includes('ice') : c.iceInCup;
+    const hasIce = recipe.usesBlender ? blenderSource.includes('ice') : c.iceInCup;
     if (hasIce) checks.push({ ok: true, text: '시원한 얼음을 알맞게 넣었어요.' });
     else { checks.push({ ok: false, text: '시원한 얼음이 빠졌어요!' }); issues++; }
   }
+
   if (stepTargets.includes('water')) {
-    if (c.waterPoured) checks.push({ ok: true, text: '물의 양을 알맞게 채웠어요.' });
+    if (c.waterPoured) checks.push({ ok: true, text: '물의 양과 온도를 알맞게 채웠어요.' });
     else { checks.push({ ok: false, text: '물을 붓지 않았어요!' }); issues++; }
   }
+
+  if (stepTargets.includes('sparkling')) {
+    if (c.sparklingPoured) checks.push({ ok: true, text: '톡 쏘는 탄산수를 알맞게 부었어요.' });
+    else { checks.push({ ok: false, text: '탄산수가 빠졌어요!' }); issues++; }
+  }
+
   if (stepTargets.includes('milk')) {
-    const hasMilk = state.recipeKey === 'strawberry_smoothie' ? c.blenderItems.includes('milk') : c.milkPoured;
+    const hasMilk = recipe.usesBlender ? blenderSource.includes('milk') : c.milkPoured;
     if (hasMilk) checks.push({ ok: true, text: '우유를 알맞게 넣었어요.' });
     else { checks.push({ ok: false, text: '우유가 빠졌어요!' }); issues++; }
   }
-  ['strawberry', 'lemon', 'choco', 'tea'].forEach((ing) => {
+
+  ['strawberry', 'mango', 'lemon', 'grapefruit', 'yuja', 'choco', 'tea', 'matcha', 'vanilla', 'caramel', 'whip'].forEach((ing) => {
     if (stepTargets.includes(ing)) {
-      const ok = state.recipeKey === 'strawberry_smoothie'
-        ? c.blenderItems.includes(ing)
+      const stepObj = recipe.steps.find((s) => s.target === ing);
+      const ok = (recipe.usesBlender && stepObj && stepObj.toBlender)
+        ? blenderSource.includes(ing)
         : c.ingredientsInCup.includes(ing);
-      const n = { strawberry: '딸기', lemon: '레몬', choco: '초코', tea: '녹차 티백' }[ing];
+      const n = (INGREDIENT_META[ing] && INGREDIENT_META[ing].name) || ing;
       if (ok) checks.push({ ok: true, text: `${n} 재료를 빠짐없이 넣었어요.` });
       else { checks.push({ ok: false, text: `${n} 재료가 빠졌어요!` }); issues++; }
     }
   });
+
   if (stepTargets.includes('pour_blender')) {
-    if (c.blended && c.smoothiePoured) checks.push({ ok: true, text: '블렌더로 곱게 갈아 컵에 잘 따랐어요.' });
-    else { checks.push({ ok: false, text: '스무디를 갈아 컵에 따르는 과정이 빠졌어요!' }); issues++; }
+    if (c.smoothiePoured && !c.mistakes.some((m) => m.code === 'pour_unblended')) {
+      checks.push({ ok: true, text: '블렌더로 곱게 갈아 컵에 잘 따랐어요.' });
+    } else {
+      checks.push({ ok: false, text: '블렌더로 갈아 컵에 따르는 과정이 완성되지 않았어요!' });
+      issues++;
+    }
   }
 
-  // 3. 실습 중 발생한 실수 내역 추가
+  // 4. 실습 중 발생한 실수 내역 추가
   const seenMsg = new Set();
   c.mistakes.forEach((m) => {
     if (!seenMsg.has(m.msg)) {
@@ -1872,22 +2828,34 @@ function evaluatePracticumDrink(recipe) {
 }
 
 function addCupTopping(kind) {
-  if (kind === 'lemon') {
+  if (kind === 'lemon' || kind === 'grapefruit') {
+    const col = kind === 'lemon' ? 0xf7dc6f : 0xfb7185;
     const slice = new THREE.Mesh(
       new THREE.CylinderGeometry(0.036, 0.036, 0.01, 18),
-      new THREE.MeshStandardMaterial({ color: 0xf7dc6f, roughness: 0.35 })
+      new THREE.MeshStandardMaterial({ color: col, roughness: 0.35 })
     );
     slice.position.set(0.012, 0.085, 0.008);
     slice.rotation.set(0.45, 0.2, 0.35);
     cupToppingGroup.add(slice);
-  } else if (kind === 'strawberry') {
+  } else if (kind === 'strawberry' || kind === 'mango') {
+    const col = kind === 'strawberry' ? 0xd9385a : 0xf59e0b;
     for (let i = 0; i < 3; i++) {
-      const berry = new THREE.Mesh(
-        new THREE.SphereGeometry(0.017, 12, 12),
-        new THREE.MeshStandardMaterial({ color: 0xd9385a, roughness: 0.4 })
+      const piece = new THREE.Mesh(
+        kind === 'strawberry' ? new THREE.SphereGeometry(0.017, 12, 12) : new THREE.BoxGeometry(0.022, 0.022, 0.022),
+        new THREE.MeshStandardMaterial({ color: col, roughness: 0.38 })
       );
-      berry.position.set((i - 1) * 0.022, 0.035 + (i % 2) * 0.014, (i % 2 === 0 ? 0.012 : -0.012));
-      cupToppingGroup.add(berry);
+      piece.position.set((i - 1) * 0.022, 0.035 + (i % 2) * 0.014, (i % 2 === 0 ? 0.012 : -0.012));
+      cupToppingGroup.add(piece);
+    }
+  } else if (kind === 'yuja') {
+    for (let i = 0; i < 4; i++) {
+      const peel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.008, 0.012),
+        new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.3 })
+      );
+      peel.position.set((i - 1.5) * 0.014, 0.03 + (i % 2) * 0.018, (i % 2 ? 0.01 : -0.01));
+      peel.rotation.set(0.3 * i, 0.6 * i, 0.2);
+      cupToppingGroup.add(peel);
     }
   } else if (kind === 'choco') {
     for (let i = 0; i < 3; i++) {
@@ -1913,6 +2881,13 @@ function addCupTopping(kind) {
     string.position.set(0.032, 0.095, 0.015);
     string.rotation.z = -0.35;
     cupToppingGroup.add(bag, string);
+  } else if (kind === 'matcha') {
+    const mound = new THREE.Mesh(
+      new THREE.ConeGeometry(0.028, 0.018, 16),
+      new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.85 })
+    );
+    mound.position.set(0, 0.032, 0);
+    cupToppingGroup.add(mound);
   }
   cupToppingGroup.visible = true;
 }
@@ -1921,28 +2896,23 @@ function animateDropIntoTarget(kind, targetPos, onDone) {
   while (fallingItemGroup.children.length > 0) {
     fallingItemGroup.remove(fallingItemGroup.children[0]);
   }
-  const colors = {
-    strawberry: 0xe11d48,
-    lemon: 0xfacc15,
-    choco: 0x4e2a14,
-    tea: 0x4d8b55,
-    ice: 0xdff6ff
-  };
-  const count = kind === 'tea' || kind === 'lemon' ? 1 : 3;
+  const meta = INGREDIENT_META[kind] || { color: 0xffffff };
+  const count = (kind === 'tea' || kind === 'lemon' || kind === 'grapefruit') ? 1 : 3;
   for (let i = 0; i < count; i++) {
     let geo;
-    if (kind === 'lemon') geo = new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16);
+    if (kind === 'lemon' || kind === 'grapefruit') geo = new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16);
     else if (kind === 'strawberry') geo = new THREE.SphereGeometry(0.02, 12, 12);
     else if (kind === 'tea') geo = new THREE.BoxGeometry(0.034, 0.038, 0.012);
-    else geo = new THREE.BoxGeometry(0.026, 0.022, 0.026);
+    else if (kind === 'matcha') geo = new THREE.ConeGeometry(0.018, 0.016, 10);
+    else geo = new THREE.BoxGeometry(0.024, 0.022, 0.024);
     const mat = new THREE.MeshStandardMaterial({
-      color: colors[kind] || 0xffffff,
-      roughness: kind === 'ice' ? 0.15 : 0.45,
+      color: meta.color,
+      roughness: kind === 'ice' ? 0.15 : 0.42,
       transparent: kind === 'ice',
-      opacity: kind === 'ice' ? 0.8 : 1
+      opacity: kind === 'ice' ? 0.82 : 1
     });
     const m = new THREE.Mesh(geo, mat);
-    m.position.set((i - (count - 1) / 2) * 0.028, i * 0.02, 0);
+    m.position.set((i - (count - 1) / 2) * 0.026, i * 0.018, 0);
     m.rotation.set(i * 0.4, i * 0.5, 0.3);
     fallingItemGroup.add(m);
   }
@@ -1950,7 +2920,7 @@ function animateDropIntoTarget(kind, targetPos, onDone) {
   const startPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.34, targetPos.z);
   const endPos = new THREE.Vector3(targetPos.x, targetPos.y + 0.04, targetPos.z);
   const start = performance.now();
-  const dur = 460;
+  const dur = 440;
   function tick(now) {
     const t = Math.min((now - start) / dur, 1);
     const ease = t * t;
@@ -1966,18 +2936,18 @@ function animateDropIntoTarget(kind, targetPos, onDone) {
   requestAnimationFrame(tick);
 }
 
-function animateBlenderFill(hexColor, targetScaleY, onDone, showStream = true) {
+function animateBlenderFill(hexColor, targetScaleY, onDone, showStream = true, streamColor = null) {
   const startY = blenderMixMesh.visible ? blenderMixMesh.scale.y : 0.01;
   const endY = Math.max(startY, targetScaleY);
   if (showStream) {
-    pourStream.material.color.setHex(hexColor);
+    pourStream.material.color.setHex(streamColor || hexColor);
     pourStream.position.set(blenderJarBounds.x, COUNTER_Y + 0.36, blenderJarBounds.z);
     pourStream.visible = true;
   }
   blenderMixMesh.visible = true;
   blenderMixMesh.material.color.setHex(hexColor);
   const start = performance.now();
-  const dur = 520;
+  const dur = 480;
   function tick(now) {
     const t = Math.min((now - start) / dur, 1);
     const cur = startY + (endY - startY) * t;
@@ -2006,9 +2976,74 @@ function configureCupLiquidProfile(cupType) {
   foamCapMesh.scale.set(profile.xz, 1, profile.xz);
 }
 
+function applyComputedCupVisuals(craft, recipe, streamColor, finishCb, skipAudio = false) {
+  const vis = computeCupVisuals(craft, recipe);
+  if (vis.overflow && state.practiceMode === 'practicum') {
+    triggerTraySpill(vis.colorHex, false);
+    recordMistake('cup_overflow', '컵이 가득 차서 음료가 쟁반으로 넘쳐흘렀어요!', '💦');
+  }
+  animatePour(vis.colorHex, vis.level, () => {
+    foamCapMesh.material.color.setHex(vis.foamHex);
+    foamCapMesh.visible = vis.showFoam && vis.level > 0.15;
+    steamGroup.visible = vis.isHot;
+    fizzGroup.visible = vis.showFizz;
+    iceGroup.visible = craft.iceInCup;
+    syncCupToppingsPosition(vis.level);
+    finishCb();
+  }, skipAudio, streamColor);
+}
+
 function executeStep(actionId, opts = {}) {
   state.busy = true;
   const recipe = getCurrentRecipe();
+  const craft = state.craft;
+  const isGuided = state.practiceMode !== 'practicum';
+  const curStep = opts.step || null;
+
+  // 자동/수동 연습에서도 3D 계산을 위해 state.craft 동기화
+  if (isGuided) {
+    if (actionId === 'cup') craft.cupPlaced = opts.cupType || recipe.cupType;
+    else if (actionId === 'grinder') craft.beansGround = true;
+    else if (actionId === 'tamper') craft.beansTamped = true;
+    else if (actionId === 'machine') { craft.shotExtracted = true; craft.shotQuality = 'good'; }
+    else if (actionId === 'shot') { craft.shotPoured = true; craft.shotCount++; craft.shotExtracted = false; }
+    else if (actionId === 'ice') {
+      const toB = opts.toBlender !== undefined ? opts.toBlender : Boolean((curStep && curStep.toBlender) || recipe.usesBlender);
+      if (toB) craft.blenderItems.push('ice');
+      else { craft.iceInCup = true; craft.iceCount++; }
+    } else if (actionId === 'water') {
+      const temp = (curStep && curStep.temp) || (recipe.isHot ? 'hot' : 'cold');
+      craft.waterPoured = true; craft.waterTemp = temp; craft.waterCount++;
+      if (temp === 'hot') craft.isHotDrink = true;
+    } else if (actionId === 'sparkling') {
+      craft.sparklingPoured = true; craft.sparklingCount++;
+    } else if (actionId === 'milk') {
+      const toB = opts.toBlender !== undefined ? opts.toBlender : Boolean((curStep && curStep.toBlender) || (recipe.usesBlender && !craft.smoothiePoured));
+      const temp = (curStep && curStep.temp) || (recipe.isHot ? 'hot' : 'cold');
+      if (toB) craft.blenderItems.push('milk');
+      else {
+        craft.milkPoured = true; craft.milkTemp = temp; craft.milkCount++;
+        if (temp === 'hot') craft.isHotDrink = true;
+      }
+    } else if (['strawberry', 'mango', 'lemon', 'grapefruit', 'yuja', 'choco', 'tea', 'matcha', 'vanilla', 'caramel', 'whip'].includes(actionId)) {
+      const toB = opts.toBlender !== undefined ? opts.toBlender : Boolean(curStep && curStep.toBlender);
+      if (toB) craft.blenderItems.push(actionId);
+      else {
+        craft.ingredientsInCup.push(actionId);
+        if (actionId === 'whip') craft.whipAdded = true;
+        if (actionId === 'caramel') craft.caramelAdded = true;
+      }
+    } else if (actionId === 'blender') {
+      craft.blended = true;
+    } else if (actionId === 'pour_blender') {
+      const bv = computeBlenderVisuals(craft.blenderItems, true);
+      craft.smoothiePoured = true;
+      craft.smoothieColor = bv.colorHex;
+      craft.smoothieIngredients = [...craft.blenderItems];
+      craft.blenderItems = [];
+      craft.blended = false;
+    }
+  }
 
   const finishStep = () => {
     state.busy = false;
@@ -2094,7 +3129,7 @@ function executeStep(actionId, opts = {}) {
         grinderModel.position.x = baseX;
         portafilterCoffee.visible = true;
         portafilterCoffee.scale.y = 1.4;
-        spawn3DSparkles(new THREE.Vector3(-0.96, COUNTER_Y + 0.22, -0.06), 10, 0xd97706);
+        spawn3DSparkles(new THREE.Vector3(-1.26, COUNTER_Y + 0.22, -0.10), 10, 0xd97706);
         finishStep();
       }
     };
@@ -2115,7 +3150,7 @@ function executeStep(actionId, opts = {}) {
       if (t < 1) requestAnimationFrame(animTamp);
       else {
         tamperMesh.position.set(0.06, 0.025, 0);
-        spawn3DSparkles(new THREE.Vector3(-0.42, COUNTER_Y + 0.12, 0.12), 10, 0xf59e0b);
+        spawn3DSparkles(new THREE.Vector3(-0.98, COUNTER_Y + 0.12, 0.24), 10, 0xf59e0b);
         finishStep();
       }
     };
@@ -2174,38 +3209,45 @@ function executeStep(actionId, opts = {}) {
     };
     requestAnimationFrame(slideToSpout);
   } else if (actionId === 'shot') {
-    focusPrepActionCamera(false);
+    const toBlender = Boolean(opts.toBlender);
+    focusPrepActionCamera(toBlender);
     playPourSound(0.7, 500, 960);
     const originPos = shotGlassGroup.position.clone();
-    const overCupPos = new THREE.Vector3(PREP_POS.x - 0.07, COUNTER_Y + 0.28, PREP_POS.z);
+    const targetDest = toBlender
+      ? new THREE.Vector3(blenderJarBounds.x - 0.06, COUNTER_Y + 0.36, blenderJarBounds.z)
+      : new THREE.Vector3(PREP_POS.x - 0.07, COUNTER_Y + 0.28, PREP_POS.z);
     const startMove = performance.now();
     const moveShot = (now) => {
       const t = Math.min((now - startMove) / 220, 1);
-      shotGlassGroup.position.lerpVectors(originPos, overCupPos, t);
+      shotGlassGroup.position.lerpVectors(originPos, targetDest, t);
       shotGlassGroup.rotation.z = -t * 0.65;
       if (t < 1) {
         requestAnimationFrame(moveShot);
       } else {
         shotLiquidMesh.visible = false;
-        const nextColor = opts.pourColor || (state.recipeKey === 'iced_latte' ? 0xb5885c : 0x3b2314);
-        animatePour(nextColor, Math.max(state.liquidLevel, 0.92), () => {
-          foamCapMesh.material.color.setHex(state.recipeKey === 'iced_latte' ? 0xf5e6d3 : 0xc68b59);
-          foamCapMesh.visible = true;
+        const shotCol = craft.shotQuality === 'good' ? 0x3b2314 : 0x9c7a5b;
+        const afterPour = () => {
           const backStart = performance.now();
           const returnShot = (n2) => {
             const bt = Math.min((n2 - backStart) / 220, 1);
-            shotGlassGroup.position.lerpVectors(overCupPos, originPos, bt);
+            shotGlassGroup.position.lerpVectors(targetDest, originPos, bt);
             shotGlassGroup.rotation.z = -(1 - bt) * 0.65;
             if (bt < 1) requestAnimationFrame(returnShot);
             else {
               shotGlassGroup.position.copy(originPos);
               shotGlassGroup.rotation.z = 0;
-              if (state.recipeKey === 'hot_americano') steamGroup.visible = true;
               finishStep();
             }
           };
           requestAnimationFrame(returnShot);
-        }, true);
+        };
+        if (toBlender) {
+          const bv = computeBlenderVisuals(craft.blenderItems, false);
+          syncBlenderChunks3D(craft.blenderItems, false);
+          animateBlenderFill(bv.colorHex, bv.levelScale, afterPour, true, shotCol);
+        } else {
+          applyComputedCupVisuals(craft, recipe, shotCol, afterPour, true);
+        }
       }
     };
     requestAnimationFrame(moveShot);
@@ -2223,6 +3265,9 @@ function executeStep(actionId, opts = {}) {
     foamCapMesh.visible = false;
     iceGroup.visible = false;
     steamGroup.visible = false;
+    fizzGroup.visible = false;
+    whipGroup.visible = false;
+    drizzleGroup.visible = false;
     cupToppingGroup.visible = false;
     while (cupToppingGroup.children.length > 0) cupToppingGroup.remove(cupToppingGroup.children[0]);
     state.liquidLevel = 0;
@@ -2244,16 +3289,19 @@ function executeStep(actionId, opts = {}) {
     };
     requestAnimationFrame(animCup);
   } else if (actionId === 'ice') {
-    const toBlender = opts.toBlender !== undefined ? opts.toBlender : (state.recipeKey === 'strawberry_smoothie');
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : Boolean((curStep && curStep.toBlender) || recipe.usesBlender);
     focusPrepActionCamera(toBlender);
     playIceSound();
     if (toBlender) {
       animateDropIntoTarget('ice', new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.28, blenderJarBounds.z), () => {
-        animateBlenderFill(0xf7b2c4, 0.85, finishStep, false);
+        const bv = computeBlenderVisuals(craft.blenderItems, false);
+        syncBlenderChunks3D(craft.blenderItems, false);
+        animateBlenderFill(bv.colorHex, bv.levelScale, finishStep, false);
       });
     } else {
       iceGroup.visible = true;
       state.hasIce = true;
+      steamGroup.visible = false;
       const start = performance.now();
       const animIce = (now) => {
         const t = Math.min((now - start) / 480, 1);
@@ -2270,101 +3318,133 @@ function executeStep(actionId, opts = {}) {
       };
       requestAnimationFrame(animIce);
     }
-  } else if (actionId === 'strawberry') {
-    const toBlender = opts.toBlender !== undefined ? opts.toBlender : (state.recipeKey === 'strawberry_smoothie');
+  } else if (['strawberry', 'mango', 'lemon', 'grapefruit', 'yuja', 'choco', 'tea', 'matcha'].includes(actionId)) {
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : Boolean(curStep && curStep.toBlender);
     focusPrepActionCamera(toBlender);
-    playIngredientSound('strawberry');
+    playIngredientSound(actionId);
     if (toBlender) {
-      animateDropIntoTarget('strawberry', new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.28, blenderJarBounds.z), () => {
-        animateBlenderFill(0xf48fb1, 0.65, finishStep, false);
+      animateDropIntoTarget(actionId, new THREE.Vector3(blenderJarBounds.x, COUNTER_Y + 0.28, blenderJarBounds.z), () => {
+        const bv = computeBlenderVisuals(craft.blenderItems, false);
+        syncBlenderChunks3D(craft.blenderItems, false);
+        animateBlenderFill(bv.colorHex, bv.levelScale, finishStep, false);
       });
     } else {
-      animateDropIntoTarget('strawberry', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
-        addCupTopping('strawberry');
-        animatePour(0xd94862, 0.28, () => finishStep(), true);
+      animateDropIntoTarget(actionId, new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
+        addCupTopping(actionId);
+        const meta = INGREDIENT_META[actionId] || { color: 0xffffff };
+        applyComputedCupVisuals(craft, recipe, meta.color, finishStep, true);
       });
     }
-  } else if (actionId === 'lemon') {
+  } else if (actionId === 'vanilla' || actionId === 'caramel') {
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : Boolean(curStep && curStep.toBlender);
+    focusPrepActionCamera(toBlender);
+    playIngredientSound(actionId);
+    const meta = INGREDIENT_META[actionId];
+    if (toBlender) {
+      const bv = computeBlenderVisuals(craft.blenderItems, false);
+      syncBlenderChunks3D(craft.blenderItems, false);
+      animateBlenderFill(bv.colorHex, bv.levelScale, finishStep, true, meta.color);
+    } else if (actionId === 'caramel') {
+      pourStream.material.color.setHex(meta.color);
+      pourStream.position.set(PREP_POS.x, COUNTER_Y + 0.28, PREP_POS.z);
+      pourStream.visible = true;
+      setTimeout(() => {
+        pourStream.visible = false;
+        drizzleGroup.visible = true;
+        syncCupToppingsPosition(state.liquidLevel);
+        spawn3DSparkles(new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.18, PREP_POS.z), 12, meta.color);
+        finishStep();
+      }, 420);
+    } else {
+      applyComputedCupVisuals(craft, recipe, meta.color, finishStep, true);
+    }
+  } else if (actionId === 'whip') {
     focusPrepActionCamera(false);
-    playIngredientSound('lemon');
-    animateDropIntoTarget('lemon', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
-      addCupTopping('lemon');
-      animatePour(0xf4d03f, 0.28, () => finishStep(), true);
-    });
-  } else if (actionId === 'choco') {
-    focusPrepActionCamera(false);
-    playIngredientSound('choco');
-    animateDropIntoTarget('choco', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
-      addCupTopping('choco');
-      animatePour(0x4e2a14, 0.3, () => finishStep(), true);
-    });
-  } else if (actionId === 'tea') {
-    focusPrepActionCamera(false);
-    playIngredientSound('tea');
-    animateDropIntoTarget('tea', new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.08, PREP_POS.z), () => {
-      addCupTopping('tea');
-      animatePour(0x7fb069, 0.22, () => finishStep(), true);
-    });
+    playWhipSound();
+    whipGroup.visible = true;
+    syncCupToppingsPosition(state.liquidLevel);
+    whipGroup.scale.set(0.2, 0.2, 0.2);
+    const start = performance.now();
+    const animWhip = (now) => {
+      const t = Math.min((now - start) / 420, 1);
+      const ease = 1 + 1.6 * Math.pow(t - 1, 3) + 0.8 * Math.pow(t - 1, 2);
+      const s = Math.min(Math.max(ease, 0.2), 1.08);
+      whipGroup.scale.set(s, s, s);
+      if (t < 1) requestAnimationFrame(animWhip);
+      else {
+        whipGroup.scale.set(1, 1, 1);
+        syncCupToppingsPosition(state.liquidLevel);
+        spawn3DSparkles(new THREE.Vector3(PREP_POS.x, COUNTER_Y + 0.22, PREP_POS.z), 12, 0xffffff);
+        finishStep();
+      }
+    };
+    requestAnimationFrame(animWhip);
   } else if (actionId === 'milk') {
-    const toBlender = opts.toBlender !== undefined ? opts.toBlender : (state.recipeKey === 'strawberry_smoothie');
+    const toBlender = opts.toBlender !== undefined ? opts.toBlender : Boolean((curStep && curStep.toBlender) || (recipe.usesBlender && !craft.smoothiePoured));
     focusPrepActionCamera(toBlender);
     playPourSound(0.66, 480, 920);
     if (toBlender) {
-      animateBlenderFill(0xfaf6ee, 0.42, finishStep, true);
+      const bv = computeBlenderVisuals(craft.blenderItems, false);
+      syncBlenderChunks3D(craft.blenderItems, false);
+      animateBlenderFill(bv.colorHex, bv.levelScale, finishStep, true, 0xfaf6ee);
     } else {
-      const milkMixColors = {
-        strawberry_latte: 0xf4b6c2,
-        hot_choco: 0x6f3e22
-      };
-      const nextColor = milkMixColors[state.recipeKey] || (state.liquidLevel > 0 ? 0xc8a47e : 0xfaf6ee);
-      animatePour(nextColor, Math.min(state.liquidLevel + 0.55, 0.86), () => {
-        if (state.recipeKey === 'hot_choco') {
-          steamGroup.visible = true;
-          foamCapMesh.material.color.setHex(0x8d5524);
-          foamCapMesh.visible = true;
-        } else if (state.recipeKey === 'strawberry_latte') {
-          foamCapMesh.material.color.setHex(0xfce7f3);
-          foamCapMesh.visible = true;
-        } else {
-          foamCapMesh.material.color.setHex(0xfef3e2);
-          foamCapMesh.visible = true;
-        }
-        finishStep();
-      }, true);
+      applyComputedCupVisuals(craft, recipe, 0xfaf6ee, finishStep, true);
     }
   } else if (actionId === 'water') {
-    focusPrepActionCamera(false);
+    const toBlender = Boolean(opts.toBlender);
+    focusPrepActionCamera(toBlender);
     playPourSound(0.7, 560, 1120);
-    const waterColors = {
-      iced_lemonade: 0xf7e98e,
-      hot_tea: 0x98c379,
-      hot_americano: 0xd9ecff,
-      iced_americano: 0xd9ecff
-    };
-    const nextColor = waterColors[state.recipeKey] || 0x4a2c18;
-    const targetLvl = (state.recipeKey === 'hot_americano' || state.recipeKey === 'iced_americano') ? 0.68 : 0.92;
-    animatePour(nextColor, targetLvl, () => {
-      if (state.recipeKey === 'hot_americano' || state.recipeKey === 'hot_tea') steamGroup.visible = true;
-      finishStep();
-    }, true);
+    if (toBlender) {
+      const bv = computeBlenderVisuals(craft.blenderItems, false);
+      syncBlenderChunks3D(craft.blenderItems, false);
+      animateBlenderFill(bv.colorHex, bv.levelScale, finishStep, true, 0xd9ecff);
+    } else {
+      applyComputedCupVisuals(craft, recipe, 0xd9ecff, finishStep, true);
+    }
+  } else if (actionId === 'sparkling') {
+    const toBlender = Boolean(opts.toBlender);
+    focusPrepActionCamera(toBlender);
+    playSparklingSound();
+    if (toBlender) {
+      const bv = computeBlenderVisuals(craft.blenderItems, false);
+      syncBlenderChunks3D(craft.blenderItems, false);
+      animateBlenderFill(bv.colorHex, bv.levelScale, finishStep, true, 0xbae6fd);
+    } else {
+      applyComputedCupVisuals(craft, recipe, 0xbae6fd, finishStep, true);
+    }
   } else if (actionId === 'blender') {
+    focusPrepActionCamera(true);
     playBlenderSound();
     const baseZ = blenderModel.position.z;
     const start = performance.now();
-    blenderMixMesh.material.color.setHex(0xf2849e);
+    const bv = computeBlenderVisuals(craft.blenderItems, true);
+    blenderMixMesh.visible = true;
+    blenderMixMesh.material.color.setHex(bv.colorHex);
+    if (blenderMixMesh.scale.y < bv.levelScale) {
+      blenderMixMesh.scale.y = bv.levelScale;
+      blenderMixMesh.position.y = blenderJarBounds.baseY + (blenderJarBounds.height * bv.levelScale) / 2;
+    }
     const animBlend = (now) => {
-      const t = (now - start) / 780;
+      const t = (now - start) / 820;
       if (t < 1) {
         blenderModel.position.z = baseZ + Math.sin(t * 52) * 0.008;
         blenderMixMesh.rotation.y += 0.36;
         blenderMixMesh.scale.x = 1 + Math.sin(t * 28) * 0.06;
         blenderMixMesh.scale.z = 1 + Math.cos(t * 28) * 0.06;
+        if (blenderChunksGroup.visible) {
+          blenderChunksGroup.rotation.y += 0.48;
+          const shrink = Math.max(1 - t * 1.15, 0.05);
+          blenderChunksGroup.scale.set(shrink, shrink, shrink);
+        }
         requestAnimationFrame(animBlend);
       } else {
         blenderModel.position.z = baseZ;
         blenderMixMesh.scale.x = 1;
         blenderMixMesh.scale.z = 1;
-        spawn3DSparkles(new THREE.Vector3(blenderJarBounds.x, blenderJarBounds.baseY + blenderJarBounds.height * 0.85, blenderJarBounds.z), 14, 0xf472b6);
+        blenderChunksGroup.rotation.y = 0;
+        blenderChunksGroup.scale.set(1, 1, 1);
+        syncBlenderChunks3D(craft.blenderItems, true);
+        spawn3DSparkles(new THREE.Vector3(blenderJarBounds.x, blenderJarBounds.baseY + blenderJarBounds.height * 0.85, blenderJarBounds.z), 14, bv.colorHex);
         finishStep();
       }
     };
@@ -2380,14 +3460,14 @@ function executeStep(actionId, opts = {}) {
       blenderMixMesh.scale.y = Math.max(cur, 0.01);
       blenderMixMesh.position.y = blenderJarBounds.baseY + (blenderJarBounds.height * cur) / 2;
       if (t < 1) requestAnimationFrame(animEmpty);
-      else blenderMixMesh.visible = false;
+      else {
+        blenderMixMesh.visible = false;
+        syncBlenderChunks3D([], true);
+      }
     };
     requestAnimationFrame(animEmpty);
-    animatePour(0xf2849e, 0.92, () => {
-      foamCapMesh.material.color.setHex(0xfbcfe8);
-      foamCapMesh.visible = true;
-      finishStep();
-    }, true);
+    const streamCol = opts.pourColor || craft.smoothieColor || 0xf2849e;
+    applyComputedCupVisuals(craft, recipe, streamCol, finishStep, true);
   } else if (actionId === 'serve') {
     playServeBell();
     const startPos = drinkGroup.position.clone();
@@ -2412,9 +3492,9 @@ function executeStep(actionId, opts = {}) {
   }
 }
 
-function animatePour(hexColor, targetLevel, onDone, skipAudio = false) {
+function animatePour(hexColor, targetLevel, onDone, skipAudio = false, streamColor = null) {
   if (!skipAudio) playPourSound(0.68, 520, 1020);
-  pourStream.material.color.setHex(hexColor);
+  pourStream.material.color.setHex(streamColor || hexColor);
   pourStream.position.set(PREP_POS.x, COUNTER_Y + 0.28, PREP_POS.z);
   pourStream.visible = true;
 
@@ -2424,7 +3504,7 @@ function animatePour(hexColor, targetLevel, onDone, skipAudio = false) {
   const maxH = drinkGroup.userData.liquidMaxH || 0.145;
   const startLevel = state.liquidLevel;
   const startTime = performance.now();
-  const duration = 700;
+  const duration = 640;
 
   function stepAnim(now) {
     const t = Math.min((now - startTime) / duration, 1);
@@ -2434,6 +3514,7 @@ function animatePour(hexColor, targetLevel, onDone, skipAudio = false) {
     if (foamCapMesh.visible) {
       foamCapMesh.position.y = 0.022 + maxH * cur + 0.004;
     }
+    syncCupToppingsPosition(cur);
     if (t < 1) {
       requestAnimationFrame(stepAnim);
     } else {
@@ -2441,6 +3522,7 @@ function animatePour(hexColor, targetLevel, onDone, skipAudio = false) {
       if (foamCapMesh.visible) {
         foamCapMesh.position.y = 0.022 + maxH * targetLevel + 0.004;
       }
+      syncCupToppingsPosition(targetLevel);
       pourStream.visible = false;
       onDone();
     }
@@ -2470,13 +3552,40 @@ function renderPracticumStatus() {
   const cupLabel = { mug: '머그컵', glass: '유리컵', tea: '찻잔' }[c.cupPlaced] || '없음';
   const beanTxt = c.beansGround ? (c.beansTamped ? '갈고 다짐✓' : '갈림(미다짐)') : '안 갈림';
   const shotTxt = c.shotPoured ? '컵에 부음✓' : (c.shotExtracted ? '추출됨' : '대기');
+  const blendTxt = c.smoothiePoured
+    ? '컵에 따름✓'
+    : (c.blenderItems.length > 0 ? (c.blended ? `갈림✓ (${c.blenderItems.length}종)` : `재료 ${c.blenderItems.length}개`) : '비어 있음');
+
   bar.innerHTML =
+    `<div class="prac-dest-group" role="group" aria-label="재료 담는 위치">` +
+      `<span class="prac-dest-label">담는 곳</span>` +
+      `<button type="button" class="prac-dest-btn ${state.practicumTarget === 'cup' ? 'active' : ''}" data-ptarget="cup">🥛 컵</button>` +
+      `<button type="button" class="prac-dest-btn ${state.practicumTarget === 'blender' ? 'active' : ''}" data-ptarget="blender">🌀 블렌더</button>` +
+    `</div>` +
     `<span class="prac-pill">☕ 컵: ${cupLabel}</span>` +
     `<span class="prac-pill">🫘 원두: ${beanTxt}</span>` +
     `<span class="prac-pill">🥃 샷: ${shotTxt}</span>` +
+    `<span class="prac-pill">🌀 믹서: ${blendTxt}</span>` +
     (c.spilled ? `<span class="prac-pill warn">💦 쟁반 흘림!</span>` : '') +
     (c.mistakes.length ? `<span class="prac-pill warn">⚠️ 실수 ${c.mistakes.length}건</span>` : '') +
     `<button type="button" class="prac-reset-btn" id="pracClearTrayBtn">🧽 쟁반 닦고 다시 담기</button>`;
+
+  bar.querySelectorAll('[data-ptarget]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.practicumTarget = btn.dataset.ptarget;
+      state.awaitingTempPick = null;
+      playSoftTone(620, 0.08, 'sine', 0.035);
+      showGuidance(
+        state.practicumTarget === 'blender'
+          ? '🌀 이제 얼음·우유·재료를 누르면 블렌더(믹서기)로 들어가요!'
+          : '🥛 이제 얼음·물·우유·재료를 누르면 쟁반 위 컵으로 들어가요!',
+        state.practicumTarget === 'blender' ? '🌀' : '🥛',
+        false
+      );
+      renderUI();
+    });
+  });
+
   const clr = document.getElementById('pracClearTrayBtn');
   if (clr) clr.addEventListener('click', clearTraySpillAndCup);
 }
@@ -2496,7 +3605,24 @@ function renderManualChoiceBar() {
         `<button type="button" class="manual-choice-btn" data-cup="tea">🍵 찻잔</button>` +
       `</div>`;
     bar.querySelectorAll('[data-cup]').forEach((b) => {
-      b.addEventListener('click', () => handlePracticumAction('cup', b.dataset.cup));
+      b.addEventListener('click', () => handlePracticumAction('cup', { cupType: b.dataset.cup }));
+    });
+    return;
+  }
+
+  // 실습모드 물/우유 온도 선택 팝업
+  if (state.practiceMode === 'practicum' && state.awaitingTempPick) {
+    const kind = state.awaitingTempPick.actionId;
+    const isWater = kind === 'water';
+    bar.classList.remove('hidden');
+    bar.innerHTML =
+      `<div class="manual-choice-title">${isWater ? '💧 어떤 온도의 물을 부을까요?' : '🥛 어떤 우유를 부을까요?'}</div>` +
+      `<div class="manual-choice-grid">` +
+        `<button type="button" class="manual-choice-btn" data-temp="hot">🔥 ${isWater ? '뜨거운 물' : '따뜻한 스팀 우유'}</button>` +
+        `<button type="button" class="manual-choice-btn" data-temp="cold">❄️ ${isWater ? '차가운 물' : '차가운 우유'}</button>` +
+      `</div>`;
+    bar.querySelectorAll('[data-temp]').forEach((b) => {
+      b.addEventListener('click', () => handlePracticumAction(kind, { temp: b.dataset.temp }));
     });
     return;
   }
@@ -2529,6 +3655,35 @@ function renderManualChoiceBar() {
   bar.classList.add('hidden');
 }
 
+function renderRecipeDrawer() {
+  const drawer = document.getElementById('recipeDrawer');
+  if (!drawer) return;
+  drawer.innerHTML = RECIPE_CATEGORIES.map((cat) => {
+    const entries = Object.entries(RECIPES).filter(([, r]) => r.category === cat.id);
+    if (!entries.length) return '';
+    return (
+      `<div class="recipe-cat-group">` +
+        `<div class="recipe-cat-title">${cat.title}</div>` +
+        `<div class="recipe-cat-grid">` +
+          entries.map(([key, r]) =>
+            `<button type="button" class="recipe-btn ${key === state.recipeKey ? 'active' : ''}" data-recipe="${key}">${r.emoji} ${r.name}</button>`
+          ).join('') +
+        `</div>` +
+      `</div>`
+    );
+  }).join('');
+
+  drawer.querySelectorAll('.recipe-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.recipeKey = btn.dataset.recipe;
+      drawer.classList.add('hidden');
+      recipePickerBtn.setAttribute('aria-expanded', 'false');
+      renderRecipeDrawer();
+      resetDrink();
+    });
+  });
+}
+
 function renderUI() {
   const recipe = getCurrentRecipe();
   const currentStep = getCurrentStep();
@@ -2552,8 +3707,10 @@ function renderUI() {
   strip.innerHTML = '';
   if (isPracticum) {
     const cupHint = { mug: '머그컵', glass: '투명 유리컵', tea: '찻잔' }[recipe.cupType] || '컵';
+    const tempHint = recipe.isHot ? '따뜻하게' : '차갑게';
+    const blendHint = recipe.usesBlender ? ' · 🌀 블렌더 사용' : '';
     strip.innerHTML =
-      `<div class="step-card current"><span class="step-num">🧪</span><span>실전 주문: ${recipe.emoji} ${recipe.name} (${cupHint}) · 실수해도 괜찮아요! 직접 순서대로 만들어 손님께 드려보세요.</span></div>`;
+      `<div class="step-card current"><span class="step-num">🧪</span><span>실전 주문: ${recipe.emoji} ${recipe.name} (${cupHint} · ${tempHint}${blendHint}) · 순서와 실수까지 직접 체험해 보세요!</span></div>`;
   } else {
     let currentCardEl = null;
     recipe.steps.forEach((step, idx) => {
@@ -2608,8 +3765,11 @@ function renderUI() {
 
   // 현재 단계 배너
   if (isPracticum) {
-    if (state.craft.log.length === 0 && !state.craft.spilled && !state.awaitingCupPick) {
-      showGuidance(`실습모드! ${recipe.name} 주문을 받았어요. 아래 도구와 3D 기구를 자유롭게 눌러 직접 만들어보세요!`, '🧪', false);
+    if (state.craft.log.length === 0 && !state.craft.spilled && !state.awaitingCupPick && !state.awaitingTempPick) {
+      const startTip = recipe.usesBlender
+        ? `실습모드! ${recipe.name} 주문을 받았어요. 현재 담는 곳이 '🌀 블렌더'로 맞춰져 있으니 재료를 넣고 갈아보세요!`
+        : `실습모드! ${recipe.name} 주문을 받았어요. 아래 도구와 3D 기구를 자유롭게 눌러 직접 만들어보세요!`;
+      showGuidance(startTip, '🧪', false);
     }
   } else if (isManual && state.awaitingNextChoice) {
     showGuidance('방금 단계를 완료했어요! 아래 선택지나 3D 카운터에서 다음에 할 일을 골라보세요.', '🧭', false);
@@ -2619,7 +3779,7 @@ function renderUI() {
     if (state.guidedMode) speakKorean(curDisp.prompt);
   }
 
-  // 하단 큰 동작 버튼 (실습모드에서는 전체 15종 도구 표시, 자동/수동에서는 레시피 도구 표시)
+  // 하단 큰 동작 버튼 (실습모드에서는 전체 23종 도구 표시, 자동/수동에서는 레시피 도구 표시)
   const neededIds = isPracticum
     ? TOOL_BUTTONS.map((b) => b.id)
     : [...new Set(recipe.steps.map((s) => s.target))];
@@ -2661,9 +3821,11 @@ function renderUI() {
   }
 
   // 단계별 자동 카메라 워킹
-  if (state.autoCamera) {
+  if (state.autoCamera && !state.awaitingCupPick && !state.awaitingTempPick) {
     if (isPracticum || (isManual && state.awaitingNextChoice)) {
-      focusOverviewCamera(520);
+      if (state.cameraViewMode !== 'overview' || (isPracticum && state.craft.log.length === 0)) {
+        focusOverviewCamera(520);
+      }
     } else if (currentStep) {
       focusStepCamera(currentStep.target, 540);
     }
@@ -2706,11 +3868,14 @@ function showCompletionModal(recipe, evalRes = null) {
 }
 
 function resetDrink() {
+  const recipe = getCurrentRecipe();
   state.stepIndex = 0;
   state.busy = false;
   state.awaitingNextChoice = false;
   state.manualChoices = [];
   state.awaitingCupPick = false;
+  state.awaitingTempPick = null;
+  state.practicumTarget = recipe.usesBlender ? 'blender' : 'cup';
   state.liquidLevel = 0;
   state.hasIce = false;
   state.craft = createInitialCraft();
@@ -2722,14 +3887,20 @@ function resetDrink() {
   foamCapMesh.visible = false;
   iceGroup.visible = false;
   steamGroup.visible = false;
+  fizzGroup.visible = false;
+  whipGroup.visible = false;
+  whipGroup.scale.set(1, 1, 1);
+  drizzleGroup.visible = false;
   cupToppingGroup.visible = false;
   while (cupToppingGroup.children.length > 0) cupToppingGroup.remove(cupToppingGroup.children[0]);
   fallingItemGroup.visible = false;
   blenderMixMesh.visible = false;
   blenderMixMesh.scale.y = 0.01;
+  syncBlenderChunks3D([], true);
   pourStream.visible = false;
   spillPuddleMesh.visible = false;
   spillIceGroup.visible = false;
+  shotOverflowMesh.visible = false;
   if (portafilterCoffee) portafilterCoffee.visible = false;
   if (shotLiquidMesh) shotLiquidMesh.visible = false;
   if (shotGlassGroup) {
@@ -2759,7 +3930,7 @@ renderer.domElement.addEventListener('pointerup', (e) => {
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects(interactables, false);
   if (hits.length > 0) {
-    handleAction(hits[0].object.userData.targetId);
+    handleAction(hits[0].object.userData.targetId, { from3D: true });
   }
 });
 
@@ -2784,6 +3955,7 @@ renderer.domElement.addEventListener('pointermove', (e) => {
 // 상단 음료 선택 드로어 & 버튼 이벤트 연결
 const recipePickerBtn = document.getElementById('recipePickerBtn');
 const recipeDrawer = document.getElementById('recipeDrawer');
+renderRecipeDrawer();
 recipePickerBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   const isHidden = recipeDrawer.classList.toggle('hidden');
@@ -2792,17 +3964,6 @@ recipePickerBtn.addEventListener('click', (e) => {
     settingsPopover.classList.add('hidden');
     settingsToggleBtn.setAttribute('aria-expanded', 'false');
   }
-});
-
-document.querySelectorAll('.recipe-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.recipe-btn').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.recipeKey = btn.dataset.recipe;
-    recipeDrawer.classList.add('hidden');
-    recipePickerBtn.setAttribute('aria-expanded', 'false');
-    resetDrink();
-  });
 });
 
 // 설정 팝오버 토글
@@ -3000,6 +4161,14 @@ function animate() {
       const cycle = (t * 0.14 + i * 0.15) % 0.28;
       puff.position.y = 0.18 + cycle;
       puff.material.opacity = 0.52 * (1 - cycle / 0.28);
+    });
+  }
+
+  if (fizzGroup.visible) {
+    fizzBubbles.forEach((b, i) => {
+      const cycle = (t * 0.16 + i * 0.09) % 0.12;
+      b.position.y = 0.03 + cycle;
+      b.material.opacity = 0.85 * (1 - cycle / 0.12);
     });
   }
 

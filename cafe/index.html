@@ -56,17 +56,8 @@
           </div>
         </header>
 
-        <!-- 음료 선택 드로어 (필요할 때만 열림) -->
-        <nav id="recipeDrawer" class="recipe-drawer hidden" aria-label="만들 음료 선택">
-          <button class="recipe-btn active" data-recipe="hot_americano">☕ 따뜻한 아메리카노</button>
-          <button class="recipe-btn" data-recipe="iced_americano">🧊 아이스 아메리카노</button>
-          <button class="recipe-btn" data-recipe="iced_latte">🥛 아이스 카페라떼</button>
-          <button class="recipe-btn" data-recipe="strawberry_smoothie">🍓 딸기 스무디</button>
-          <button class="recipe-btn" data-recipe="iced_lemonade">🍋 아이스 레몬에이드</button>
-          <button class="recipe-btn" data-recipe="hot_choco">🍫 따뜻한 핫초코</button>
-          <button class="recipe-btn" data-recipe="hot_tea">🍵 따뜻한 녹차</button>
-          <button class="recipe-btn" data-recipe="strawberry_latte">🍓 딸기 라떼</button>
-        </nav>
+        <!-- 음료 선택 드로어 (필요할 때만 열림, JS에서 카테고리별 동적 생성) -->
+        <nav id="recipeDrawer" class="recipe-drawer hidden" aria-label="만들 음료 선택"></nav>
 
         <!-- 슬림 시각적 과제 분석표 -->
         <section class="schedule-strip" id="scheduleStrip" aria-label="만드는 순서"></section>
