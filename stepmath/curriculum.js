@@ -771,7 +771,8 @@ function getStageCurriculum(stageId) {
     type: "choice",
     choices: Array.isArray(p.choices) ? p.choices : [],
     answer: p.answer,
-    okMsg: p.okMsg || "정답이에요! 정말 잘했어요!"
+    okMsg: p.okMsg || "정답이에요! 정말 잘했어요!",
+    _isCustom: true
   })).concat(base.problems || []);
   return { examples, example: examples[0], problems };
 }

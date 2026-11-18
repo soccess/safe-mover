@@ -1,0 +1,72 @@
+[특수교육(지적장애·자폐성장애) 관점 검토에 따른 프로젝트 수정 완료 보고서]
+작성일: 2026-11-15
+기준 검토 문서: special_ed_review.txt (특수교육 교육과정 전문가·현장 특수교사 5대 개선점)
+고려 장애 영역: 지적장애(Intellectual Disability) 및 자폐성장애(Autism Spectrum Disorder)
+
+========================================================================
+1. 수정 요약 (5대 개선점별 반영 현황)
+========================================================================
+
+[개선점 1] 감각 과부하 완화 및 전 앱 통합 특수교육 맞춤 지원 설정
+- assets/d1_client.js:
+  • 전 앱 공용 설정 저장소(SPED_PREFS_KEY = "safe_mover.sped_prefs.v1") 및 D1Bridge API(getSpedPrefs, setSpedPrefs, onSpedPrefsChange, applySpedPrefsToDom, speakText, openSpedSettingsModal) 추가.
+  • 저자극 모드(calmMode), 쉬운 말 모드(easyMode), 자동 음성 안내(ttsAuto), 천천히 진행(slowPace), 고대비(highContrast) 설정 모달(#d1SpedModal) 및 body.sped-calm / body.sped-contrast 전역 CSS 적용.
+- index.html, assets/portal.css:
+  • 포털 상단 제어 바(.d1-controls)에 '🛡️ 맞춤 지원(#btnSpedPrefs)' 버튼 추가 및 body.sped-calm 시 포털 카드·SVG 애니메이션 정지 규칙 추가.
+- safe_mover_8_stages.html, safe_mover/audio.js, safe_mover/renderer.js, safe_mover/styles.css, safe_mover/game.js:
+  • 효과음(sfxOn)과 음성 읽기(voiceOn)를 분리하여 '🔔 효과음 ON/OFF(#btnSound)'과 '🗣️ 음성 ON/OFF(#btnVoice)' 독립 제어 지원.
+  • '🌿 저자극 ON/OFF(#btnCalmMode)' 활성화 시 캔버스 내 오답 X 고주파 깜빡임, 화면 흔들림(shake), 배경 날씨/색종이 파티클, 회전 광선, 바운싱 화살표, 강풍(wind) 위치 밀림을 중단하고, 날카로운 sawtooth/square 효과음을 부드러운 sine/triangle 톤으로 완화하며 매 0.27초 발소리(step)를 음소거함.
+- emotion/activities.js, emotion/styles.css:
+  • body.sped-calm 적용 시 꽃가루 효과(taConfetti) 및 히어로·물방울·비눗방울·SVG 애니메이션 억제.
+- cafe/style.css, cafe/app.js:
+  • '🌿 저자극(#calmCafeBtn)' 활성화 시 그라인더·블렌더 3D 진동 폭(0.007→0.0012 / 0.008→0.0012) 및 혼합액 흔들림, 강조 비콘 회전·펄스, 수증기/카드 애니메이션을 완화함.
+
+[개선점 2] 문해력·작업기억 부담을 낮춘 '쉬운 말 + 음성 읽기(TTS)' 지원
+- emotion.html, emotion/data.js, emotion/app.js:
+  • 상단 '🔊 읽어주기(#btnEmotionSpeak)', '📖 쉬운 말(#btnEmotionEasy)' 버튼 및 카드·배너·활동 순서별 인라인 '🔊 듣기'(#btnBannerSpeak, #btnDetailSpeak, .em-tts-inline) 추가.
+  • emotion/data.js에 일상 단문 중심의 EASY_MOOD_COPY 및 EASY_ACTION_STEPS(21개 활동 전체) 추가하여 쉬운 말 모드 시 즉시 전환.
+- cafe/index.html, cafe/app.js:
+  • 안내 배너 내 '🔊 듣기(#speakStepBtn)' 버튼과 설정 팝오버 내 '📖 쉬운 말(#easyCafeBtn)' 버튼 추가.
+  • EASY_STEP_MAP을 통해 바리스타 전문 용어(예: 원두 그라인더→커피콩 갈기, 탬퍼 다지기→가루 꾹 누르기, 머신 샷 추출→진한 커피 내리기 등)를 쉬운 일상 어휘와 짧은 문장으로 전환하고, slowPace 설정 시 TTS 발화 속도를 0.82배속으로 늦춤.
+- safe_mover/game.js:
+  • 캔버스에서 바른 단어를 터치해 이동할 때 해당 단어를 AUDIO.speak로 읽어주도록 보완.
+
+[개선점 3] 예측 가능한 전환 예고 및 '지금→다음(First-Then) · 잠깐 쉬기' 도입
+- safe_mover_8_stages.html, safe_mover/game.js:
+  • 기존 1.35초 자동 스테이지 전환(setTimeout)을 제거하고, enterStageTransition()을 통해 [완료 요약 + 다음 단계 예고 + '▶ 다음 단계 시작(#btnNextStage)' / '🔁 이 단계 한 번 더(#btnRepeatStage)'] 전환 카드를 제공.
+  • 상단 '⏸️ 쉬기(#btnPause)' 버튼 및 Space/Escape 단축키로 togglePause() 호흡 휴식 오버레이('▶ 이어서 하기', '🔁 이 단계 처음부터') 제공.
+- cafe/index.html, cafe/style.css, cafe/app.js:
+  • 상단 순서 스트립 아래에 '지금(now) → 다음(next)' 요약 바(#firstThenBar) 추가.
+  • 상단 '🌿 쉼(#quickBreakBtn)' 버튼 및 호흡 진정 모달(#cafeBreakModal, '▶ 이어서 만들기(#resumeCafeBtn)') 추가.
+- emotion.html, emotion/app.js:
+  • 진행 단계 아래 '🧭 지금 → 다음' 안내 바(#emNowNextBar) 추가 및 상단 원클릭 긴급 진정 버튼 '🌬️ 바로 숨 고르기(#btnQuickBreathe)' 추가(즉시 '천천히 숨 쉬기' 활동으로 이동).
+
+[개선점 4] 무오류 학습 지원 및 '수학 공책(stepmath)' 21단계 교구/도움 버그 수정
+- stepmath/practice_init.js:
+  • 구버전 18단계 기준이던 HINTS 객체와 12단계 기준이던 modelStep(stageId) 함수를 STAGES 1~21단계 전체(sort, count, place, compare, compose, maketen, strategy, multiply, fraction, measure length/clock/money, shape, data) 실제 DOM 선택자와 일치하도록 전면 수정.
+  • voiceBtn, settings와 D1Bridge 공용 특수교육 설정(getSpedPrefs/setSpedPrefs/onSpedPrefsChange) 양방향 연동.
+- stepmath/tools_basic.js, stepmath/render_core.js:
+  • 10 만들기 비덧셈 안내의 잘못된 단계 연결('4단계 가르기로 확인하기', state.stage = 4)을 실제 수 가르기 단계인 '7단계 가르기로 확인하기'(state.stage = 7)로 수정.
+  • renderConcrete의 구버전 안내 문구('7단계 수모형' → '11단계 수모형', '8단계 교구' → '13단계 묶음 교구' / '14단계 나누기 교구') 수정.
+- stepmath/support_ui.js:
+  • loadSupportSettings() / saveSupportSettings()가 D1Bridge 특수교육 설정(calmMode↔motion, easyMode↔easy, highContrast↔contrast, ttsAuto↔voice)과 연동되도록 수정.
+- safe_mover/game.js:
+  • '🐢 천천히(#btnPracticeMode)' 연습 모드 추가: 이동·낙하 속도 감속(speedMul=0.55), 출현 간격 확대(spawnMul=1.45), 이중 적·빙판 미끄러짐·강풍·적 흔들림(sway) 해제, 오타 접촉 시 화면 흔들림과 붉은 경고 대신 부드러운 교정 팁(info 배너 + 정답 안내) 제공, spawnCorrect() 중복 호출(2회→1회) 제거.
+
+[개선점 5] 전 앱 공용 AAC(말판) 통합 및 IEP 연계 학습 기록 강화
+- assets/d1_client.js, index.html:
+  • D1Bridge 공용 플로팅 바(#d1FloatBar)와 포털 상단에 '💬 말판(#d1FloatingAacBtn / #btnGlobalAac)' 탑재.
+  • 8개 핵심 의사소통 버튼(도움 필요, 잠깐 쉬기, 천천히, 다시 설명, 화장실, 끝났어요, 좋아요, 힘들어요) 클릭 시 음성 출력(speechSynthesis) 및 D1 학습 기록 저장.
+- emotion/app.js:
+  • 활동 완료(#donePanel) 시 3단계 감정 사후 점검(Check-out: '😌 한결 편안해졌어요', '🙂 조금 나아졌어요', '🙋 선생님 도움이 필요해요') 버튼(.checkout-btn) 추가 및 선택 결과를 D1Bridge.saveRecord(afterMood, afterLabel)에 저장.
+- safe_mover/game.js:
+  • 오타 접촉 시 missedWords 목록을 수집(recordMissed)하여 최종 결과 화면에 '📖 다시 살펴볼 맞춤법 (오답 복습)' 섹션을 표시하고 D1Bridge.saveRecord payload/summary에 포함.
+
+========================================================================
+2. 검증 결과
+========================================================================
+1) 정적 구문·참조 무결성 점검 (Python 스크립트):
+   - 수정한 16개 JS/CSS 파일 전체 괄호·문자열·주석·정규식 밸런스 검사 통과(OK).
+   - HTML 정적 ID vs JS getElementById 참조 대조 및 stepmath HINTS(1~21)·modelStep(1~21) 전 단계 커버리지 확인 완료.
+2) 실제 브라우저 실행 점검 (Chrome Headless):
+   - index.html, safe_mover_8_stages.html, emotion.html, cafe/index.html, stepmath.html 5개 페이지 모두 정상 로드(exit code 0) 및 추가 UI·동적 DOM 요소 렌더링 확인 완료.

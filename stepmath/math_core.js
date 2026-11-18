@@ -237,9 +237,9 @@ function playMathTone(freq, dur = 0.14, type = 'sine', vol = 0.045, delay = 0) {
   } catch (e) { /* 오디오 미지원 환경 무시 */ }
 }
 
-function playMathSfx(kind) {
+function playMathSfx(kind, extra) {
   if (state && state.settings && state.settings.lowStim) {
-    if (kind === 'correct') playMathTone(523.25, 0.16, 'sine', 0.028);
+    if (kind === 'correct' || kind === 'fanfare') playMathTone(523.25, 0.16, 'sine', 0.028);
     return;
   }
   if (kind === 'tap') {
@@ -247,15 +247,36 @@ function playMathSfx(kind) {
   } else if (kind === 'place') {
     playMathTone(440, 0.08, 'triangle', 0.04);
     playMathTone(660, 0.09, 'sine', 0.028, 0.04);
-  } else if (kind === 'correct') {
+  } else if (kind === 'coin') {
+    playMathTone(987.77, 0.09, 'sine', 0.045);
+    playMathTone(1318.51, 0.22, 'triangle', 0.045, 0.055);
+  } else if (kind === 'pop') {
+    playMathTone(360, 0.05, 'sine', 0.045);
+    playMathTone(720, 0.08, 'sine', 0.035, 0.03);
+  } else if (kind === 'zap') {
+    playMathTone(587.33, 0.08, 'sawtooth', 0.025);
+    playMathTone(880, 0.12, 'triangle', 0.04, 0.04);
+    playMathTone(1174.66, 0.18, 'sine', 0.04, 0.09);
+  } else if (kind === 'rocket') {
+    [260, 340, 460, 620, 840].forEach((f, i) => playMathTone(f, 0.09, 'triangle', 0.032, i * 0.045));
+  } else if (kind === 'note') {
+    const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66];
+    const idx = Math.max(0, Number(extra) || 0) % scale.length;
+    playMathTone(scale[idx], 0.16, 'triangle', 0.045);
+  } else if (kind === 'combo') {
+    const step = Math.min(Number(extra) || 1, 6);
+    const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+    playMathTone(scale[step - 1], 0.18, 'triangle', 0.05);
+    playMathTone(scale[step - 1] * 1.5, 0.2, 'sine', 0.03, 0.04);
+  } else if (kind === 'correct' || kind === 'fanfare') {
     [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
-      playMathTone(f, 0.22, 'sine', 0.05, i * 0.085);
-      playMathTone(f * 1.5, 0.15, 'triangle', 0.018, i * 0.085 + 0.015);
+      playMathTone(f, 0.24, 'sine', 0.05, i * 0.08);
+      playMathTone(f * 1.5, 0.16, 'triangle', 0.02, i * 0.08 + 0.015);
     });
   } else if (kind === 'guided') {
     playMathTone(523.25, 0.14, 'sine', 0.042);
     playMathTone(659.25, 0.18, 'sine', 0.04, 0.09);
-  } else if (kind === 'hint') {
+  } else if (kind === 'hint' || kind === 'boing') {
     playMathTone(392, 0.12, 'sine', 0.036);
     playMathTone(329.63, 0.16, 'sine', 0.032, 0.08);
   }

@@ -3,45 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>수학 공책 — 21단계 세분화 · 터치 구체물 활동</title>
+  <title>수학 공책 — 21단계 화폐계산 선수지식 · 태블릿 SVG 수학 게임</title>
   <link rel="stylesheet" href="./stepmath/styles.css">
 </head>
 <body>
- <section class="course-gate" id="courseGate" aria-labelledby="gateTitle">
+ <section class="course-gate gm-arcade-gate" id="courseGate" aria-labelledby="gateTitle">
   <div class="gate-brand">
     <div class="gate-mark" aria-hidden="true">
-      <svg viewBox="0 0 48 48" width="38" height="38">
-        <rect x="6" y="8" width="36" height="32" rx="8" fill="rgba(255,255,255,0.18)" stroke="#fff" stroke-width="2.4"/>
-        <line x1="11" y1="18" x2="37" y2="18" stroke="#bfdbfe" stroke-width="2.2" stroke-linecap="round"/>
-        <line x1="11" y1="30" x2="37" y2="30" stroke="#fde68a" stroke-width="2.2" stroke-linecap="round"/>
-        <circle cx="17" cy="18" r="3.6" fill="#fde047"/>
-        <circle cx="26" cy="18" r="3.6" fill="#fde047"/>
-        <circle cx="21" cy="30" r="3.6" fill="#86efac"/>
-        <circle cx="31" cy="30" r="3.6" fill="#86efac"/>
+      <svg viewBox="0 0 64 64" width="46" height="46">
+        <circle cx="32" cy="32" r="27" fill="#fde047" stroke="#ca8a04" stroke-width="3.5" class="svg-pulse-x"/>
+        <circle cx="32" cy="32" r="21" fill="none" stroke="#b45309" stroke-width="1.8" stroke-dasharray="4 3"/>
+        <text x="32" y="39" text-anchor="middle" font-size="22" font-weight="900" fill="#78350f">₩</text>
       </svg>
     </div>
     <div>
-       <h1 class="gate-title" id="gateTitle" tabindex="-1">오늘 할 수학을 골라요</h1>
-       <p class="gate-subtitle">선생님과 함께 코스를 골라요. 먼저 보고, 같이 해 보고, 혼자서도 해 볼 수 있어요.</p>
+       <h1 class="gate-title" id="gateTitle" tabindex="-1">🪙 황금 마트 21 스테이지 대모험</h1>
+       <p class="gate-subtitle">터치하고! 끌고! 터뜨려라! 21개의 신나는 태블릿 아케이드 게임으로 화폐 마스터가 되어 보세요!</p>
     </div>
   </div>
-   <h2 class="course-prompt">선생님, 수업할 코스를 골라 주세요</h2>
-   <div class="course-grid" role="list" aria-label="선생님이 고르는 학습 코스">
-    <button type="button" class="course-card" data-course="count">
+   <div class="course-grid" role="list" aria-label="4대 게임 월드">
+    <button type="button" class="course-card world-1" data-course="count">
       <span class="course-icon" aria-hidden="true">
         <svg viewBox="0 0 56 56" width="48" height="48">
           <rect x="6" y="10" width="44" height="36" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
           <circle cx="18" cy="24" r="4.5" fill="#2563eb" class="svg-bounce-1"/>
           <circle cx="28" cy="24" r="4.5" fill="#2563eb" class="svg-bounce-2"/>
           <circle cx="38" cy="24" r="4.5" fill="#16a34a" class="svg-bounce-1"/>
-          <text x="28" y="40" text-anchor="middle" font-size="11" font-weight="900" fill="#1e40af">1·2·3~20</text>
+          <text x="28" y="40" text-anchor="middle" font-size="11" font-weight="900" fill="#1e40af">1~20</text>
         </svg>
       </span>
-       <h2>하나둘 숫자 세기</h2>
-       <p>같은 것을 모으고, 1부터 20까지 하나씩 세고, 크기를 비교해요.</p>
-       <span class="course-meta">활동 5개 · 1~5단계</span>
+       <h2>🏝️ 보물섬 숫자 탐험</h2>
+       <p>컨베이어 분류 · Polka Dot 짝꿍 · Make 10 스냅 · 줄다리기 대결!</p>
+       <span class="course-meta">▶ 1~5 스테이지 바로 플레이</span>
     </button>
-    <button type="button" class="course-card" data-course="calc">
+    <button type="button" class="course-card world-2" data-course="calc">
       <span class="course-icon" aria-hidden="true">
         <svg viewBox="0 0 56 56" width="48" height="48">
           <rect x="6" y="10" width="44" height="36" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
@@ -51,24 +46,22 @@
           <text x="37" y="42" text-anchor="middle" font-size="14" font-weight="900" fill="#7c3aed">÷</text>
         </svg>
       </span>
-       <h2>더하기·빼기·곱하기·나누기</h2>
-       <p>모으고 가르고, 10 만들고, 뛰어 세고, 분수·소수까지 해 봐요.</p>
-       <span class="course-meta">활동 11개 · 6~16단계</span>
+       <h2>🚀 우주 계산 어드벤처</h2>
+       <p>방울 합체 · 볼링 뺄셈 · 로켓 수직선 · 금고 털기 · YouCubed 땅따먹기!</p>
+       <span class="course-meta">▶ 6~16 스테이지 바로 플레이</span>
     </button>
-    <button type="button" class="course-card" data-course="life">
+    <button type="button" class="course-card world-3" data-course="life">
       <span class="course-icon" aria-hidden="true">
         <svg viewBox="0 0 56 56" width="48" height="48">
-          <circle cx="28" cy="28" r="20" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/>
-          <line x1="28" y1="28" x2="28" y2="15" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="28" y1="28" x2="38" y2="28" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" class="svg-pulse-x"/>
-          <circle cx="28" cy="28" r="2.8" fill="#0f172a"/>
+          <circle cx="28" cy="28" r="20" fill="#fef08a" stroke="#ca8a04" stroke-width="2.8" class="svg-pulse-x"/>
+          <text x="28" y="33" text-anchor="middle" font-size="15" font-weight="900" fill="#78350f">500</text>
         </svg>
       </span>
-       <h2>시계·돈·길이·도형 놀이</h2>
-       <p>길이·무게를 재고, 시계와 동전을 세고, 도형 무늬를 맞춰요.</p>
-       <span class="course-meta">활동 4개 · 17~20단계</span>
+       <h2>🏪 꿈의 마트 &amp; 시계 마을</h2>
+       <p>동전 결제와 거스름돈 · 시간 여행 시계 · 장인 공방 · 네온 도형 로봇!</p>
+       <span class="course-meta">▶ 17~20 스테이지 바로 플레이</span>
     </button>
-    <button type="button" class="course-card" data-course="data">
+    <button type="button" class="course-card world-4" data-course="data">
       <span class="course-icon" aria-hidden="true">
         <svg viewBox="0 0 56 56" width="48" height="48">
           <rect x="6" y="10" width="44" height="36" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2.5"/>
@@ -77,53 +70,82 @@
           <rect x="36" y="17" width="7" height="23" rx="2" fill="#22c55e" class="svg-bounce-1"/>
         </svg>
       </span>
-       <h2>그림 그래프 놀이</h2>
-       <p>과일을 그래프에 놓고, 무엇이 가장 많은지 찾아봐요.</p>
-       <span class="course-meta">활동 1개 · 21단계</span>
+       <h2>🏆 슈퍼마켓 챔피언스</h2>
+       <p>솟아오르는 마트 그래프 타워와 과일 장바구니 대작전!</p>
+       <span class="course-meta">▶ 21 스테이지 바로 플레이</span>
     </button>
   </div>
-   <p class="gate-note">💡 활동은 <b>먼저 보기 → 같이 해보기 → 혼자 해보기</b> 순서예요. 교구를 <b>손가락으로 끌어다 놓아</b> 문제를 풀어요. 틀려도 괜찮아요. 다시 해 볼 수 있어요.</p>
+
+  <div class="gm-world-map" aria-label="21 스테이지 바로 선택">
+    <div class="gm-world-map-head"><span>🎮 스테이지 바로 골라 출발하기 (1 ~ 21)</span><button type="button" class="btn primary" id="allActivitiesBtn">🚀 1스테이지부터 모험 시작!</button></div>
+    <div class="gm-stage-tiles">
+      <button type="button" class="gm-stage-tile" data-direct-stage="1"><span>🧺</span><b>1</b><small>마트 분류</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="2"><span>✨</span><b>2</b><small>도트 짝꿍</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="3"><span>⚡</span><b>3</b><small>10 스냅</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="4"><span>🪙</span><b>4</b><small>10원 상점</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="5"><span>🚩</span><b>5</b><small>줄다리기</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="6"><span>🫧</span><b>6</b><small>방울 합체</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="7"><span>🎳</span><b>7</b><small>볼링 뺄셈</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="8"><span>🔥</span><b>8</b><small>10 부스터</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="9"><span>🐸</span><b>9</b><small>연못 점프</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="10"><span>🚀</span><b>10</b><small>로켓 수직선</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="11"><span>🏦</span><b>11</b><small>동전 환전</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="12"><span>🔐</span><b>12</b><small>금고 털기</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="13"><span>🟦</span><b>13</b><small>땅따먹기</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="14"><span>🐾</span><b>14</b><small>파티 나눔</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="15"><span>🍕</span><b>15</b><small>피자 셰프</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="16"><span>🧪</span><b>16</b><small>물약 연구소</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="17"><span>📏</span><b>17</b><small>장인 공방</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="18"><span>🕒</span><b>18</b><small>시간 여행</small></button>
+      <button type="button" class="gm-stage-tile hot" data-direct-stage="19"><span>💳</span><b>19</b><small>마트 계산대</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="20"><span>🤖</span><b>20</b><small>도형 로봇</small></button>
+      <button type="button" class="gm-stage-tile" data-direct-stage="21"><span>📊</span><b>21</b><small>마트 그래프</small></button>
+    </div>
+  </div>
   <div class="row-flex" style="justify-content:center;margin-top:14px">
-     <button type="button" class="btn primary" id="allActivitiesBtn">🎯 모든 활동 둘러보기</button>
-     <button type="button" class="btn soft" id="gateSettingsBtn">⚙️ 화면·도움 설정</button>
-     <a class="home-portal-link" href="./index.html">🏠 학습 게임 목록</a>
+     <button type="button" class="btn soft" id="gateSettingsBtn">⚙️ 화면·사운드 설정</button>
+     <a class="home-portal-link" href="./index.html">🏠 전체 게임 목록</a>
   </div>
 </section>
 
 <div class="app" id="app" hidden>
 
-  <header class="topbar">
+  <header class="topbar gm-arcade-topbar">
     <div class="brand">
       <div class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 48 48" width="32" height="32">
-          <rect x="6" y="8" width="36" height="32" rx="8" fill="rgba(255,255,255,0.18)" stroke="#fff" stroke-width="2.4"/>
-          <line x1="11" y1="18" x2="37" y2="18" stroke="#bfdbfe" stroke-width="2.2" stroke-linecap="round"/>
-          <line x1="11" y1="30" x2="37" y2="30" stroke="#fde68a" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="17" cy="18" r="3.6" fill="#fde047"/>
-          <circle cx="26" cy="18" r="3.6" fill="#fde047"/>
-          <circle cx="21" cy="30" r="3.6" fill="#86efac"/>
-          <circle cx="31" cy="30" r="3.6" fill="#86efac"/>
+          <circle cx="24" cy="24" r="19" fill="#fde047" stroke="#ca8a04" stroke-width="2.6"/>
+          <text x="24" y="30" text-anchor="middle" font-size="16" font-weight="900" fill="#78350f">₩</text>
         </svg>
       </div>
       <div>
-        <div class="brand-title">수학 공책</div>
-       <div class="brand-sub">세고, 놓고, 끌어 보며 배우는 수학</div>
+        <div class="brand-title">황금 마트 어드벤처</div>
+       <div class="brand-sub">21 스테이지 화폐 대모험</div>
       </div>
     </div>
     <div class="top-actions">
-      <div class="view-switch" role="tablist" aria-label="화면 보기 선택">
-         <button type="button" id="viewActivityBtn" class="on" role="tab" aria-selected="true">🎯 놀이</button>
-         <button type="button" id="viewCalcBtn" role="tab" aria-selected="false">🧮 숫자 넣기</button>
-      </div>
-      <button type="button" class="icon-btn on" id="voiceBtn" aria-pressed="true">🔊 음성 안내</button>
-       <button type="button" class="icon-btn off" id="courseBtn">🗂️ 코스 바꾸기</button>
-       <button type="button" class="icon-btn off" id="helpBtn">📚 수학 놀이 안내</button>
-       <button type="button" class="icon-btn off" id="settingsBtn">⚙️ 화면·도움 설정</button>
-       <button type="button" class="icon-btn off" id="resetBtn">🧹 숫자 지우기</button>
+      <a class="icon-btn off" href="./index.html" style="text-decoration:none">🏠 게임 목록</a>
+      <button type="button" class="icon-btn off" id="courseBtn">🗺️ 월드맵</button>
+      <button type="button" class="icon-btn on" id="voiceBtn" aria-pressed="true">🔊 사운드</button>
+      <button type="button" class="icon-btn off" id="breakBtn">🌿 쉬기</button>
+      <button type="button" class="icon-btn off" id="teacherToolsBtn">🛠️ 교사용</button>
     </div>
   </header>
 
-  <nav class="stage-nav" id="stageNav" aria-label="수학 학습 단계"></nav>
+  <div class="gm-teacher-drawer" id="teacherToolsDrawer" hidden>
+    <div class="view-switch" role="tablist" aria-label="화면 보기 선택">
+       <button type="button" id="viewActivityBtn" class="on" role="tab" aria-selected="true">🎮 게임 모드</button>
+       <button type="button" id="viewCalcBtn" role="tab" aria-selected="false">🧮 계산기 모드</button>
+    </div>
+    <button type="button" class="support-btn" id="teacherBtn">📋 플레이 기록</button>
+    <button type="button" class="support-btn" id="aacBtn">💬 말판</button>
+    <button type="button" class="support-btn" id="bundleBtn">🔟 10·100 묶기</button>
+    <button type="button" class="support-btn" id="settingsBtn">⚙️ 설정</button>
+    <button type="button" class="support-btn" id="helpBtn">📚 연구 근거</button>
+    <button type="button" class="support-btn" id="resetBtn">🧹 지우기</button>
+  </div>
+
+  <nav class="stage-nav" id="stageNav" aria-label="스테이지 선택"></nav>
 
   <div class="support-bar" id="supportBar" aria-label="학습 지원 도구">
     <div class="first-then" aria-label="먼저 다음 보드">
@@ -135,10 +157,6 @@
       <span class="t-label">칭찬 별</span>
       <div class="token-dots" id="tokenDots"></div>
     </div>
-    <button type="button" class="support-btn" id="aacBtn">💬 말판</button>
-    <button type="button" class="support-btn" id="breakBtn">🌿 쉬는 시간</button>
-    <button type="button" class="support-btn" id="bundleBtn">🔟 10·100 묶기</button>
-    <button type="button" class="support-btn" id="teacherBtn">📋 기록</button>
   </div>
 
   <main class="layout">
@@ -333,14 +351,12 @@
       <span class="kbd">Esc</span> 처음으로 · 끌기 조작은 마우스·펜·터치 모두 지원합니다.
     </div>
     <div class="research-card">
-      <b>교육 설계 참고 자료</b><br>
-      • IES What Works Clearinghouse (2021), <i>Assisting Students Struggling with Mathematics</i> ·
-        <a href="https://ies.ed.gov/ncee/wwc/practiceguide/26" target="_blank" rel="noopener noreferrer">WWC 실천 안내</a><br>
-      • CAST (2024), <i>UDL Guidelines 3.0</i> ·
-        <a href="https://udlguidelines.cast.org/" target="_blank" rel="noopener noreferrer">UDL 지침 보기</a><br>
-      • W3C, <i>Web Content Accessibility Guidelines (WCAG) 2.2</i> ·
-        <a href="https://www.w3.org/TR/WCAG22/" target="_blank" rel="noopener noreferrer">WCAG 2.2</a><br>
-      <small>학생의 속도·지원 수준·감각 선호에 맞게 활동을 조정해 주세요.</small>
+      <b>교육·게임 설계 참고 문헌 (논문 · Archive.org · 세계 수학 교사 커뮤니티)</b><br>
+      • Serra-Grabulosa, J. M., &amp; Grau, S. (2025/2026), <i>NeurekaNUM: Digital Serious Game for Developmental Dyscalculia</i> — 멘탈 수직선 추정, 서비타이징, 10진 자릿값 게임.<br>
+      • Bird, R., <i>The Dyscalculia Toolkit</i> (<a href="https://archive.org" target="_blank" rel="noopener noreferrer">Archive.org</a>) — 10칸 판 보수, 점 패턴, 10 거쳐 더하기, 공평 나누기 다감각 게임.<br>
+      • Dan Finkel (<i>Math for Love</i>: Tiny Polka Dot, Make 10) · Jo Boaler (<i>YouCubed</i>: How Close to 100?, Dot Talks) · Cambridge <i>NRICH</i> (Tug of War, Strike It Out, Fractions &amp; Coins).<br>
+      • Elementary Math GBL Flow &amp; Engagement Studies (2024–2026) · Touchscreen Functional Money Math · IES WWC (2021) · UDL 3.0.<br>
+      <small>학생의 속도·지원 수준·감각 선호에 맞게 게임과 도움을 조정해 주세요.</small>
     </div>
   </div>
 </dialog>
@@ -516,6 +532,9 @@
   <script src="./stepmath/render_core.js"></script>
   <script src="./stepmath/tools_basic.js"></script>
   <script src="./stepmath/tools_advanced.js"></script>
+  <script src="./stepmath/vfx_engine.js"></script>
+  <script src="./stepmath/svg_assets.js"></script>
+  <script src="./stepmath/game_arena.js"></script>
   <script src="./stepmath/practice_init.js"></script>
 </body>
 </html>

@@ -46,20 +46,20 @@ function renderNav() {
 function renderLessonPath() {
   const stage = currentStage();
   const lesson = (state.settings.easy && EASY_LESSONS[stage.id]) ? EASY_LESSONS[stage.id] : MICRO_LESSONS[stage.id];
-  const labels = ['👀 먼저 보기', '🤝 같이 해보기', '⭐ 혼자 해보기'];
+  const labels = ['👀 게임 방법', '🎮 미션 게임', '⭐ 마스터 도전'];
   const stepText = state.courseComplete
-    ? '코스를 마쳤어요! 원하는 활동을 다시 연습하거나 위의 코스 선택 버튼으로 다른 코스를 골라 보세요.'
+    ? '코스를 마쳤어요! 원하는 게임을 다시 플레이하거나 위의 코스 선택 버튼으로 다른 코스를 골라 보세요.'
     : [lesson.goal, lesson.guided, lesson.try][state.lessonStep];
-  $('lessonTitle').textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.id}번째 놀이 · ${stage.short}`;
+  $('lessonTitle').textContent = `${STAGE_ICONS[stage.id] || ''} ${stage.id}번째 게임 · ${stage.short}`;
   const courseStages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
   const position = Math.max(0, courseStages.indexOf(stage.id)) + 1;
-  $('lessonCount').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${position}/${courseStages.length}단계 · 활동 ${state.lessonStep + 1}/3`;
+  $('lessonCount').textContent = `${state.course ? COURSES[state.course].title + ' · ' : ''}${position}/${courseStages.length}단계 · ${state.lessonStep + 1}/3`;
   $('lessonSteps').innerHTML = labels.map((label, index) => `<div class="lesson-step${state.courseComplete || index < state.lessonStep ? ' done' : index === state.lessonStep ? ' current' : ''}"${!state.courseComplete && index === state.lessonStep ? ' aria-current="step"' : ''}>${state.courseComplete || index < state.lessonStep ? '✓ ' : `${index + 1}. `}${label}</div>`).join('');
   $('lessonInstruction').textContent = stepText;
   $('lessonPrevBtn').disabled = state.lessonStep === 0 || state.courseComplete;
   const lastStage = position === courseStages.length;
   const isLastActivity = state.lessonStep === 2;
-  $('lessonNextBtn').textContent = state.courseComplete ? '첫 놀이 다시 하기' : state.lessonStep === 0 ? '같이 해보기 →' : state.lessonStep === 1 ? '혼자 해보기 →' : lastStage ? '코스 마치기 ✓' : '다음 놀이 →';
+  $('lessonNextBtn').textContent = state.courseComplete ? '첫 게임 다시 하기' : state.lessonStep === 0 ? '미션 게임 시작 →' : state.lessonStep === 1 ? '마스터 도전 →' : lastStage ? '코스 마치기 ✓' : '다음 게임 →';
   $('lessonNextBtn').className = `btn ${isLastActivity ? 'green' : 'primary'}`;
   const modelButton = $('lessonModelBtn');
   if (modelButton) {
@@ -79,14 +79,25 @@ function chooseCourse(courseId) {
   if (!COURSES[courseId]) return;
   state.course = courseId;
   state.courseComplete = false;
-  state.lessonStep = 0;
+  state.lessonStep = 1;
   state.promptLevel = 0;
   $('courseGate').hidden = true;
   $('app').hidden = false;
   setView('activity');
   selectStage(COURSES[courseId].stageIds[0]);
-  $('stageTitle').focus?.();
-  setTimeout(() => $('toolCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 250);
+  setTimeout(() => $('toolCard')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+  noteInteraction();
+}
+
+function launchStageDirect(stageId) {
+  state.course = null;
+  state.courseComplete = false;
+  state.lessonStep = 1;
+  state.promptLevel = 0;
+  $('courseGate').hidden = true;
+  $('app').hidden = false;
+  setView('activity');
+  selectStage(Number(stageId) || 1);
   noteInteraction();
 }
 
@@ -130,9 +141,10 @@ function selectStage(id) {
   if (!stage || (state.course && !COURSES[state.course].stageIds.includes(stage.id))) return;
   stopAnim();
   stopSpeech();
+  if (window.SM_GAME) window.SM_GAME.resetMission();
   state.stage = stage.id;
   state.courseComplete = false;
-  state.lessonStep = 0;
+  state.lessonStep = 1;
   state.exampleIdx = 0;
   if (stage.measureTab) state.measure.tab = stage.measureTab;
   state.promptLevel = 0;

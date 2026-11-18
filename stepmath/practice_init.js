@@ -4,6 +4,7 @@
    8. 도구 디스패처 · 초기화
    ============================================================ */
 function resetStageActivity() {
+  if (window.SM_GAME) window.SM_GAME.resetMission();
   const stage = currentStage();
   switch (stage.tool) {
     case 'sort': newSortRound(); break;
@@ -363,6 +364,18 @@ function renderLessonStageOverlay(stageId) {
 
 function renderTool() {
   const stage = currentStage();
+  if (state.view === 'activity' && window.SM_GAME && !window.SM_GAME.isSandbox()) {
+    const meta = window.SM_GAME.STAGE_MONEY_META[stage.id];
+    setToolHead(meta ? meta.gameTitle : stage.title, meta ? `🪙 화폐 연결 · ${meta.moneyLink}` : stage.subtitle);
+    window.SM_GAME.renderGameArena(stage.id);
+    const body = $('toolBody');
+    body.dataset.stage = String(stage.id);
+    body.classList.remove('activity-enter');
+    Array.from(body.children).forEach((child, index) => child.style.setProperty('--activity-order', index));
+    void body.offsetWidth;
+    body.classList.add('activity-enter');
+    return;
+  }
   preparePracticeProblem(stage.id);
   switch (stage.tool) {
     case 'sort': renderSort(); break;
@@ -381,7 +394,11 @@ function renderTool() {
       setToolHead('단계별 교구', '단계를 골라 주세요');
       $('toolBody').innerHTML = '<div class="guide">위에서 학습 단계를 골라 보세요.</div>';
   }
-  renderLessonStageOverlay(stage.id);
+  if (window.SM_GAME && window.SM_GAME.isSandbox()) {
+    window.SM_GAME.renderGameArena(stage.id);
+  } else {
+    renderLessonStageOverlay(stage.id);
+  }
   const body = $('toolBody');
   body.dataset.stage = String(stage.id);
   body.classList.remove('activity-enter');
@@ -481,6 +498,23 @@ function bundleHundred() {
   }
   renderBundle();
 }
+const REWARD_CHOICES = [
+  { emoji: '🏆', label: '황금 트로피' },
+  { emoji: '🪙', label: '보너스 1000원 지폐' },
+  { emoji: '🎨', label: '자유 그림 그리기' },
+  { emoji: '🌿', label: '1분 쉬는 시간' },
+];
+const AAC_ITEMS = [
+  { emoji: '🙋', label: '도와주세요', say: '도와주세요' },
+  { emoji: '➕', label: '더 할래요', say: '더 할래요' },
+  { emoji: '🛑', label: '그만할래요', say: '그만할래요' },
+  { emoji: '🔁', label: '또 할래요', say: '또 할래요' },
+  { emoji: '😊', label: '좋아요', say: '좋아요' },
+  { emoji: '🌿', label: '쉬고 싶어요', say: '쉬고 싶어요' },
+  { emoji: '💧', label: '물 마실래요', say: '물 마실래요' },
+  { emoji: '👍', label: '다 했어요', say: '다 했어요' },
+];
+
 function openReward() {
   const wrap = $('rewardChoices');
   if (wrap) {
@@ -523,6 +557,25 @@ const HINTS = {
 function giveHint(auto) {
   if (auto && state.promptLevel > 0) { scheduleAutoHint(); return; }
   const stage = currentStage();
+  const gmStage = $('gmStage');
+  if (gmStage) {
+    if (!auto) {
+      state.promptLevel = Math.min(4, state.promptLevel + 1);
+      renderPromptMeter();
+      const hintBtn = $('toolBody')?.querySelector('[data-gm-hint]');
+      if (hintBtn && !state.practice.hintShown) hintBtn.click();
+    } else if (state.promptLevel === 0) {
+      state.promptLevel = 1;
+      renderPromptMeter();
+    }
+    const dropTarget = gmStage.querySelector('[data-drop]');
+    if (dropTarget) showHintTarget('[data-drop]', gmStage);
+    const qText = $('toolBody')?.querySelector('.gm-quest-text')?.textContent;
+    if (qText && auto) announce(qText);
+    recordTrial('prompted', state.promptLevel, auto ? '자동 힌트' : '도움 요청');
+    noteInteraction();
+    return;
+  }
   const hint = HINTS[stage.id] || { text: MICRO_LESSONS[stage.id]?.guided || '천천히 다시 해 보세요.', target: '#toolBody' };
   if (!auto) {
     state.promptLevel = Math.min(4, state.promptLevel + 1);
@@ -542,6 +595,20 @@ function giveHint(auto) {
 function modelStep(stageId) {
   const body = $('toolBody');
   if (!body) return false;
+  if (state.view === 'activity' && window.SM_GAME && !window.SM_GAME.isSandbox()) {
+    if (state.lessonStep === 0) {
+      state.lessonStep = 1;
+      renderLessonPath();
+      renderTool();
+    }
+    const gmStage = $('gmStage');
+    const act = gmStage && gmStage.querySelector('[role="button"], button');
+    if (act) {
+      showHintTarget('[data-drop], [role="button"], button', gmStage);
+      announce('같이 해 보아요! 반짝이는 곳을 손가락으로 움직여 보세요.');
+      return true;
+    }
+  }
   const activate = (sel) => {
     const el = body.querySelector(sel);
     if (!el || el.disabled) return false;
@@ -662,10 +729,20 @@ function init() {
   document.querySelectorAll('[data-course]').forEach((button) => {
     button.addEventListener('click', () => chooseCourse(button.dataset.course));
   });
+  document.querySelectorAll('[data-direct-stage]').forEach((button) => {
+    button.addEventListener('click', () => launchStageDirect(Number(button.dataset.directStage)));
+  });
+  const teacherToolsBtn = $('teacherToolsBtn');
+  if (teacherToolsBtn) {
+    teacherToolsBtn.onclick = () => {
+      const drawer = $('teacherToolsDrawer');
+      if (drawer) drawer.hidden = !drawer.hidden;
+    };
+  }
   $('allActivitiesBtn').onclick = () => {
     state.course = null;
     state.courseComplete = false;
-    state.lessonStep = 0;
+    state.lessonStep = 1;
     $('courseGate').hidden = true;
     $('app').hidden = false;
     setView('activity');
