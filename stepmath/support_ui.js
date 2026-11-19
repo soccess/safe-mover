@@ -305,10 +305,11 @@ function scheduleAutoHint() {
   if (autoHintTimer) clearTimeout(autoHintTimer);
   if (!state.settings.wait) return;
   autoHintTimer = setTimeout(() => {
-    if ($('app').hidden || $('helpDialog').open || $('settingsDialog').open) return;
-    if (state.view !== 'activity') return;
+    if ($('app').hidden || $('helpDialog')?.open || $('settingsDialog')?.open || $('hubDialog')?.open) return;
+    if (state.view !== 'activity' || state.problemSolved) return;
     if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
-    giveHint(true);
+    if (typeof playCurrentDemo === 'function') playCurrentDemo({ quiet: true });
+    else giveHint(true);
   }, state.settings.wait * 1000);
 }
 function noteInteraction() {
@@ -386,7 +387,13 @@ function stopAnim() {
   state.countPlay.idx = -1;
 }
 function stopSpeech() {
-  try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* 무시 */ }
+  try {
+    if (window.D1Bridge && typeof window.D1Bridge.stopSpeak === 'function') {
+      window.D1Bridge.stopSpeak();
+    } else if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+  } catch (e) { /* 무시 */ }
 }
 
 function pressDigit(d) {

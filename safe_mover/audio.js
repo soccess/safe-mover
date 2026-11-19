@@ -94,11 +94,17 @@ window.SafeMoverAudio = (() => {
 
   function speak(text) {
     try {
-      if (!voiceOn || !("speechSynthesis" in window)) return;
+      if (!voiceOn || !text) return;
+      const rate = slowMode ? 0.88 : 0.98;
+      if (window.D1Bridge && typeof window.D1Bridge.speakText === "function") {
+        window.D1Bridge.speakText(text, rate, 1.06);
+        return;
+      }
+      if (!("speechSynthesis" in window)) return;
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "ko-KR";
-      u.rate = slowMode ? 0.88 : 0.98;
+      u.rate = rate;
       u.pitch = 1.06;
       speechSynthesis.speak(u);
     } catch (_) {}

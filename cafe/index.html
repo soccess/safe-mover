@@ -82,8 +82,12 @@
         <div class="guidance-banner" id="guidanceBanner" role="status" aria-live="polite">
           <span class="guidance-emoji" id="guidanceEmoji">☕</span>
           <span class="guidance-text" id="guidanceText">3D 카페를 불러오고 있어요...</span>
-          <button type="button" id="speakStepBtn" class="speak-step-btn" title="지금 할 일 다시 듣기">🔊 듣기</button>
+          <div class="guidance-actions">
+            <button type="button" id="speakStepBtn" class="guidance-ctrl-btn speak" title="지시문 읽어주기" aria-label="지시문 읽어주기">🔊</button>
+            <button type="button" id="closeGuidanceBtn" class="guidance-ctrl-btn close" title="지시문 닫기" aria-label="지시문 닫기">✕</button>
+          </div>
         </div>
+        <button type="button" id="reopenGuidanceBtn" class="guidance-reopen-btn hidden" title="지시문 다시 보기" aria-label="지시문 다시 보기">💬 지시문 보기</button>
         <div id="manualChoiceBar" class="manual-choice-bar hidden" aria-live="polite"></div>
         <div id="practicumStatusBar" class="practicum-status-bar hidden" aria-live="polite"></div>
         <div class="action-bar" id="actionBar" aria-label="동작 버튼"></div>

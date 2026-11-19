@@ -89,19 +89,157 @@
     return () => spedListeners.delete(fn);
   }
 
-  function speakText(text, rate) {
+  const TTS_DISMISS_DATE_KEY = "safe_mover.tts_guide_dismissed_date.v1";
+
+  function isKoreanVoice(v) {
+    if (!v) return false;
+    return /^ko([_-]|$)/i.test(String(v.lang || "")) || /korean|한국/i.test(String(v.name || ""));
+  }
+
+  function isEdgeNaturalVoice(v) {
+    if (!isKoreanVoice(v)) return false;
+    const n = String(v.name || "");
+    return /online/i.test(n) || /natural/i.test(n) ||
+      /sunhi|injoon|hyunsu|bongjin|gookmin|jimin|seohyeon|soonbok|yujin/i.test(n);
+  }
+
+  function isWindowsDefaultVoice(v) {
+    const n = String(v && v.name || "");
+    return /heami|desktop|sapi/i.test(n);
+  }
+
+  function pickBestKoreanVoice() {
+    if (!("speechSynthesis" in window)) return null;
+    const voices = window.speechSynthesis.getVoices() || [];
+    const ko = voices.filter(isKoreanVoice);
+    if (!ko.length) return null;
+    return (
+      ko.find((v) => isEdgeNaturalVoice(v) && /sunhi/i.test(v.name || "")) ||
+      ko.find((v) => isEdgeNaturalVoice(v) && /injoon|hyunsu/i.test(v.name || "")) ||
+      ko.find(isEdgeNaturalVoice) ||
+      ko.find((v) => !v.localService && !isWindowsDefaultVoice(v)) ||
+      ko.find((v) => !isWindowsDefaultVoice(v)) ||
+      ko[0]
+    );
+  }
+
+  function detectTtsPlatform() {
+    const ua = navigator.userAgent || "";
+    const plat = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    const isAndroid = /android/i.test(ua);
+    const isWindows = !isAndroid && (/windows/i.test(ua) || /win/i.test(plat));
+    const isEdge = /edg\//i.test(ua);
+    return {
+      isAndroid,
+      isWindows,
+      isEdge,
+      platform: isAndroid ? "android" : (isWindows ? "windows" : "other")
+    };
+  }
+
+  function waitForTtsVoices(timeoutMs = 1500) {
+    return new Promise((resolve) => {
+      if (!("speechSynthesis" in window)) {
+        resolve([]);
+        return;
+      }
+      const synth = window.speechSynthesis;
+      let done = false;
+      let graceTimer = null;
+      let hardTimer = null;
+
+      const finish = () => {
+        if (done) return;
+        done = true;
+        if (graceTimer) clearTimeout(graceTimer);
+        if (hardTimer) clearTimeout(hardTimer);
+        try { synth.removeEventListener("voiceschanged", onVoices); } catch (_) {}
+        resolve(synth.getVoices() || []);
+      };
+
+      const checkVoices = () => {
+        const list = synth.getVoices() || [];
+        if (list.some(isEdgeNaturalVoice)) {
+          finish();
+          return;
+        }
+        if (list.some(isKoreanVoice) && !graceTimer) {
+          // On Windows Edge, local Heami often arrives before Online Natural voices
+          graceTimer = setTimeout(finish, 450);
+        }
+      };
+
+      const onVoices = () => checkVoices();
+      try { synth.addEventListener("voiceschanged", onVoices); } catch (_) {}
+      checkVoices();
+      hardTimer = setTimeout(finish, timeoutMs);
+    });
+  }
+
+  async function inspectTtsEnvironment(timeoutMs = 1500) {
+    const info = detectTtsPlatform();
+    const supported = "speechSynthesis" in window;
+    const voices = await waitForTtsVoices(timeoutMs);
+    const koVoices = voices.filter(isKoreanVoice);
+    const bestVoice = pickBestKoreanVoice();
+    const hasEdgeNatural = koVoices.some(isEdgeNaturalVoice);
+    const onlyWindowsDefault = info.isWindows && koVoices.length > 0 && !hasEdgeNatural && koVoices.every(isWindowsDefaultVoice);
+
+    let needsGuide = false;
+    let reason = "ok";
+    if (!supported) {
+      needsGuide = true;
+      reason = "unsupported";
+    } else if (info.isAndroid && koVoices.length === 0) {
+      needsGuide = true;
+      reason = "android-no-tts";
+    } else if (info.isWindows && !hasEdgeNatural) {
+      needsGuide = true;
+      reason = "windows-no-edgetts";
+    }
+
+    return {
+      ...info,
+      supported,
+      voices,
+      koVoices,
+      bestVoice,
+      hasEdgeNatural,
+      onlyWindowsDefault,
+      needsGuide,
+      reason
+    };
+  }
+
+  function speakText(text, rate, pitch) {
     try {
       if (!text || !("speechSynthesis" in window)) return false;
-      window.speechSynthesis.cancel();
+      const synth = window.speechSynthesis;
+      synth.cancel();
+      if (synth.paused) {
+        try { synth.resume(); } catch (_) {}
+      }
       const u = new SpeechSynthesisUtterance(String(text));
-      u.lang = "ko-KR";
+      const voice = pickBestKoreanVoice();
+      if (voice) {
+        u.voice = voice;
+        u.lang = voice.lang || "ko-KR";
+      } else {
+        u.lang = "ko-KR";
+      }
       u.rate = rate || (spedPrefs.slowPace ? 0.86 : 0.94);
-      u.pitch = 1.02;
-      window.speechSynthesis.speak(u);
+      u.pitch = pitch || 1.02;
+      synth.speak(u);
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  function stopSpeak() {
+    try {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    } catch (_) {}
   }
 
   function detectCurrentGame() {
@@ -1223,6 +1361,155 @@
     document.getElementById("d1FloatingTeacherBtn").addEventListener("click", openTeacherModal);
   }
 
+  function todayDateKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function isTtsGuideDismissedToday() {
+    try {
+      return localStorage.getItem(TTS_DISMISS_DATE_KEY) === todayDateKey();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function dismissTtsGuideToday() {
+    try { localStorage.setItem(TTS_DISMISS_DATE_KEY, todayDateKey()); } catch (_) {}
+  }
+
+  function renderTtsGuideBody(env, msgEl, bodyEl, actionRow) {
+    const voiceLabel = env.bestVoice ? `${env.bestVoice.name} (${env.bestVoice.lang || "ko-KR"})` : "감지된 한국어 음성 없음";
+    if (!env.supported) {
+      bodyEl.innerHTML = `
+        <div class="d1-t-section" style="background:#fef2f2;border-color:#fca5a5">
+          <h3>⚠️ 음성 읽기(TTS) 미지원 브라우저</h3>
+          <p style="font-size:13.5px;color:#7f1d1d;line-height:1.55;margin:0">현재 브라우저에서는 음성 읽기 기능을 사용할 수 없습니다. 최신 Chrome 또는 Microsoft Edge 브라우저를 사용해 주세요.</p>
+        </div>
+      `;
+      actionRow.innerHTML = `<button type="button" class="d1-btn-sm" id="d1TtsRecheckBtn">🔄 다시 확인</button>`;
+    } else if (env.isAndroid && env.koVoices.length === 0) {
+      bodyEl.innerHTML = `
+        <div class="d1-t-section" style="background:#fffbeb;border-color:#fcd34d">
+          <h3>📱 안드로이드 한국어 TTS 다운로드 안내</h3>
+          <p style="font-size:13.5px;color:#78350f;line-height:1.6;margin:0 0 8px">
+            현재 기기에 한국어 음성(TTS)이 설치되어 있지 않거나 꺼져 있어요.<br>
+            아래 버튼을 눌러 <b>Google 음성 서비스</b>를 설치한 뒤 한국어 음성을 받아 주세요.
+          </p>
+          <ol style="font-size:13px;color:#334155;line-height:1.65;margin:0;padding-left:18px">
+            <li><b>Google 음성 인식 및 합성</b> 앱을 설치 또는 업데이트해요.</li>
+            <li>안드로이드 <b>설정 → 일반(또는 접근성) → 글자 읽어주기(TTS)</b>로 이동해요.</li>
+            <li>기본 엔진을 <b>Google 음성 인식 및 합성</b>으로 고르고, <b>한국어 음성 데이터</b>를 다운로드해요.</li>
+          </ol>
+        </div>
+        <div style="font-size:12.5px;color:#64748b">현재 감지 상태: <b>${esc(voiceLabel)}</b></div>
+      `;
+      actionRow.innerHTML = `
+        <a class="d1-btn-sm primary" href="https://play.google.com/store/apps/details?id=com.google.android.tts" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">📥 TTS 다운로드 (Play 스토어)</a>
+        <button type="button" class="d1-btn-sm" id="d1TtsTestBtn">🔊 음성 테스트</button>
+        <button type="button" class="d1-btn-sm" id="d1TtsRecheckBtn">🔄 다시 확인</button>
+      `;
+    } else if (env.isWindows && !env.hasEdgeNatural) {
+      const canEdgeScheme = /^https?:/i.test(location.protocol || "");
+      const edgeHref = `microsoft-edge:${location.href}`;
+      bodyEl.innerHTML = `
+        <div class="d1-t-section" style="background:#eff6ff;border-color:#93c5fd">
+          <h3>🪟 윈도우 EdgeTTS(자연스러운 한국어 음성) 안내</h3>
+          <p style="font-size:13.5px;color:#1e3a8a;line-height:1.6;margin:0 0 8px">
+            윈도우 기본 음성(Heami 등) 대신 훨씬 자연스럽고 또박또박한 <b>Microsoft Edge 음성(EdgeTTS)</b> 사용을 권장해요.
+          </p>
+          <ul style="font-size:13px;color:#334155;line-height:1.65;margin:0;padding-left:18px">
+            <li><b>Microsoft Edge 브라우저</b>로 이 페이지를 열면 별도 설치 없이 <b>SunHi / InJoon 자연스러운 한국어 음성</b>이 자동 연결됩니다.</li>
+            <li>인터넷에 연결되어 있어야 온라인 EdgeTTS 음성을 불러올 수 있어요.</li>
+          </ul>
+        </div>
+        <div style="font-size:12.5px;color:#475569">현재 감지된 음성: <b>${esc(voiceLabel)}</b></div>
+      `;
+      actionRow.innerHTML = `
+        ${canEdgeScheme ? `<a class="d1-btn-sm primary" href="${esc(edgeHref)}" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">🌐 Microsoft Edge로 열기</a>` : ""}
+        <button type="button" class="d1-btn-sm" id="d1TtsTestBtn">🔊 현재 음성 테스트</button>
+        <button type="button" class="d1-btn-sm" id="d1TtsRecheckBtn">🔄 다시 확인</button>
+      `;
+    } else {
+      const tag = env.hasEdgeNatural ? "EdgeTTS 자연스러운 음성 연결됨" : "한국어 음성 준비됨";
+      bodyEl.innerHTML = `
+        <div class="d1-t-section" style="background:#f0fdf4;border-color:#86efac">
+          <h3>✅ ${esc(tag)}</h3>
+          <p style="font-size:13.5px;color:#166534;line-height:1.55;margin:0">
+            현재 사용 중인 음성: <b>${esc(voiceLabel)}</b>
+          </p>
+        </div>
+      `;
+      actionRow.innerHTML = `
+        <button type="button" class="d1-btn-sm primary" id="d1TtsTestBtn">🔊 음성 테스트</button>
+        <button type="button" class="d1-btn-sm" id="d1TtsRecheckBtn">🔄 다시 확인</button>
+      `;
+    }
+
+    const testBtn = actionRow.querySelector("#d1TtsTestBtn");
+    if (testBtn) {
+      testBtn.addEventListener("click", () => {
+        const ok = speakText("안녕하세요. 반갑습니다. 즐겁게 학습을 시작해 볼까요?");
+        msgEl.textContent = ok
+          ? `재생 요청됨: ${env.bestVoice ? env.bestVoice.name : "시스템 기본 음성"}`
+          : "음성 재생을 시작하지 못했어요.";
+      });
+    }
+    const recheckBtn = actionRow.querySelector("#d1TtsRecheckBtn");
+    if (recheckBtn) {
+      recheckBtn.addEventListener("click", async () => {
+        msgEl.textContent = "음성 목록을 다시 확인하고 있어요...";
+        const nextEnv = await inspectTtsEnvironment(1200);
+        renderTtsGuideBody(nextEnv, msgEl, bodyEl, actionRow);
+        msgEl.textContent = nextEnv.needsGuide
+          ? "아직 권장 음성이 확인되지 않았어요."
+          : "✅ 자연스러운 한국어 음성이 확인되었어요!";
+      });
+    }
+  }
+
+  async function openTtsGuideModal(preEnv, opts = {}) {
+    ensureModals();
+    let modal = document.getElementById("d1TtsGuideModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "d1TtsGuideModal";
+      modal.className = "d1-modal-backdrop";
+      modal.innerHTML = `
+        <div class="d1-modal-card" role="dialog" aria-modal="true" aria-label="음성 안내(TTS) 설정 안내">
+          <div class="d1-modal-head">
+            <h2>🔊 음성 안내(TTS) 환경 확인</h2>
+            <button type="button" class="d1-close-btn" data-close-modal="d1TtsGuideModal">닫기</button>
+          </div>
+          <div id="d1TtsGuideBody"></div>
+          <div class="d1-class-row" id="d1TtsGuideActions" style="margin-top:12px"></div>
+          <div class="d1-class-row" style="justify-content:space-between;margin-top:8px">
+            <button type="button" class="d1-btn-sm" id="d1TtsDismissTodayBtn">오늘 다시 보지 않기</button>
+            <span class="d1-msg" id="d1TtsGuideMsg" style="margin:0"></span>
+          </div>
+        </div>
+      `;
+      modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("open"); });
+      document.body.appendChild(modal);
+      modal.querySelector("[data-close-modal='d1TtsGuideModal']").addEventListener("click", () => modal.classList.remove("open"));
+      modal.querySelector("#d1TtsDismissTodayBtn").addEventListener("click", () => {
+        dismissTtsGuideToday();
+        modal.classList.remove("open");
+      });
+    }
+
+    const bodyEl = modal.querySelector("#d1TtsGuideBody");
+    const actionRow = modal.querySelector("#d1TtsGuideActions");
+    const msgEl = modal.querySelector("#d1TtsGuideMsg");
+    const dismissBtn = modal.querySelector("#d1TtsDismissTodayBtn");
+    msgEl.textContent = "";
+    const env = preEnv || await inspectTtsEnvironment(1200);
+    if (dismissBtn) dismissBtn.style.display = (opts.autoOpened || env.needsGuide) ? "" : "none";
+    renderTtsGuideBody(env, msgEl, bodyEl, actionRow);
+    modal.classList.add("open");
+    return env;
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       mountFloatingBar();
@@ -1257,6 +1544,11 @@
     setSpedPrefs,
     onSpedPrefsChange,
     speakText,
+    stopSpeak,
+    pickBestKoreanVoice,
+    inspectTtsEnvironment,
+    openTtsGuideModal,
+    isTtsGuideDismissedToday,
     checkHealth,
     saveRecord,
     getRecords,

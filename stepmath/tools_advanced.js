@@ -49,63 +49,49 @@ function renderPlace() {
   const p = state.parts;
   const total = totalOf(p);
   const body = $('toolBody');
-  const flats = Array.from({ length: p.hundreds }, () => `<div class="flat" data-place-item="hundreds" role="button" tabindex="0" title="백모형 · 끌어서 풀거나 뺄 수 있어요">${'<span></span>'.repeat(100)}</div>`).join('');
-  const rods = Array.from({ length: p.tens }, () => `<button type="button" class="rod" data-place-item="tens" title="십모형 · 끌어서 묶거나 풀고 뺄 수 있어요">${'<span></span>'.repeat(10)}</button>`).join('');
-  const units = Array.from({ length: p.units }, () => `<button type="button" class="unit" data-place-item="units" style="cursor:grab;touch-action:none" title="일모형 · 끌어서 묶거나 뺄 수 있어요"></button>`).join('');
-  setToolHead('🧱 자릿값 수모형', '수모형을 끌어 자리 칸에 놓고, 10개·100개를 묶어요');
+  const showHundreds = state.stage === 12;
+  const showBundle10 = state.stage === 11 || state.stage === 12;
+  const showBundle100 = state.stage === 12;
+  const flats = Array.from({ length: p.hundreds }, () => `<div class="flat" data-place-item="hundreds" role="button" tabindex="0" title="백모형">${'<span></span>'.repeat(100)}</div>`).join('');
+  const rods = Array.from({ length: p.tens }, () => `<button type="button" class="rod" data-place-item="tens" title="십모형">${'<span></span>'.repeat(10)}</button>`).join('');
+  const units = Array.from({ length: p.units }, () => `<button type="button" class="unit" data-place-item="units" style="cursor:grab;touch-action:none" title="일모형"></button>`).join('');
+  setToolHead('🧱 자릿값 수모형', '수모형을 끌어 자리 칸에 놓아요');
   body.innerHTML = `
     <div class="chips">
-      <span class="chip" style="background:#d97706">백모형(100) <b>${p.hundreds}</b></span>
-      <span class="chip" style="background:#16a34a">십모형(10) <b>${p.tens}</b></span>
-      <span class="chip" style="background:#2563eb">일모형(1) <b>${p.units}</b></span>
+      ${showHundreds ? `<span class="chip" style="background:#d97706">백 <b>${p.hundreds}</b></span>` : ''}
+      <span class="chip" style="background:#16a34a">십 <b>${p.tens}</b></span>
+      <span class="chip" style="background:#2563eb">일 <b>${p.units}</b></span>
       <span class="total-badge">${total}</span>
     </div>
     <div class="drag-tray">
-      <span class="tray-label">수모형을 끌어서 자리 칸에 놓기</span>
+      <span class="tray-label">끌어서 놓기</span>
       <div class="place-source one" data-place-source="1" role="button" tabindex="0"><span class="ps-icon">🟦</span>일 1</div>
       <div class="place-source ten" data-place-source="10" role="button" tabindex="0"><span class="ps-icon">🟩</span>십 10</div>
-      <div class="place-source hundred" data-place-source="100" role="button" tabindex="0"><span class="ps-icon">🟧</span>백 100</div>
-      <div class="drop-plate" data-drop="place-trash" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2;flex:1"><div class="plate-title" style="margin:0"><span>➖ 여기로 끌면 모형 빼기</span></div></div>
+      ${showHundreds ? '<div class="place-source hundred" data-place-source="100" role="button" tabindex="0"><span class="ps-icon">🟧</span>백 100</div>' : ''}
+      <div class="drop-plate" data-drop="place-trash" style="min-height:52px;padding:7px 12px;border-color:#fda4af;background:#fff1f2;margin-left:auto"><div class="plate-title" style="margin:0"><span>➖ 빼기</span></div></div>
     </div>
-    <div class="place-columns">
-      <div class="place-col hundreds" data-drop="place:hundreds">
+    <div class="place-columns" style="grid-template-columns:repeat(${showHundreds ? 3 : 2},minmax(0,1fr))">
+      ${showHundreds ? `<div class="place-col hundreds" data-drop="place:hundreds">
         <div class="pc-head"><span>🟧 백의 자리</span><span>${p.hundreds}개</span></div>
-        <div class="pc-body">${flats || '<span class="muted">백모형을 놓아요</span>'}</div>
-      </div>
+        <div class="pc-body">${flats || '<span class="muted">백모형</span>'}</div>
+      </div>` : ''}
       <div class="place-col tens" data-drop="place:tens">
         <div class="pc-head"><span>🟩 십의 자리</span><span>${p.tens}개</span></div>
-        <div class="pc-body">${rods || '<span class="muted">십모형을 놓아요</span>'}</div>
+        <div class="pc-body">${rods || '<span class="muted">십모형</span>'}</div>
       </div>
       <div class="place-col units" data-drop="place:units">
         <div class="pc-head"><span>🟦 일의 자리</span><span>${p.units}개</span></div>
-        <div class="pc-body">${units || '<span class="muted">일모형을 놓아요</span>'}</div>
+        <div class="pc-body">${units || '<span class="muted">일모형</span>'}</div>
       </div>
     </div>
-    <div class="place-bundle-zones">
-      <div class="place-bundle-zone" data-drop="place-bundle10"><strong>10개 묶기</strong>일모형 10개를 여기로 끌어요</div>
-      <div class="place-bundle-zone" data-drop="place-bundle100"><strong>100개 묶기</strong>십모형 10개를 여기로 끌어요</div>
-      <div class="place-bundle-zone" data-drop="place-unbundle10"><strong>십 1개 풀기</strong>십모형을 여기로 끌면 일 10개</div>
-      <div class="place-bundle-zone" data-drop="place-unbundle100"><strong>백 1개 풀기</strong>백모형을 여기로 끌면 십 10개</div>
-    </div>
-    <div class="digit-table">
-      <div class="digit-col"><span class="p">백의 자리</span><span class="d">${p.hundreds}</span></div>
-      <div class="digit-col"><span class="p">십의 자리</span><span class="d">${p.tens}</span></div>
-      <div class="digit-col"><span class="p">일의 자리</span><span class="d">${p.units}</span></div>
-    </div>
-    <div class="guide"><b>${total} = ${p.hundreds * 100} + ${p.tens * 10} + ${p.units}</b> · ${countWord(total)}</div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-pa="bundle" ${p.units < 10 ? 'disabled' : ''}>10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-pa="bundle100" ${p.tens < 10 ? 'disabled' : ''}>100개 묶기</button>
-      <button type="button" class="btn soft" data-pa="unbundle" ${p.tens <= 0 ? 'disabled' : ''}>십모형 풀기</button>
-      <button type="button" class="btn soft" data-pa="unbundle100" ${p.hundreds <= 0 ? 'disabled' : ''}>백모형 풀기</button>
-    </div>
-    <div class="row-flex">
-      <button type="button" class="btn primary" data-pa="add1">＋ 일모형 1</button>
-      <button type="button" class="btn green" data-pa="add10">＋ 십모형 1</button>
-      <button type="button" class="btn amber" data-pa="add100">＋ 백모형 1</button>
-      <button type="button" class="btn soft" data-pa="sub1">－ 1</button>
-      <button type="button" class="btn soft" data-pa="clear">비우기</button>
-      <button type="button" class="btn violet" data-pa="use">계산기에 넣기</button>
+    ${(showBundle10 || showBundle100) ? `<div class="place-bundle-zones" style="grid-template-columns:repeat(${showBundle10 && showBundle100 ? 2 : 1},1fr)">
+      ${showBundle10 ? '<div class="place-bundle-zone" data-drop="place-bundle10"><strong>🔟 10개 묶기</strong>일모형을 여기로 끌면 십 1개</div>' : ''}
+      ${showBundle100 ? '<div class="place-bundle-zone" data-drop="place-bundle100"><strong>💯 100개 묶기</strong>십모형을 여기로 끌면 백 1개</div>' : ''}
+    </div>` : ''}
+    <div class="row-flex" style="margin-top:0;justify-content:flex-end">
+      ${showBundle10 ? `<button type="button" class="bundle-big-btn blue sm" data-pa="bundle" ${p.units < 10 ? 'disabled' : ''}>10개 묶기</button>` : ''}
+      ${showBundle100 ? `<button type="button" class="bundle-big-btn sm" data-pa="bundle100" ${p.tens < 10 ? 'disabled' : ''}>100개 묶기</button>` : ''}
+      <button type="button" class="btn soft sm" data-pa="clear">비우기</button>
     </div>`;
 
   const afterModify = (kind) => {
@@ -199,28 +185,16 @@ function renderMultiply() {
       </div>`).join('');
     setToolHead('➗ 똑같이 나누기', `${first}개를 ${second}곳에 똑같이 끌어 나누어요`);
     body.innerHTML = `
-      <div class="guide">전체 <b>${first}개</b>를 <b>${second}곳</b>에 똑같이 나누어요. 점을 접시로 <b>손가락으로 끌어다 놓으세요</b>. 남는 점은 남는 곳에 놓아요.</div>
       <div class="drag-tray"><span class="tray-label">점을 끌어서 접시에 나누기</span>
-        <div class="drag-token blue" data-div-token role="button" tabindex="0"><span class="big">●</span><span class="tiny">1개</span></div>
-        <div class="drop-plate" data-drop="div-rem" style="min-height:52px;padding:7px 10px;border-color:#fcd34d;background:#fffbeb;flex:1">
-          <div class="plate-title" style="margin:0"><span>🟡 남는 것 · ${state.divRem}개</span></div>
-        </div>
-        <div class="drop-plate" data-drop="div-minus" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2">
+        <div class="drag-token blue" data-div-token role="button" tabindex="0"><span class="big">●</span><span class="tiny">남은 ${Math.max(0, first - totalPlaced)}개</span></div>
+        <div class="drop-plate" data-drop="div-minus" style="min-height:52px;padding:7px 12px;border-color:#fda4af;background:#fff1f2;margin-left:auto">
           <div class="plate-title" style="margin:0"><span>➖ 빼기</span></div>
         </div>
       </div>
       <div class="plate-grid">${platesHtml}</div>
-      <div class="guide" style="font-size:15px"><b>${first} ÷ ${second} = ${d.q}${d.r ? ` … ${d.r}` : ''}</b> · 지금까지 놓은 점 <b>${totalPlaced}</b>개</div>
-      ${finished ? `<div class="feedback" style="color:#16a34a">한 곳에 ${d.q}개씩, 남는 것 ${d.r}개예요. 나누기를 완성했어요!</div>` : ''}
-      <div class="row-flex" style="margin-top:0">
-        <button type="button" class="bundle-big-btn blue" data-div-bundle="ten">10개 묶기</button>
-        <button type="button" class="bundle-big-btn" data-div-bundle="hundred">100개 묶기</button>
-      </div>
-      <div class="row-flex">
-        <button type="button" class="btn green" data-div="12,3">12 ÷ 3</button>
-        <button type="button" class="btn green" data-div="14,4">14 ÷ 4</button>
-        <button type="button" class="btn soft" data-div="20,5">20 ÷ 5</button>
-        <button type="button" class="btn soft" data-div-reset>처음부터</button>
+      <div class="row-flex" style="justify-content:space-between;align-items:center">
+        <span class="chip" style="background:#2563eb">${first} ÷ ${second} · 놓은 점 <b>${totalPlaced}/${first}</b></span>
+        <button type="button" class="btn soft sm" data-div-reset>처음부터</button>
       </div>`;
     const afterDivide = () => {
       const placed = state.divPlates.reduce((s, v) => s + v, 0) + state.divRem;
@@ -359,25 +333,14 @@ function renderMultiply() {
   const cardDots = Array.from({ length: Math.min(a, 12) }, () => '<i></i>').join('');
   setToolHead('✖️ 묶음 곱셈', `${a}개씩 ${b}묶음 · 동그라미나 묶음 카드를 끌어 채워요`);
   body.innerHTML = `
-    <div class="guide">한 묶음에 <b>${a}개씩</b> <b>${b}묶음</b>이면 모두 <b>${a * b}개</b>예요. <b>동그라미(●)</b>나 <b>묶음 카드</b>를 손가락으로 끌어 빈 칸에 놓으세요.</div>
     <div class="drag-tray"><span class="tray-label">끌어서 채우기</span>
-      <div class="drag-token" data-mul-dot role="button" tabindex="0" aria-label="동그라미 1개 끌어서 놓기"><span class="big">●</span><span class="tiny">동그라미 1개</span></div>
-      <div class="drag-token violet" data-mul-bundle role="button" tabindex="0" aria-label="${a}개 한 묶음 카드 끌어서 놓기"><div class="mul-card-dots">${cardDots}</div><span class="tiny">${a}개 한 묶음</span></div>
-      <div class="drop-plate" data-drop="mul-minus" style="min-height:52px;min-width:112px;padding:7px 10px;border-color:#fda4af;background:#fff1f2;flex:1"><div class="plate-title" style="margin:0;white-space:nowrap"><span>➖ 1개 빼기</span></div></div>
+      <div class="drag-token" data-mul-dot role="button" tabindex="0" aria-label="동그라미 1개 끌어서 놓기"><span class="big">●</span><span class="tiny">1개</span></div>
+      <div class="drag-token violet" data-mul-bundle role="button" tabindex="0" aria-label="${a}개 한 묶음 카드 끌어서 놓기"><div class="mul-card-dots">${cardDots}</div><span class="tiny">${a}개 묶음</span></div>
+      <div class="drop-plate" data-drop="mul-minus" style="min-height:52px;padding:7px 12px;border-color:#fda4af;background:#fff1f2;margin-left:auto"><div class="plate-title" style="margin:0;white-space:nowrap"><span>➖ 빼기</span></div></div>
     </div>
     <div class="group-grid">${groupSlots}</div>
-    <div class="guide" style="font-size:15px"><b>${a} × ${b} = ${a * b}</b> · 지금 <b>${totalDots}개</b> (${filled}/${b}묶음 완성)</div>
-    ${filled === b ? `<div class="feedback" style="color:#16a34a">${a}개씩 ${b}묶음은 모두 ${a * b}개예요!</div>` : ''}
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-mul-bundle-btn="ten">10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-mul-bundle-btn="hundred">100개 묶기</button>
-    </div>
-    <div class="row-flex">
-      <button type="button" class="btn soft" data-mul="a:-1" ${a <= 1 ? 'disabled' : ''}>한 묶음 －1</button>
-      <button type="button" class="btn soft" data-mul="a:1" ${a >= 12 ? 'disabled' : ''}>한 묶음 ＋1</button>
-      <button type="button" class="btn soft" data-mul="b:-1" ${b <= 1 ? 'disabled' : ''}>묶음 －1</button>
-      <button type="button" class="btn soft" data-mul="b:1" ${b >= 10 ? 'disabled' : ''}>묶음 ＋1</button>
-      <button type="button" class="btn primary" data-mul-ex2="3,4">3 × 4로</button>
+    <div class="row-flex" style="justify-content:space-between;align-items:center">
+      <span class="chip" style="background:#7c3aed">${a} × ${b} · 지금 <b>${totalDots}개</b> (${filled}/${b}묶음)</span>
     </div>`;
 
   const announceMulProgress = (msg) => {
@@ -472,56 +435,31 @@ function renderMultiply() {
 /* ---------- 9단계: 분수 ---------- */
 function renderFraction() {
   const fa = state.fractions.a;
-  const fb = state.fractions.b;
-  const same = fa.d === fb.d;
-  const lcm = (fa.d * fb.d) / gcd(fa.d, fb.d);
-  const rawSum = same ? { n: fa.n + fb.n, d: fa.d } : null;
-  const simp = rawSum ? simplify(rawSum) : null;
-  const bar = (f, color, target, label) => `
-    <div class="fgroup">
-      <div class="row-flex" style="margin:0;justify-content:space-between">
-        <b style="font-size:13px">${label}</b>
-        <span class="num-card" style="min-width:0;padding:4px 10px;border-color:${color}"><span class="v" style="font-size:20px;color:${color}">${f.n}/${f.d}</span></span>
-      </div>
-      <div class="fbar frac-bar-drop" data-drop="frac:${target}" aria-label="${label} 막대">${Array.from({ length: f.d }, (_, i) =>
-        `<button type="button" class="fslice" data-f="${target}:${i}" style="background:${i < f.n ? color : '#fff'}" aria-label="${i + 1}조각"></button>`).join('')}</div>
-      <div class="denom-row">${[2, 3, 4, 5, 6, 8, 10].map((d) =>
-        `<button type="button" class="denom${f.d === d ? ' active' : ''}" data-d="${target}:${d}" ${f.d === d ? `style="background:${color};border-color:${color}"` : ''}>${d}조각</button>`).join('')}</div>
-    </div>`;
-  setToolHead('🍕 분수 막대', '조각을 손가락으로 끌어 막대에 놓아 분수를 만들어요');
+  const isDecimal = state.stage === 16;
+  const labelText = isDecimal ? `${(fa.n / 10).toFixed(1)}` : `${fa.n}/${fa.d}`;
+  const pieceLabel = isDecimal ? '0.1' : `1/${fa.d}`;
+  const color = isDecimal ? '#0284c7' : '#2563eb';
+  setToolHead(isDecimal ? '💧 소수 막대' : '🍕 분수 막대', '조각을 손가락으로 끌어 막대에 놓아요');
   $('toolBody').innerHTML = `
-    <div class="fcols">${bar(fa, '#2563eb', 'a', '첫 번째 분수')}${bar(fb, '#16a34a', 'b', '두 번째 분수')}</div>
-    <div class="frac-shelf" aria-label="분수 조각 상자">
-      <span class="tray-label" style="align-self:center;font-size:11px;font-weight:950;color:#6d28d9">조각을 끌어다 놓기</span>
-      ${Array.from({ length: 10 }, (_, i) => `<div class="frac-piece" data-frac-piece="a" role="button" tabindex="0" aria-label="첫 번째 분수에 조각 하나">${i < fa.d ? `${i + 1}/${fa.d}` : '＋'}</div>`).join('')}
-      ${Array.from({ length: 10 }, (_, i) => `<div class="frac-piece" data-frac-piece="b" role="button" tabindex="0" aria-label="두 번째 분수에 조각 하나" style="border-color:#86efac;background:#dcfce7;color:#166534">${i < fb.d ? `${i + 1}/${fb.d}` : '＋'}</div>`).join('')}
-      <div class="drop-plate" data-drop="frac-minus" style="min-height:44px;padding:6px 10px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>➖ 조각 빼기</span></div></div>
+    <div class="fgroup">
+      <div class="row-flex" style="margin:0;justify-content:space-between;align-items:center">
+        <b style="font-size:15px">${isDecimal ? '소수 0.1 막대' : `${fa.d}등분 막대`}</b>
+        <span class="num-card" style="min-width:0;padding:4px 14px;border-color:${color}"><span class="v" style="font-size:24px;color:${color}">${labelText}</span></span>
+      </div>
+      <div class="fbar frac-bar-drop" data-drop="frac:a" aria-label="막대">${Array.from({ length: fa.d }, (_, i) =>
+        `<button type="button" class="fslice" data-f="a:${i}" style="background:${i < fa.n ? color : '#fff'}" aria-label="${i + 1}조각">${isDecimal ? '0.1' : ''}</button>`).join('')}</div>
     </div>
-    <div class="fresult">
-      <div class="guide">${same ? '조각 크기가 같아서 분자끼리 더할 수 있어요.' : `조각 크기가 달라요. <b>${lcm}조각</b>으로 맞추면 더할 수 있어요.`}</div>
-      <div class="guide" style="margin-top:6px">분수를 소수로 읽으면 <b>${fa.n}/${fa.d} = ${displayNumber(fa.n / fa.d)}</b>, <b>${fb.n}/${fb.d} = ${displayNumber(fb.n / fb.d)}</b>예요.</div>
-      ${same
-        ? `<div class="rv" style="font-size:24px;font-weight:900;margin-top:5px">${fa.n}/${fa.d} + ${fb.n}/${fb.d} = ${rawSum.n}/${rawSum.d}${simp && (simp.n !== rawSum.n || simp.d !== rawSum.d) ? ` = ${simp.n}/${simp.d}` : ''}</div>
-           ${rawSum.n >= rawSum.d ? `<div class="guide">가분수예요. 자연수 ${Math.floor(rawSum.n / rawSum.d)}과 ${rawSum.n % rawSum.d}/${rawSum.d}로 나타낼 수 있어요.</div>` : ''}`
-        : `<div class="guide">통분하면 <b>${fa.n * (lcm / fa.d)}/${lcm} + ${fb.n * (lcm / fb.d)}/${lcm}</b>이 돼요.</div>`}
-    </div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-frac-bundle="ten">10조각으로 보기</button>
-      <button type="button" class="bundle-big-btn" data-frac-bundle="hundred">100칸으로 보기</button>
-    </div>
-    <div class="row-flex">
-      <button type="button" class="btn violet" data-fa="lcm">조각 크기 같게 (${lcm}조각)</button>
-      <button type="button" class="btn primary" data-fa="send">계산기에 보내기</button>
-      <button type="button" class="btn soft" data-fa="swap">두 분수 바꾸기</button>
-      <button type="button" class="btn soft" data-fa="reset">처음으로</button>
+    <div class="frac-shelf" aria-label="조각 상자">
+      <span class="tray-label" style="align-self:center;font-size:12px;font-weight:950;color:#6d28d9">끌어서 채우기</span>
+      ${Array.from({ length: Math.min(fa.d, 6) }, () => `<div class="frac-piece" data-frac-piece="a" role="button" tabindex="0" aria-label="${pieceLabel} 조각">${pieceLabel}</div>`).join('')}
+      <div class="drop-plate" data-drop="frac-minus" style="min-height:44px;padding:6px 12px;border-color:#fda4af;background:#fff1f2;margin-left:auto"><div class="plate-title" style="margin:0"><span>➖ 빼기</span></div></div>
     </div>`;
   const body = $('toolBody');
   const addPiece = (which, delta) => {
     const cur = state.fractions[which];
     cur.n = clamp(cur.n + delta, 0, cur.d);
     recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${which} ${cur.n}/${cur.d}`);
-    if (cur.n === cur.d) awardToken('전체를 가득 채웠어요!');
-    else speak(`${cur.d}조각 중 ${countWord(cur.n)}조각`);
+    speak(isDecimal ? `영 점 ${sinoWord(cur.n)}` : `${countWord(cur.d)} 조각 중 ${countWord(cur.n)} 조각`);
     renderTool();
   };
   bindDrag(body, '[data-frac-piece]', (el) => ({ which: el.dataset.fracPiece }), (p, zone) => {
@@ -533,22 +471,9 @@ function renderFraction() {
     onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="frac:${p.which}"]`, body); },
     onTap: (p) => {
       if (state.settings.errorless) showHintTarget(`[data-drop="frac:${p.which}"]`, body);
-      speak('분수 조각을 손가락으로 끌어 분수 막대에 놓아 보세요.');
+      speak('조각을 손가락으로 끌어 막대에 놓아 보세요.');
     },
     onActivate: (p) => addPiece(p.which, 1),
-  });
-  body.querySelectorAll('[data-frac-bundle]').forEach((btn) => {
-    btn.onclick = () => {
-      if (btn.dataset.fracBundle === 'ten') {
-        state.fractions = { a: { n: Math.min(3, 10), d: 10 }, b: { n: Math.min(4, 10), d: 10 } };
-        awardToken('10조각 분수로 바꾸었어요!');
-        renderTool();
-      } else {
-        state.fractions = { a: { n: 25, d: 100 }, b: { n: 30, d: 100 } };
-        awardToken('100칸 분수로 바꾸었어요! 0.25 + 0.30을 살펴보세요.');
-        renderTool();
-      }
-    };
   });
   body.querySelectorAll('[data-f]').forEach((btn) => {
     btn.onclick = () => {
@@ -556,36 +481,6 @@ function renderFraction() {
       const cur = state.fractions[which];
       const i = Number(idx);
       cur.n = cur.n === i + 1 ? i : i + 1;
-      speak(`${cur.d}조각 중 ${countWord(cur.n)}조각`);
-      renderTool();
-    };
-  });
-  $('toolBody').querySelectorAll('[data-d]').forEach((btn) => {
-    btn.onclick = () => {
-      const [which, d] = btn.dataset.d.split(':');
-      const cur = state.fractions[which];
-      cur.d = Number(d);
-      cur.n = Math.min(cur.n, cur.d);
-      renderTool();
-    };
-  });
-  $('toolBody').querySelectorAll('[data-fa]').forEach((btn) => {
-    btn.onclick = () => {
-      const action = btn.dataset.fa;
-      if (action === 'send') {
-        loadExpression(`${fa.n}/${fa.d}`, '+', `${fb.n}/${fb.d}`);
-        return;
-      } else if (action === 'lcm') {
-        if (same) { speak('이미 조각 크기가 같아요'); return; }
-        state.fractions = {
-          a: { n: fa.n * (lcm / fa.d), d: lcm },
-          b: { n: fb.n * (lcm / fb.d), d: lcm },
-        };
-      } else if (action === 'swap') {
-        state.fractions = { a: { ...fb }, b: { ...fa } };
-      } else {
-        state.fractions = { a: { n: 1, d: 4 }, b: { n: 2, d: 4 } };
-      }
       renderTool();
     };
   });
@@ -651,7 +546,8 @@ function renderMeasure() {
     { id: 'money', label: '🪙 화폐' },
   ];
   if (!tabs.some((t) => t.id === m.tab)) m.tab = 'length';
-  const tabHtml = tabs.map((t) => `<button type="button" class="tab${m.tab === t.id ? ' active' : ''}" data-mtab="${t.id}">${t.label}</button>`).join('');
+  const showTabs = state.stage === 17 && !state.activeProblem;
+  const tabHtml = showTabs ? `<div class="tabs measure-tabs">${tabs.slice(0, 3).map((t) => `<button type="button" class="tab${m.tab === t.id ? ' active' : ''}" data-mtab="${t.id}">${t.label}</button>`).join('')}</div>` : '';
   let panel = '';
   if (m.tab === 'length') {
     const pct = (m.length / 20) * 100;
@@ -661,8 +557,7 @@ function renderMeasure() {
     }).join('');
     panel = `
       <div class="measure-panel">
-        <div class="measure-line"><span class="guide">연필 손잡이를 좌우로 끌어 길이를 재어 보세요.</span><span class="measure-value" id="lenVal">${m.length} cm</span></div>
-        <input type="range" id="lenRange" min="0" max="20" step="1" value="${m.length}" aria-label="길이 조절" />
+        <div class="measure-line"><span class="guide">연필을 좌우로 끌어요</span><span class="measure-value" id="lenVal">${m.length} cm</span></div>
         <div class="ruler-wrap">
           <div class="ruler-stage" id="rulerStage" data-drop="ruler" aria-label="연필 막대를 좌우로 끌어 길이 재기">
             <div class="ruler-fill" id="rulerFill" style="width:${pct}%"></div>
@@ -672,44 +567,35 @@ function renderMeasure() {
             <div class="ruler-ticks">${ticks}</div>
           </div>
         </div>
-        <div class="guide">연필(✏️)을 <b>손가락으로 좌우로 끌어</b> 길이를 재어 보세요. 자는 <b>0 cm</b>부터 시작해요. <b>${m.length} cm = ${m.length}센티미터</b></div>
       </div>`;
   } else if (m.tab === 'volume') {
     const pct = (m.volume / 10) * 100;
     panel = `
       <div class="measure-panel">
-        <div class="measure-line"><span class="guide">컵 안의 물 손잡이를 위아래로 끌어 양을 맞춰 보세요.</span><span class="measure-value" id="volVal">${m.volume}컵</span></div>
-        <input type="range" id="volRange" min="0" max="10" step="1" value="${m.volume}" aria-label="들이 조절" />
+        <div class="measure-line"><span class="guide">물방울을 위아래로 끌어요</span><span class="measure-value" id="volVal">${m.volume}컵</span></div>
         <div class="beaker" id="beaker" data-drop="beaker" aria-label="컵의 물 높이를 끌어 조절">
           <div class="beaker-fill" id="beakerFill" style="height:${pct}%"></div>
           <div class="beaker-handle" id="beakerHandle" style="bottom:${pct}%">💧 ${m.volume}컵</div>
           <span class="beaker-mark" style="bottom:49%">5</span>
           <span class="beaker-mark" style="bottom:98%">10</span>
         </div>
-        <div class="guide">물 높이 손잡이를 <b>손가락으로 위아래로 끌어</b> 양을 맞춰 보세요. <b>${m.volume}컵</b>은 눈금으로 <b>${m.volume}</b>만큼 채운 것이에요.</div>
       </div>`;
   } else if (m.tab === 'weight') {
     panel = `
       <div class="measure-panel">
         <div class="scale">
           <span class="num" id="scaleVal">${m.weight}</span>
-          <span class="u">g (그램)</span>
+          <span class="u">g</span>
         </div>
-        <input type="range" id="wtRange" min="0" max="1000" step="50" value="${m.weight}" aria-label="무게 조절" />
         <div class="weight-tray" aria-label="무게 추를 끌어 저울에 놓기">
           <div class="weight-token" data-weight="100" role="button" tabindex="0">100g</div>
           <div class="weight-token" data-weight="200" role="button" tabindex="0">200g</div>
           <div class="weight-token w500" data-weight="500" role="button" tabindex="0">500g</div>
-          <div class="drop-plate" data-drop="weight" style="min-height:52px;padding:7px 10px;border-color:#fcd34d;background:#fffbeb;flex:1">
-            <div class="plate-title" style="margin:0"><span>⚖️ 저울 접시 · 여기로 끌어요</span></div>
+          <div class="drop-plate" data-drop="weight" style="min-height:56px;padding:7px 12px;border-color:#fcd34d;background:#fffbeb;flex:1">
+            <div class="plate-title" style="margin:0"><span>⚖️ 저울 접시</span></div>
           </div>
-          <button type="button" class="btn soft" data-weight-clear>비우기</button>
+          <button type="button" class="btn soft sm" data-weight-clear>비우기</button>
         </div>
-        <div class="row-flex" style="margin-top:0">
-          <button type="button" class="bundle-big-btn blue" data-weight-bundle="ten">100g 10개 묶기 = 1kg</button>
-          <button type="button" class="bundle-big-btn" data-weight-bundle="hundred">10g 100개 묶기 = 1kg</button>
-        </div>
-        <div class="guide" style="text-align:center"><b>${m.weight} g</b> · 1 kg은 1000 g이에요. ${m.weight === 1000 ? '가득 1 kg!' : ''}</div>
       </div>`;
   } else if (m.tab === 'clock') {
     panel = `
@@ -720,14 +606,12 @@ function renderMeasure() {
             <div class="digital">${timeText(m.minutes)}</div>
             <div class="digital" style="font-size:16px;color:#64748b;margin-top:4px">${String(Math.floor(m.minutes / 60) % 24).padStart(2, '0')}:${String(m.minutes % 60).padStart(2, '0')}</div>
             <div class="row-flex" style="justify-content:center">
-              <button type="button" class="btn soft" data-clock="-10">－10분</button>
-              <button type="button" class="btn primary" data-clock="10">＋10분</button>
+              <button type="button" class="btn soft" data-clock="-30">－30분</button>
+              <button type="button" class="btn primary" data-clock="30">＋30분</button>
               <button type="button" class="btn soft" data-clock="60">＋1시간</button>
-              <button type="button" class="btn soft" data-clock="0">9시로</button>
             </div>
           </div>
         </div>
-        <div class="guide" style="text-align:center">시계의 <b>짧은바늘(시)</b>과 <b>긴바늘(분)</b>을 손가락으로 끌어 시간을 맞춰 보세요.</div>
       </div>`;
   } else {
     const coins = [
@@ -738,27 +622,35 @@ function renderMeasure() {
     ];
     let totalMoney = 0;
     coins.forEach((c) => { totalMoney += c.v * m.coins[c.v]; });
-    const breakdown = coins.filter((c) => m.coins[c.v] > 0).map((c) => `${c.label} × ${m.coins[c.v]}`).join(' + ');
+    const placedChips = coins.flatMap((c) =>
+      Array.from({ length: m.coins[c.v] }, () => `<button type="button" class="chip-btn" data-coin-remove="${c.v}" title="누르면 빼기">${c.label} ✕</button>`)
+    ).join('');
     panel = `
       <div class="measure-panel">
-        <div class="guide">동전을 <b>손가락으로 끌어 지갑에 넣어</b> 돈을 모아 보세요.</div>
         <div class="coins">${coins.map((c) => `<button type="button" class="coin ${c.cls}" data-coin="${c.v}" data-coin-drag="${c.v}" aria-label="${c.label} 끌어서 넣기">${c.label}</button>`).join('')}</div>
         <div class="wallet-drop" data-drop="wallet">
           <span class="wd-label">👛 지갑</span>
-          <span class="guide" style="flex:1">${breakdown || '동전을 여기로 끌어오세요'}</span>
+          <div style="flex:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center">${placedChips || '<span class="muted">동전을 여기로 끌어요</span>'}</div>
           <span class="measure-value" id="moneyVal">${totalMoney}원</span>
         </div>
-        <div class="row-flex" style="margin-top:0">
-          <button type="button" class="bundle-big-btn blue" data-money-bundle="ten">10원 10개 = 100원</button>
-          <button type="button" class="bundle-big-btn" data-money-bundle="hundred">100원 10개 = 1,000원</button>
-          <button type="button" class="btn soft" data-coin-clear>비우기</button>
+        <div class="row-flex" style="margin-top:0;justify-content:flex-end">
+          <button type="button" class="btn soft sm" data-coin-clear>비우기</button>
         </div>
       </div>`;
   }
-  setToolHead('📏 측정 실험실', '연필·물·시계바늘·동전을 손가락으로 끌어 재어요');
-  body.innerHTML = `<div class="tabs measure-tabs">${tabHtml}</div>${panel}`;
+  setToolHead('📏 측정 실험실', '직접 끌어 움직여 보세요');
+  body.innerHTML = `${tabHtml}${panel}`;
   body.querySelectorAll('[data-mtab]').forEach((b) => {
     b.onclick = () => { state.measure.tab = b.dataset.mtab; renderTool(); };
+  });
+  body.querySelectorAll('[data-coin-remove]').forEach((b) => {
+    b.onclick = () => {
+      const v = Number(b.dataset.coinRemove);
+      if (state.measure.coins[v] > 0) {
+        state.measure.coins[v] -= 1;
+        renderTool();
+      }
+    };
   });
 
   const len = $('lenRange');
@@ -886,6 +778,7 @@ function renderMeasure() {
             updateLen(e.clientX);
             recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `길이 ${state.measure.length}cm`);
             speak(`${state.measure.length} 센티미터`);
+            if (typeof checkProblemSolved === 'function') checkProblemSolved();
           } else {
             speak('연필 손잡이(✏️)를 손가락으로 좌우로 끌어 길이를 재어 보세요.');
           }
@@ -942,6 +835,7 @@ function renderMeasure() {
           updateVol(e.clientY);
           recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `들이 ${state.measure.volume}컵`);
           speak(`${state.measure.volume}컵`);
+          if (typeof checkProblemSolved === 'function') checkProblemSolved();
         } else {
           speak('물 높이 손잡이를 손가락으로 위아래로 끌어 컵 양을 맞춰 보세요.');
         }
@@ -955,13 +849,11 @@ function renderMeasure() {
   /* 무게: 추 끌기 */
   const addWeight = (v) => {
     state.measure.weight = clamp(state.measure.weight + v, 0, 1000);
-    const range = $('wtRange');
-    if (range) range.value = String(state.measure.weight);
     const scale = $('scaleVal');
     if (scale) scale.textContent = String(state.measure.weight);
     recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `무게 ${state.measure.weight}g`);
-    if (state.measure.weight >= 1000) awardToken('1킬로그램을 가득 채웠어요!');
-    else speak(`${state.measure.weight} 그램`);
+    speak(`${state.measure.weight} 그램`);
+    if (typeof checkProblemSolved === 'function') checkProblemSolved();
   };
   bindDrag(body, '[data-weight]', (el) => ({ v: Number(el.dataset.weight) }), (p, zone) => {
     if (zone && zone.dataset.drop === 'weight') addWeight(p.v);
@@ -1076,31 +968,28 @@ function renderShape() {
       const s = SHAPES.find((x) => x.id === inst.id) || SHAPES[0];
       return `<button type="button" class="shape-instance${state.shapeSelected === i ? ' selected' : ''}" data-shape-instance="${i}" style="left:${inst.x}%;top:${inst.y}%;transform:translate(-50%,-50%) rotate(${inst.rot || 0}deg)" aria-label="${s.name} ${i + 1}번째, 두 번 누르면 돌아가요"><svg viewBox="0 0 100 100">${s.svg}</svg><span class="si-badge">${i + 1}</span></button>`;
     }).join('');
-    setToolHead('🔺 도형 탐험', '도형을 손가락으로 끌어 보드에 놓고, 두 번 눌러 돌려 보세요');
-    body.innerHTML = `${tabs}
+    setToolHead('🔺 도형 보드', '도형을 손가락으로 끌어 보드에 놓아요');
+    body.innerHTML = `${state.activeProblem ? '' : tabs}
       <div class="shape-board-wrap">
         <div class="shape-board" data-drop="shape-board" aria-label="도형 놀이 보드">
-          ${boardShapes || '<div class="board-hint">도형을 여기로 끌어다 놓아요.<br/>여러 도형으로 그림을 만들어 보세요.</div>'}
+          ${boardShapes || '<div class="board-hint">도형을 여기로 끌어다 놓아요</div>'}
         </div>
         <div>
           <div class="shape-palette" aria-label="도형 상자">${palette}</div>
           <div class="row-flex" style="margin-top:8px">
-            <button type="button" class="btn soft" data-shape-rotate ${state.shapeSelected === null ? 'disabled' : ''}>↻ 돌리기</button>
-            <button type="button" class="btn soft" data-shape-remove ${state.shapeSelected === null ? 'disabled' : ''}>🗑 빼기</button>
-            <button type="button" class="btn soft" data-shape-clear>모두 지우기</button>
+            <button type="button" class="btn soft sm" data-shape-rotate ${state.shapeSelected === null ? 'disabled' : ''}>↻ 돌리기</button>
+            <button type="button" class="btn soft sm" data-shape-clear>지우기</button>
           </div>
-          <div class="drop-plate" data-drop="shape-trash" style="margin-top:8px;min-height:48px;padding:7px 9px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>🗑 여기로 끌면 빼기</span></div></div>
+          <div class="drop-plate" data-drop="shape-trash" style="margin-top:8px;min-height:48px;padding:7px 9px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>🗑 빼기</span></div></div>
         </div>
       </div>
       <div class="shape-detail">
         <svg viewBox="0 0 100 100">${selected.svg}</svg>
         <div class="shape-info">
           <div class="name" style="color:${selected.id === 'triangle' || selected.id === 'circle' || selected.id === 'pentagon' ? '#7c3aed' : '#16a34a'}">${selected.name}</div>
-          <div class="shape-fact">변: <b>${selected.sides}개</b> · 꼭짓점: <b>${selected.corners}개</b></div>
-          <div class="shape-fact">${selected.fact}</div>
+          <div class="shape-fact">변 <b>${selected.sides}개</b> · 꼭짓점 <b>${selected.corners}개</b></div>
         </div>
-      </div>
-      <div class="guide">도형을 누르면 특징을 볼 수 있고, <b>손가락으로 끌어 보드에 놓을</b> 수 있어요. 보드에 놓은 도형을 <b>두 번 누르면</b> 돌아가요.</div>`;
+      </div>`;
 
     const addShape = (id, x, y) => {
       state.shapeBoard.push({ id, x: clamp(x ?? 50, 8, 92), y: clamp(y ?? 50, 10, 90), rot: 0 });
@@ -1108,8 +997,7 @@ function renderShape() {
       state.shapeId = id;
       const s = SHAPES.find((z) => z.id === id);
       recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${s.name} 놓기`);
-      if (state.shapeBoard.length === 1 || state.shapeBoard.length % 5 === 0) awardToken(`${s.name}을 놓았어요!`);
-      else speak(`${s.name}. 변 ${countWord(s.sides)}개, 꼭짓점 ${countWord(s.corners)}개`);
+      speak(`${s.name}`);
       renderTool();
     };
     bindDrag(body, '[data-shape-source]', (el) => ({ id: el.dataset.shapeSource }), (p, zone, el, ev) => {
@@ -1188,27 +1076,22 @@ function renderShape() {
     const clear = body.querySelector('[data-shape-clear]');
     if (clear) clear.onclick = () => { state.shapeBoard = []; state.shapeSelected = null; renderTool(); };
   } else {
-    const p = PATTERNS[state.pattern.index] || PATTERNS[0];
+    const p = state.customPattern || PATTERNS[state.pattern.index] || PATTERNS[0];
     const seqHtml = p.seq.map((s) => `<div class="pattern-box">${s}</div>`).join('') + `<div class="pattern-box q" data-drop="pattern-next" aria-label="다음에 올 모양을 놓는 곳">${state.pattern.solved && state.pattern.chosen ? state.pattern.chosen : '?'}</div>`;
-    setToolHead('🔁 반복 규칙 찾기', '다음에 올 모양을 골라 ? 자리로 끌어다 놓아요');
-    body.innerHTML = `${tabs}
-      <div class="guide" style="text-align:center">규칙을 보고 <b>?</b>에 들어갈 모양을 <b>손가락으로 끌어 ? 자리에 놓아</b> 보세요.</div>
+    setToolHead('🔁 반복 규칙 찾기', '다음에 올 모양을 ? 자리로 끌어다 놓아요');
+    body.innerHTML = `${state.activeProblem ? '' : tabs}
       <div class="pattern-row">${seqHtml}</div>
       <div class="drag-tray" style="justify-content:center">
-        ${p.choices.map((c) => `<div class="drag-token violet${state.pattern.chosen === c ? (state.pattern.solved ? ' green' : ' rose') : ''}" data-pattern-drag="${c}" role="button" tabindex="0"><span class="big">${c}</span><span class="tiny">끌어서 ?에 놓기</span></div>`).join('')}
-      </div>
-      <div class="feedback ${state.pattern.chosen ? (state.pattern.solved ? 'good' : 'bad') : ''}" style="color:${state.pattern.chosen ? (state.pattern.solved ? '#16a34a' : '#e11d48') : '#64748b'}">
-        ${state.pattern.chosen ? (state.pattern.solved ? '정답이에요! ' + p.rule : '다시 한 번 규칙을 살펴보세요.') : '차례대로 어떤 모양이 반복되는지 보세요.'}
-      </div>
-      <div class="row-flex" style="justify-content:center">
-        <button type="button" class="btn violet" data-next-pattern>다음 문제 →</button>
+        ${p.choices.map((c) => `<div class="drag-token violet${state.pattern.chosen === c ? (state.pattern.solved ? ' green' : ' rose') : ''}" data-pattern-drag="${c}" role="button" tabindex="0"><span class="big">${c}</span><span class="tiny">끌어서 ?에</span></div>`).join('')}
       </div>`;
     const choose = (choice) => {
       state.pattern.chosen = choice;
       state.pattern.solved = choice === p.answer;
       recordTrial(state.pattern.solved ? (state.promptLevel ? 'prompted' : 'independent') : 'error', state.promptLevel, `규칙 ${choice}`);
-      if (state.pattern.solved) awardToken('규칙을 찾았어요!');
-      else speak('다시 한 번 규칙을 살펴보세요.');
+      if (!state.pattern.solved) {
+        haptic(35);
+        speak('다시 한 번 규칙을 살펴보아요.');
+      }
       renderTool();
     };
     bindDrag(body, '[data-pattern-drag]', (el) => ({ choice: el.dataset.patternDrag }), (p, zone) => {
@@ -1254,38 +1137,10 @@ function renderData() {
     </div>`).join('');
   const choices = kinds.map((k) => `<button type="button" class="btn soft" data-answer="${k.id}" style="${d.answer === k.id ? `background:${d.solved ? '#dcfce7' : '#ffe4e6'}` : ''}">${k.label} ${d[k.id]}개</button>`).join('');
   const tray = kinds.map((k) => `<div class="drag-token ${k.id === 'banana' ? 'amber' : k.id === 'grape' ? 'violet' : ''}" data-data-token="${k.id}" role="button" tabindex="0"><span class="big">${k.label.split(' ')[0]}</span><span class="tiny">${k.label.split(' ')[1]} +1</span></div>`).join('');
-  setToolHead('📊 자료와 문제해결', '과일을 그래프로 끌어다 놓고 가장 많은 것을 찾아요');
+  setToolHead('📊 그림 그래프', '과일을 그래프로 끌어다 놓아요');
   body.innerHTML = `
-    <div class="guide">과일을 <b>손가락으로 끌어</b> 그래프 위에 놓아 보세요. 막대가 길어지는 것을 볼 수 있어요.</div>
-    <div class="drag-tray"><span class="tray-label">과일을 끌어서 그래프에 놓기</span>${tray}</div>
-    <div class="data-chart">${rows}</div>
-    ${bundleSummaryHTML(d.apple, { extra: `<span class="bundle-item">🍎 사과 ${d.apple}개</span>` })}
-    ${bundleSummaryHTML(d.banana, { extra: `<span class="bundle-item">🍌 바나나 ${d.banana}개</span>` })}
-    ${bundleSummaryHTML(d.grape, { extra: `<span class="bundle-item">🍇 포도 ${d.grape}개</span>` })}
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-data-bundle="ten">10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-data-bundle="hundred">100개 묶기</button>
-    </div>
-    <div class="data-question">
-      <div class="guide">가장 많은 과일은 무엇일까요? 그래프의 길이를 비교해 보세요.</div>
-      <div class="data-choices">${choices}</div>
-      ${d.answer ? `<div class="feedback" style="color:${d.solved ? '#16a34a' : '#e11d48'};margin-top:7px">${d.solved ? `정답! ${winners.map((k) => k.label).join(', ')}가 ${maxCount}개로 가장 많아요.` : '다시 세어 보세요. 막대가 가장 긴 것을 찾아요.'}</div>` : ''}
-    </div>
-    <div class="word-problem">
-      <div class="q">🍎 사과 3개와 🍊 귤 5개가 있어요. 모두 몇 개일까요?</div>
-      <div class="drag-tray" style="margin-top:8px">
-        <div class="drag-token" data-story-token="apple" role="button" tabindex="0"><span class="big">🍎</span><span class="tiny">사과</span></div>
-        <div class="drag-token amber" data-story-token="orange" role="button" tabindex="0"><span class="big">🍊</span><span class="tiny">귤</span></div>
-        <div class="drop-plate" data-drop="story" style="min-height:52px;padding:7px 10px;flex:1">
-          <div class="plate-title" style="margin:0"><span>🧺 바구니 · 사과 ${state.story.apple}개, 귤 ${state.story.orange}개</span></div>
-        </div>
-      </div>
-      <div class="row-flex" style="margin-top:8px">
-        <button type="button" class="btn primary" data-word>계산기에 3 + 5 넣기</button>
-        <button type="button" class="btn soft" data-word-answer>정답 확인</button>
-      </div>
-      ${d.wordSolved ? '<div class="a">3 + 5 = 8 · 모두 8개예요!</div>' : ''}
-    </div>`;
+    <div class="drag-tray"><span class="tray-label">끌어서 그래프 채우기</span>${tray}</div>
+    <div class="data-chart">${rows}</div>`;
 
   const setCount = (kind, value, msg) => {
     d[kind] = clamp(Math.trunc(value), 0, 100);

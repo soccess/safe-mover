@@ -433,6 +433,7 @@ const state = {
   soundEnabled: true,
   easyMode: false,
   slowPace: false,
+  guidanceHidden: false,
   paused: false,
   busy: false,
   completedCount: loadCafeCount(),
@@ -649,11 +650,17 @@ function playGentleHintSound() {
 }
 
 function speakKorean(text, forceSpeak) {
-  if ((!state.voiceEnabled && !forceSpeak) || !('speechSynthesis' in window)) return;
+  if (!state.voiceEnabled && !forceSpeak) return;
+  const rate = state.slowPace ? 0.82 : 0.92; // 또박또박 차분한 속도
+  if (window.D1Bridge && typeof window.D1Bridge.speakText === 'function') {
+    window.D1Bridge.speakText(text, rate, 1.02);
+    return;
+  }
+  if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'ko-KR';
-  utter.rate = state.slowPace ? 0.82 : 0.92; // 또박또박 차분한 속도
+  utter.rate = rate;
   window.speechSynthesis.speak(utter);
 }
 
@@ -4052,12 +4059,40 @@ if (easyCafeBtn) {
   });
 }
 
+function setGuidanceVisible(visible) {
+  state.guidanceHidden = !visible;
+  const banner = document.getElementById('guidanceBanner');
+  const reopenBtn = document.getElementById('reopenGuidanceBtn');
+  if (banner) banner.classList.toggle('hidden', !visible);
+  if (reopenBtn) reopenBtn.classList.toggle('hidden', visible);
+}
+
 const speakStepBtn = document.getElementById('speakStepBtn');
 if (speakStepBtn) {
   speakStepBtn.addEventListener('click', () => {
+    const shownText = document.getElementById('guidanceText')?.textContent?.trim();
     const step = getCurrentStep();
-    const text = step ? getStepDisplay(step).prompt : '음료가 완성되었어요!';
+    const text = shownText || (step ? getStepDisplay(step).prompt : '음료가 완성되었어요!');
     speakKorean(text, true);
+  });
+}
+
+const closeGuidanceBtn = document.getElementById('closeGuidanceBtn');
+if (closeGuidanceBtn) {
+  closeGuidanceBtn.addEventListener('click', () => {
+    setGuidanceVisible(false);
+    if (window.D1Bridge && typeof window.D1Bridge.stopSpeak === 'function') {
+      window.D1Bridge.stopSpeak();
+    } else if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  });
+}
+
+const reopenGuidanceBtn = document.getElementById('reopenGuidanceBtn');
+if (reopenGuidanceBtn) {
+  reopenGuidanceBtn.addEventListener('click', () => {
+    setGuidanceVisible(true);
   });
 }
 

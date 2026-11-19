@@ -285,11 +285,16 @@ function playMathSfx(kind, extra) {
 function speak(text) {
   if (!state.voice || !text) return;
   try {
+    const rate = (state.settings && state.settings.easy) ? 0.86 : 0.92;
+    if (window.D1Bridge && typeof window.D1Bridge.speakText === 'function') {
+      window.D1Bridge.speakText(String(text), rate, 1.04);
+      return;
+    }
     if (!('speechSynthesis' in window)) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    const u = new SpeechSynthesisUtterance(String(text));
     u.lang = 'ko-KR';
-    u.rate = 0.9;
+    u.rate = rate;
     u.pitch = 1.04;
     speechSynthesis.speak(u);
   } catch (e) { /* 음성 미지원 환경 무시 */ }

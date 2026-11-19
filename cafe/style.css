@@ -363,31 +363,108 @@ html, body {
 }
 
 .guidance-banner {
-  pointer-events: none;
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 13px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(10px);
-  border: 1.5px solid var(--primary);
-  border-radius: 999px;
-  box-shadow: 0 4px 12px rgba(44, 36, 30, 0.1);
-  font-size: 13px;
+  gap: 10px;
+  padding: 11px 14px 11px 18px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2px solid var(--primary);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(44, 36, 30, 0.16);
+  font-size: clamp(16px, 2.1vw, 20px);
+  line-height: 1.42;
   font-weight: 800;
   color: var(--text);
-  max-width: 96%;
-  text-align: center;
+  max-width: min(820px, 96%);
+  text-align: left;
 }
 
 .guidance-banner.gentle-hint {
   border-color: var(--accent);
-  background: rgba(255, 248, 238, 0.95);
+  background: rgba(255, 248, 238, 0.97);
 }
 
 .guidance-emoji {
-  font-size: 16px;
+  font-size: 24px;
   flex-shrink: 0;
+  line-height: 1;
+}
+
+.guidance-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: keep-all;
+}
+
+.guidance-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.guidance-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.guidance-ctrl-btn:active {
+  transform: scale(0.94);
+}
+
+.guidance-ctrl-btn.speak {
+  border: 1.5px solid var(--primary);
+  background: #e8f3ec;
+  color: var(--primary);
+}
+
+.guidance-ctrl-btn.speak:hover {
+  background: #d5ebdd;
+}
+
+.guidance-ctrl-btn.close {
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.guidance-ctrl-btn.close:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.guidance-reopen-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--primary);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(44, 36, 30, 0.14);
+}
+
+.guidance-reopen-btn:hover {
+  background: #e8f3ec;
 }
 
 .action-bar {
@@ -552,8 +629,19 @@ html, body {
     padding: 4px 7px;
   }
   .guidance-banner {
-    font-size: 12.5px;
-    padding: 5px 11px;
+    font-size: 16px;
+    padding: 9px 11px 9px 13px;
+    border-radius: 16px;
+    gap: 8px;
+  }
+  .guidance-emoji {
+    font-size: 21px;
+  }
+  .guidance-ctrl-btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0 8px;
+    font-size: 16px;
   }
 }
 
@@ -583,20 +671,6 @@ html, body {
 }
 .ft-pill.now { background: #fff3e0; color: #9c4f0a; border: 1px solid #f5b971; }
 .ft-pill.next { background: #e8f3ec; color: var(--primary); border: 1px solid #a9d3b8; }
-
-.speak-step-btn {
-  pointer-events: auto;
-  flex-shrink: 0;
-  border: 1px solid var(--primary);
-  background: #e8f3ec;
-  color: var(--primary);
-  border-radius: 999px;
-  padding: 3px 9px;
-  font-size: 11.5px;
-  font-weight: 800;
-  cursor: pointer;
-}
-.speak-step-btn:hover { background: #d5ebdd; }
 
 .tool-btn.highlighted {
   border-color: #ea8c2a;

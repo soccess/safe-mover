@@ -134,9 +134,9 @@
           <text x="20" y="84" font-size="18" font-weight="900" fill="#7c3aed" class="svg-twinkle">＋</text>
           <text x="94" y="28" font-size="16" font-weight="900" fill="#2563eb" class="svg-twinkle-2">＝</text>
         </svg>
-        <h2>수학 공책 21단계<br>터치 구체물 활동</h2>
-        <p>21단계로 세분화된 활동과 풍부한 예시·문제 ·<br>숫자 세기 · 사칙연산 · 시계·돈 · 도형 · 그래프</p>
-        <span class="go">▶ 학습 시작</span>
+        <h2>넘버 아일랜드 대모험<br>13단계 액션 수학 게임</h2>
+        <p>피하고·던지고·점프하고·화폐 교환까지!<br>몸으로 부딪혀 수 개념을 깨우치는 태블릿 액션 아케이드</p>
+        <span class="go">▶ 게임 시작</span>
       </a>
 
       <!-- 3. 마음 날씨 연구소 -->
@@ -227,6 +227,7 @@
         <span id="d1StatusText">Cloudflare D1 DB 연결 상태 확인 중...</span>
       </div>
       <div class="d1-controls">
+        <button type="button" class="d1-btn" id="btnTtsStatus">🔊 음성 확인</button>
         <button type="button" class="d1-btn" id="btnSpedPrefs">🛡️ 맞춤 지원</button>
         <button type="button" class="d1-btn" id="btnGlobalAac">💬 도움 말판</button>
         <button type="button" class="d1-btn" id="btnStudentLogin">🎨 캐릭터 로그인</button>
@@ -277,6 +278,40 @@
         document.getElementById("btnGlobalAac").addEventListener("click", () => window.D1Bridge.openAacModal());
         btnStudentLogin.addEventListener("click", () => window.D1Bridge.openStudentLoginModal());
         btnTeacherMode.addEventListener("click", () => window.D1Bridge.openTeacherModal());
+
+        const btnTtsStatus = document.getElementById("btnTtsStatus");
+        if (btnTtsStatus && window.D1Bridge.inspectTtsEnvironment) {
+          let lastTtsEnv = null;
+          const syncTtsBtn = (env) => {
+            lastTtsEnv = env;
+            if (!env) return;
+            if (env.needsGuide) {
+              btnTtsStatus.textContent = env.isAndroid ? "⚠️ 안드로이드 TTS 설치" : "⚠️ EdgeTTS 권장";
+              btnTtsStatus.style.borderColor = "rgba(251, 191, 36, 0.7)";
+              btnTtsStatus.style.background = "rgba(245, 158, 11, 0.22)";
+            } else if (env.hasEdgeNatural) {
+              btnTtsStatus.textContent = "🔊 EdgeTTS 연결됨";
+              btnTtsStatus.style.borderColor = "";
+              btnTtsStatus.style.background = "";
+            } else {
+              btnTtsStatus.textContent = "🔊 한국어 음성 준비됨";
+              btnTtsStatus.style.borderColor = "";
+              btnTtsStatus.style.background = "";
+            }
+          };
+
+          btnTtsStatus.addEventListener("click", async () => {
+            const env = await window.D1Bridge.openTtsGuideModal(lastTtsEnv);
+            syncTtsBtn(env);
+          });
+
+          window.D1Bridge.inspectTtsEnvironment(1500).then((env) => {
+            syncTtsBtn(env);
+            if (env && env.needsGuide && !window.D1Bridge.isTtsGuideDismissedToday()) {
+              window.D1Bridge.openTtsGuideModal(env, { autoOpened: true });
+            }
+          });
+        }
       }
 
       async function refreshStatus() {

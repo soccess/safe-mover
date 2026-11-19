@@ -22,6 +22,10 @@ function taCelebrate(){
 }
 function taSpeak(text){
  try{
+  if(!text)return false;
+  if(window.D1Bridge&&typeof window.D1Bridge.speakText==='function'){
+   return window.D1Bridge.speakText(text,.9,1.04);
+  }
   if(!('speechSynthesis' in window))return false;
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);

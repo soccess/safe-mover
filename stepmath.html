@@ -2,539 +2,111 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>수학 공책 — 21단계 화폐계산 선수지식 · 태블릿 SVG 수학 게임</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>넘버 아일랜드 — 13단계 액션 수학 대모험</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>🏝️</text></svg>">
   <link rel="stylesheet" href="./stepmath/styles.css">
 </head>
 <body>
- <section class="course-gate gm-arcade-gate" id="courseGate" aria-labelledby="gateTitle">
-  <div class="gate-brand">
-    <div class="gate-mark" aria-hidden="true">
-      <svg viewBox="0 0 64 64" width="46" height="46">
-        <circle cx="32" cy="32" r="27" fill="#fde047" stroke="#ca8a04" stroke-width="3.5" class="svg-pulse-x"/>
-        <circle cx="32" cy="32" r="21" fill="none" stroke="#b45309" stroke-width="1.8" stroke-dasharray="4 3"/>
-        <text x="32" y="39" text-anchor="middle" font-size="22" font-weight="900" fill="#78350f">₩</text>
-      </svg>
-    </div>
-    <div>
-       <h1 class="gate-title" id="gateTitle" tabindex="-1">🪙 황금 마트 21 스테이지 대모험</h1>
-       <p class="gate-subtitle">터치하고! 끌고! 터뜨려라! 21개의 신나는 태블릿 아케이드 게임으로 화폐 마스터가 되어 보세요!</p>
-    </div>
-  </div>
-   <div class="course-grid" role="list" aria-label="4대 게임 월드">
-    <button type="button" class="course-card world-1" data-course="count">
-      <span class="course-icon" aria-hidden="true">
-        <svg viewBox="0 0 56 56" width="48" height="48">
-          <rect x="6" y="10" width="44" height="36" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
-          <circle cx="18" cy="24" r="4.5" fill="#2563eb" class="svg-bounce-1"/>
-          <circle cx="28" cy="24" r="4.5" fill="#2563eb" class="svg-bounce-2"/>
-          <circle cx="38" cy="24" r="4.5" fill="#16a34a" class="svg-bounce-1"/>
-          <text x="28" y="40" text-anchor="middle" font-size="11" font-weight="900" fill="#1e40af">1~20</text>
-        </svg>
-      </span>
-       <h2>🏝️ 보물섬 숫자 탐험</h2>
-       <p>컨베이어 분류 · Polka Dot 짝꿍 · Make 10 스냅 · 줄다리기 대결!</p>
-       <span class="course-meta">▶ 1~5 스테이지 바로 플레이</span>
-    </button>
-    <button type="button" class="course-card world-2" data-course="calc">
-      <span class="course-icon" aria-hidden="true">
-        <svg viewBox="0 0 56 56" width="48" height="48">
-          <rect x="6" y="10" width="44" height="36" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
-          <text x="19" y="29" text-anchor="middle" font-size="18" font-weight="900" fill="#d97706" class="svg-bounce-1">＋</text>
-          <text x="37" y="29" text-anchor="middle" font-size="18" font-weight="900" fill="#2563eb" class="svg-bounce-2">－</text>
-          <text x="19" y="42" text-anchor="middle" font-size="14" font-weight="900" fill="#16a34a">×</text>
-          <text x="37" y="42" text-anchor="middle" font-size="14" font-weight="900" fill="#7c3aed">÷</text>
-        </svg>
-      </span>
-       <h2>🚀 우주 계산 어드벤처</h2>
-       <p>방울 합체 · 볼링 뺄셈 · 로켓 수직선 · 금고 털기 · YouCubed 땅따먹기!</p>
-       <span class="course-meta">▶ 6~16 스테이지 바로 플레이</span>
-    </button>
-    <button type="button" class="course-card world-3" data-course="life">
-      <span class="course-icon" aria-hidden="true">
-        <svg viewBox="0 0 56 56" width="48" height="48">
-          <circle cx="28" cy="28" r="20" fill="#fef08a" stroke="#ca8a04" stroke-width="2.8" class="svg-pulse-x"/>
-          <text x="28" y="33" text-anchor="middle" font-size="15" font-weight="900" fill="#78350f">500</text>
-        </svg>
-      </span>
-       <h2>🏪 꿈의 마트 &amp; 시계 마을</h2>
-       <p>동전 결제와 거스름돈 · 시간 여행 시계 · 장인 공방 · 네온 도형 로봇!</p>
-       <span class="course-meta">▶ 17~20 스테이지 바로 플레이</span>
-    </button>
-    <button type="button" class="course-card world-4" data-course="data">
-      <span class="course-icon" aria-hidden="true">
-        <svg viewBox="0 0 56 56" width="48" height="48">
-          <rect x="6" y="10" width="44" height="36" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2.5"/>
-          <rect x="14" y="20" width="7" height="20" rx="2" fill="#ef4444" class="svg-bounce-1"/>
-          <rect x="25" y="26" width="7" height="14" rx="2" fill="#facc15" class="svg-bounce-2"/>
-          <rect x="36" y="17" width="7" height="23" rx="2" fill="#22c55e" class="svg-bounce-1"/>
-        </svg>
-      </span>
-       <h2>🏆 슈퍼마켓 챔피언스</h2>
-       <p>솟아오르는 마트 그래프 타워와 과일 장바구니 대작전!</p>
-       <span class="course-meta">▶ 21 스테이지 바로 플레이</span>
-    </button>
-  </div>
-
-  <div class="gm-world-map" aria-label="21 스테이지 바로 선택">
-    <div class="gm-world-map-head"><span>🎮 스테이지 바로 골라 출발하기 (1 ~ 21)</span><button type="button" class="btn primary" id="allActivitiesBtn">🚀 1스테이지부터 모험 시작!</button></div>
-    <div class="gm-stage-tiles">
-      <button type="button" class="gm-stage-tile" data-direct-stage="1"><span>🧺</span><b>1</b><small>마트 분류</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="2"><span>✨</span><b>2</b><small>도트 짝꿍</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="3"><span>⚡</span><b>3</b><small>10 스냅</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="4"><span>🪙</span><b>4</b><small>10원 상점</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="5"><span>🚩</span><b>5</b><small>줄다리기</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="6"><span>🫧</span><b>6</b><small>방울 합체</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="7"><span>🎳</span><b>7</b><small>볼링 뺄셈</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="8"><span>🔥</span><b>8</b><small>10 부스터</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="9"><span>🐸</span><b>9</b><small>연못 점프</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="10"><span>🚀</span><b>10</b><small>로켓 수직선</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="11"><span>🏦</span><b>11</b><small>동전 환전</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="12"><span>🔐</span><b>12</b><small>금고 털기</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="13"><span>🟦</span><b>13</b><small>땅따먹기</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="14"><span>🐾</span><b>14</b><small>파티 나눔</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="15"><span>🍕</span><b>15</b><small>피자 셰프</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="16"><span>🧪</span><b>16</b><small>물약 연구소</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="17"><span>📏</span><b>17</b><small>장인 공방</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="18"><span>🕒</span><b>18</b><small>시간 여행</small></button>
-      <button type="button" class="gm-stage-tile hot" data-direct-stage="19"><span>💳</span><b>19</b><small>마트 계산대</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="20"><span>🤖</span><b>20</b><small>도형 로봇</small></button>
-      <button type="button" class="gm-stage-tile" data-direct-stage="21"><span>📊</span><b>21</b><small>마트 그래프</small></button>
-    </div>
-  </div>
-  <div class="row-flex" style="justify-content:center;margin-top:14px">
-     <button type="button" class="btn soft" id="gateSettingsBtn">⚙️ 화면·사운드 설정</button>
-     <a class="home-portal-link" href="./index.html">🏠 전체 게임 목록</a>
-  </div>
-</section>
-
-<div class="app" id="app" hidden>
-
-  <header class="topbar gm-arcade-topbar">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48" width="32" height="32">
-          <circle cx="24" cy="24" r="19" fill="#fde047" stroke="#ca8a04" stroke-width="2.6"/>
-          <text x="24" y="30" text-anchor="middle" font-size="16" font-weight="900" fill="#78350f">₩</text>
-        </svg>
-      </div>
-      <div>
-        <div class="brand-title">황금 마트 어드벤처</div>
-       <div class="brand-sub">21 스테이지 화폐 대모험</div>
-      </div>
-    </div>
-    <div class="top-actions">
-      <a class="icon-btn off" href="./index.html" style="text-decoration:none">🏠 게임 목록</a>
-      <button type="button" class="icon-btn off" id="courseBtn">🗺️ 월드맵</button>
-      <button type="button" class="icon-btn on" id="voiceBtn" aria-pressed="true">🔊 사운드</button>
-      <button type="button" class="icon-btn off" id="breakBtn">🌿 쉬기</button>
-      <button type="button" class="icon-btn off" id="teacherToolsBtn">🛠️ 교사용</button>
-    </div>
-  </header>
-
-  <div class="gm-teacher-drawer" id="teacherToolsDrawer" hidden>
-    <div class="view-switch" role="tablist" aria-label="화면 보기 선택">
-       <button type="button" id="viewActivityBtn" class="on" role="tab" aria-selected="true">🎮 게임 모드</button>
-       <button type="button" id="viewCalcBtn" role="tab" aria-selected="false">🧮 계산기 모드</button>
-    </div>
-    <button type="button" class="support-btn" id="teacherBtn">📋 플레이 기록</button>
-    <button type="button" class="support-btn" id="aacBtn">💬 말판</button>
-    <button type="button" class="support-btn" id="bundleBtn">🔟 10·100 묶기</button>
-    <button type="button" class="support-btn" id="settingsBtn">⚙️ 설정</button>
-    <button type="button" class="support-btn" id="helpBtn">📚 연구 근거</button>
-    <button type="button" class="support-btn" id="resetBtn">🧹 지우기</button>
-  </div>
-
-  <nav class="stage-nav" id="stageNav" aria-label="스테이지 선택"></nav>
-
-  <div class="support-bar" id="supportBar" aria-label="학습 지원 도구">
-    <div class="first-then" aria-label="먼저 다음 보드">
-      <div class="ft-card now"><div class="ft-label">지금 · FIRST</div><div class="ft-text" id="ftNow">활동을 골라요</div></div>
-      <span class="ft-arrow" aria-hidden="true">→</span>
-      <div class="ft-card next"><div class="ft-label">다음 · THEN</div><div class="ft-text" id="ftNext">칭찬 별 5개 · 쉬는 시간</div></div>
-    </div>
-    <div class="token-board" aria-label="칭찬 별">
-      <span class="t-label">칭찬 별</span>
-      <div class="token-dots" id="tokenDots"></div>
-    </div>
-  </div>
-
-  <main class="layout">
-    <section class="left-col" aria-label="계산기와 단계별 교구">
-      <div class="stage-head">
-        <span class="stage-badge" id="stageBadge"></span>
-        <h1 class="stage-title" id="stageTitle" tabindex="-1"></h1>
-        <div class="stage-sub" id="stageSub"></div>
-        <p class="stage-hint" id="stageHint"></p>
-      </div>
-
-      <section class="lesson-path" aria-label="단계별 학습 활동" id="lessonPanel">
-        <div class="lesson-path-top">
-         <h2 class="lesson-path-title" id="lessonTitle">이번 놀이</h2>
-          <span class="lesson-count" id="lessonCount"></span>
+  <div id="arcadeWrap">
+    <!-- 상단 아케이드 HUD -->
+    <header id="hudBar">
+      <div class="hud-left">
+        <a id="homeLink" class="hud-btn" href="./index.html" title="학습 게임 목록">🏠 목록</a>
+        <button type="button" class="hud-btn map-btn" id="btnMap">🗺️ 13개 섬</button>
+        <div class="stage-stepper">
+          <button type="button" class="step-arrow" id="btnPrevStage" aria-label="이전 섬">◀</button>
+          <button type="button" class="stage-pill" id="btnStageInfo">
+            <span id="hudStageIcon">🍎</span>
+            <span id="hudStageName">1단계 과일 바운스</span>
+          </button>
+          <button type="button" class="step-arrow" id="btnNextStage" aria-label="다음 섬">▶</button>
         </div>
-        <div class="lesson-steps" id="lessonSteps" aria-label="수업 순서"></div>
-        <p class="lesson-instruction" id="lessonInstruction" aria-live="polite"></p>
-        <div class="lesson-actions">
-           <button type="button" class="btn soft" id="goToolBtn">놀이로 가기 ↓</button>
-           <button type="button" class="btn soft" id="lessonPrevBtn">← 이전</button>
-           <button type="button" class="btn amber" id="lessonModelBtn">👩‍🏫 같이 해보기</button>
-           <button type="button" class="btn primary" id="lessonNextBtn">다음 →</button>
+      </div>
+
+      <div class="hud-center">
+        <div class="wave-wrap" aria-label="웨이브 진행">
+          <span class="wave-txt" id="hudWaveTxt">WAVE 1/3</span>
+          <div class="wave-bar"><div class="wave-fill" id="hudWaveFill"></div></div>
+        </div>
+        <div class="hud-hearts" id="hudHearts" aria-label="남은 하트">❤️❤️❤️</div>
+        <div class="hud-score">
+          <span class="score-pill">⭐ <b id="hudScore">0</b></span>
+          <span class="combo-pill" id="hudCombo" hidden>🔥 x1</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <button type="button" class="hud-btn toggle" id="btnSlow" title="속도를 천천히 해서 여유롭게 플레이해요">🐢 천천히 OFF</button>
+        <button type="button" class="hud-btn toggle on" id="btnMusic" title="배경 음악 켜기/끄기">🎵 음악 ON</button>
+        <button type="button" class="hud-btn toggle on" id="btnSfx" title="효과음 켜기/끄기">🔔 소리 ON</button>
+        <button type="button" class="hud-btn toggle on" id="btnVoice" title="짧은 음성 응원 켜기/끄기">🗣️ 음성 ON</button>
+        <button type="button" class="hud-btn" id="btnRestart" title="현재 단계 다시 시작">↻</button>
+      </div>
+    </header>
+
+    <!-- 게임 캔버스 영역 -->
+    <main id="stageWrap">
+      <canvas id="gameCanvas"></canvas>
+
+      <!-- 상단 미션 플로팅 배지 (간결한 아이콘 + 핵심 목표) -->
+      <div id="missionChip" hidden>
+        <span class="mission-tag" id="missionTag">ACTION</span>
+        <span class="mission-text" id="missionText">과일을 바구니로 던지세요!</span>
+      </div>
+
+      <!-- 플로팅 메시지 -->
+      <div id="floatBanner" hidden></div>
+
+      <!-- 태블릿 터치 액션 패드 (점프/러너/이동형 스테이지에서 자동 노출) -->
+      <div id="touchPad" hidden>
+        <div class="pad-group left">
+          <button type="button" class="pad-btn" id="padLeft" aria-label="왼쪽">◀</button>
+          <button type="button" class="pad-btn" id="padRight" aria-label="오른쪽">▶</button>
+        </div>
+        <div class="pad-group right">
+          <button type="button" class="pad-btn action" id="padAction" aria-label="점프 또는 액션">⬆️ 점프!</button>
+        </div>
+      </div>
+
+      <!-- 월드맵 / 타이틀 오버레이 -->
+      <section id="mapOverlay" class="overlay-screen">
+        <div class="map-panel">
+          <div class="map-hero">
+            <div class="hero-badge">🎮 TABLET ACTION MATH</div>
+            <h1>넘버 아일랜드 대모험!</h1>
+            <p>피하고 · 던지고 · 점프하고 · 베고 · 합체하면서 변신하는 <b>13개 액션 수학 월드</b></p>
+            <div class="hero-actions">
+              <button type="button" class="big-play-btn" id="btnQuickPlay">▶ 이어서 모험하기</button>
+              <span class="total-stars-pill" id="totalStarsPill">⭐ 0 / 39</span>
+            </div>
+          </div>
+          <div class="world-grid" id="worldGrid"></div>
         </div>
       </section>
 
-      <div class="calc-panel">
-        <div class="calc-top">
-          <div class="calc-title">🧮 계산기</div>
-          <div class="calc-dot" aria-hidden="true"><i></i><i></i><i></i></div>
-        </div>
-        <div class="screen">
-          <div class="screen-top">
-            <span class="screen-badge" id="screenBadge">4단계</span>
-            <span class="screen-live" id="screenLive">공식이 오른쪽에 보여요</span>
-          </div>
-          <div class="screen-expr" id="screenExpr">3 + 5 = 8</div>
-          <div class="screen-word" id="screenWord">셋 더하기 다섯은 여덟</div>
-          <div class="screen-tip" id="screenTip">숫자와 기호를 누르면 바로 계산돼요</div>
-        </div>
-
-        <div class="toolbar">
-          <div class="toolbar-row" id="themeRow"></div>
-          <div class="toolbar-row" id="exampleRow"></div>
-          <div class="calc-extra" aria-label="수 표현 입력 도구">
-            <button type="button" class="chip-btn" id="decimalKey">소수점 ·</button>
-            <button type="button" class="chip-btn" id="fractionKey">분수선 /</button>
+      <!-- 스테이지 클리어 / 결과 오버레이 -->
+      <section id="resultOverlay" class="overlay-screen" hidden>
+        <div class="result-card" id="resultCard">
+          <div class="result-stars" id="resStars">⭐⭐⭐</div>
+          <h2 id="resTitle">스테이지 클리어!</h2>
+          <p id="resSub">멋진 액션으로 수 개념을 정복했어요!</p>
+          <div class="res-stats" id="resStats"></div>
+          <div class="res-actions">
+            <button type="button" class="res-btn soft" id="btnResMap">🗺️ 섬 지도</button>
+            <button type="button" class="res-btn warn" id="btnResRetry">↻ 다시 도전</button>
+            <button type="button" class="res-btn primary" id="btnResNext">▶ 다음 섬으로!</button>
           </div>
         </div>
-
-        <div class="keypad" id="keypad" aria-label="계산기 키패드"></div>
-        <section class="calc-grouping" id="calcGrouping" aria-live="polite">
-          <div class="grouping-head"><span>🧩 자릿값 묶음 보기</span><span id="groupingValue">수를 입력해 보세요</span></div>
-          <div class="calc-extra">
-            <button type="button" class="chip-btn" data-group-size="10">10개씩 묶기</button>
-            <button type="button" class="chip-btn" data-group-size="100">100개씩 묶기</button>
-          </div>
-          <div class="grouping-visual" id="groupingVisual"></div>
-        </section>
-      </div>
-
-      <div class="tool-card" id="toolCard">
-        <div class="tool-head">
-          <div>
-            <div class="tool-title" id="toolTitle">단계별 교구</div>
-            <div class="tool-sub" id="toolSub">단계를 고르면 맞춤 교구가 나타납니다</div>
-          </div>
-        </div>
-        <div class="tool-body" id="toolBody"></div>
-        <div class="activity-footer" id="activityFooter">
-          <div class="footer-row">
-            <span class="prompt-meter" id="promptMeter" aria-live="polite"></span>
-            <span class="spacer"></span>
-            <button type="button" class="btn soft" id="retryBtn">🔄 다시</button>
-            <button type="button" class="btn amber" id="hintBtn">💡 도움</button>
-            <button type="button" class="btn green" id="independentBtn">✓ 스스로 했어요</button>
-            <button type="button" class="btn soft" id="helpedBtn">🤝 도움 받았어요</button>
-             <button type="button" class="btn primary" id="nextTaskBtn">다음 순서 →</button>
-          </div>
-          <div class="progress-note" id="progressNote">손가락으로 구체물을 끌어다 놓아 보세요. 잘못 놓아도 괜찮아요. 다시 해 볼 수 있어요.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="right-col" aria-label="수학 공식과 구체물">
-      <div class="card">
-        <div class="card-head">
-          <div>
-     <h2 class="card-title">📐 숫자로 나타내기</h2>
-     <div class="card-sub">가로와 세로로 계산해요</div>
-          </div>
-          <div class="tabs" id="formulaTabs" role="tablist" aria-label="공식 보기 방식"></div>
-        </div>
-        <div class="formula-grid" id="formulaGrid">
-          <div class="formula-box horizontal" id="horizontalBox"></div>
-          <div class="formula-box vertical" id="verticalBox"></div>
-        </div>
-        <div class="steps-banner" id="stepsBanner"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <h2 class="card-title">🍎 그림으로 풀어 보기</h2>
-            <div class="card-sub" id="concreteSub">구체물이 하나씩 모여요</div>
-          </div>
-          <div class="card-tools">
-            <button type="button" class="btn violet" id="playBtnTop">▶ 하나씩 세며 합치기</button>
-          </div>
-        </div>
-        <div class="concrete-stage" id="concreteStage"></div>
-      </div>
-
-      <div class="card history-card">
-        <div class="card-head">
-          <div>
-            <h2 class="card-title">📖 계산 기록</h2>
-            <div class="card-sub">이 브라우저에만 저장돼요 (인터넷 없이도 사용 가능)</div>
-          </div>
-          <button type="button" class="btn soft" id="clearHistoryBtn">기록 지우기</button>
-        </div>
-        <div class="history-list" id="historyList"></div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="foot">
-    수학 공책 · 구체물 → 그림 → 숫자·기호 순서로 배우는 수학 · 혼합 계산과 큰 수는 단계별 교구로 확인하세요
-  </footer>
-</div>
-
-<dialog class="modal" id="helpDialog">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title">📚 수학 학습 단계 안내</div>
-        <div class="modal-sub">12단계 · 수와 연산 / 도형·측정 / 규칙성·자료</div>
-      </div>
-      <button type="button" class="btn soft" id="closeHelpBtn">닫기</button>
-    </div>
-    <div class="curriculum">
-      <div class="cur-group">
-        <h3>수와 연산</h3>
-        <ol>
-          <li>짝짓기와 분류</li>
-          <li>하나씩 세어보기</li>
-          <li>수의 순서와 크기</li>
-          <li>모으기와 가르기</li>
-          <li>10 만들어 계산하기</li>
-          <li>덧셈·뺄셈 전략</li>
-          <li>자릿값과 세로식</li>
-          <li>묶음 곱셈과 나누기</li>
-          <li>분수와 소수</li>
-        </ol>
-      </div>
-      <div class="cur-group shape">
-        <h3>도형·측정</h3>
-        <ol start="10">
-          <li>측정하기</li>
-          <li>도형과 규칙성</li>
-        </ol>
-      </div>
-      <div class="cur-group data">
-        <h3>규칙성·자료</h3>
-        <ol start="12">
-          <li>자료와 문제해결</li>
-        </ol>
-      </div>
-    </div>
-    <div class="modal-note">
-      수학의 <b>하나둘 숫자 세기 · 사칙연산 · 시계·돈·길이·도형 · 그림 그래프</b> 영역을 21단계로 세분화했습니다.
-      모든 단계는 <b>구체물 → 그림 → 숫자·기호</b> 순서(CRA)로 이어지고, 각 활동은 <b>손가락으로 끌어다 놓는 터치 조작</b>으로 설계했습니다.
-      계산기 화면은 활동을 보조하는 확인 도구로 남겨 두었습니다.
-    </div>
-    <div class="modal-note" style="background:#f0fdf4;border-color:#86efac">
-      <b>이 화면에 적용된 기초 수학 학습 원리</b><br>
-      • <b>시각적·체계적 단계 교수</b>: 먼저 보기 → 같이 해보기 → 혼자 해보기의 예측 가능한 순서로 한 번에 한 가지씩 배웁니다.<br>
-      • <b>CRA (구체물 → 그림 → 숫자·기호)</b>: 실제로 만지고 끄는 점·수모형·10칸 판·분수 조각에서 출발해 그림과 식으로 자연스럽게 연결합니다.<br>
-      • <b>다양한 표현과 접근성 (UDL)</b>: 큰 터치 영역, 키보드 조작, 쉬운 말 보기, 음성 안내, 쉬는 시간을 제공합니다.<br>
-      • <b>성장 기록</b>: 활동별 수행 기록을 저장하고 살펴볼 수 있습니다.
-    </div>
-    <div class="modal-note" style="background:#fff7ed;border-color:#fdba74">
-      <b>학생 눈높이 맞춤 학습 지원</b><br>
-      • 작은 단계 나누기: 한 번에 한 가지 지시만 제공하고, 여러 개의 쉬운 예시와 힌트를 바로 볼 수 있어요.<br>
-      • 구체물과 생활 연결: 수모형, 10칸 판, 수직선뿐만 아니라 시계·동전·길이·무게 등 생활 속 수학을 함께 익혀요.<br>
-      • 편안한 화면과 격려: 틀려도 괜찮아요! 따뜻한 안내와 칭찬 별 보상으로 자신감을 키워요.
-    </div>
-    <div class="modal-note" style="background:#f7faff;border-color:#bfdbfe">
-      ⌨️ 키보드: 숫자 <span class="kbd">0</span>~<span class="kbd">9</span>,
-      <span class="kbd">+</span> <span class="kbd">-</span> <span class="kbd">*</span> <span class="kbd">/</span>,
-      <span class="kbd">Enter</span> 계산, <span class="kbd">Backspace</span> 지우기,
-      <span class="kbd">Esc</span> 처음으로 · 끌기 조작은 마우스·펜·터치 모두 지원합니다.
-    </div>
-    <div class="research-card">
-      <b>교육·게임 설계 참고 문헌 (논문 · Archive.org · 세계 수학 교사 커뮤니티)</b><br>
-      • Serra-Grabulosa, J. M., &amp; Grau, S. (2025/2026), <i>NeurekaNUM: Digital Serious Game for Developmental Dyscalculia</i> — 멘탈 수직선 추정, 서비타이징, 10진 자릿값 게임.<br>
-      • Bird, R., <i>The Dyscalculia Toolkit</i> (<a href="https://archive.org" target="_blank" rel="noopener noreferrer">Archive.org</a>) — 10칸 판 보수, 점 패턴, 10 거쳐 더하기, 공평 나누기 다감각 게임.<br>
-      • Dan Finkel (<i>Math for Love</i>: Tiny Polka Dot, Make 10) · Jo Boaler (<i>YouCubed</i>: How Close to 100?, Dot Talks) · Cambridge <i>NRICH</i> (Tug of War, Strike It Out, Fractions &amp; Coins).<br>
-      • Elementary Math GBL Flow &amp; Engagement Studies (2024–2026) · Touchscreen Functional Money Math · IES WWC (2021) · UDL 3.0.<br>
-      <small>학생의 속도·지원 수준·감각 선호에 맞게 게임과 도움을 조정해 주세요.</small>
-    </div>
+      </section>
+    </main>
   </div>
-</dialog>
-
-<div class="sr-only" id="liveRegion" aria-live="polite" aria-atomic="true"></div>
-
-<dialog class="modal wide" id="bundleDialog" aria-labelledby="bundleTitle">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="bundleTitle">🔟 10개 묶기 · 100개 묶기</div>
-        <div class="modal-sub">하나를 10개씩 묶으면 십, 십 10개를 묶으면 백이 돼요. 손가락으로 끌어다 놓아 보세요.</div>
-      </div>
-      <button type="button" class="btn soft" id="closeBundleBtn">닫기</button>
-    </div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" id="bundleTenBtn">10개 묶기 → 십 1개</button>
-      <button type="button" class="bundle-big-btn" id="bundleHundredBtn">100개 묶기 → 백 1개</button>
-      <button type="button" class="btn soft" id="unbundleTenBtn">십 1개 풀기</button>
-      <button type="button" class="btn soft" id="bundleClearBtn">비우기</button>
-    </div>
-    <div id="bundleBoard" aria-live="polite"></div>
-  </div>
-</dialog>
-
-<dialog class="modal" id="settingsDialog" aria-labelledby="settingsTitle">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="settingsTitle">⚙️ 화면과 도움 설정</div>
-        <div class="modal-sub">학생에게 맞는 화면과 도움 수준을 골라 주세요. 이 브라우저에만 저장됩니다.</div>
-      </div>
-      <button type="button" class="btn soft" id="closeSettingsBtn">닫기</button>
-    </div>
-    <div class="settings-grid">
-      <div class="setting-field">
-        <label for="setTextSize">글자 크기</label>
-        <select id="setTextSize">
-          <option value="normal">보통</option>
-          <option value="large">크게</option>
-          <option value="xlarge">아주 크게</option>
-        </select>
-        <div class="hint">읽기 부담을 줄이고 중요한 글자를 크게 보여 줘요.</div>
-      </div>
-      <div class="setting-field">
-        <label for="setTouch">터치 크기</label>
-        <select id="setTouch">
-          <option value="normal">보통 (52px)</option>
-          <option value="big">크게 (64px)</option>
-        </select>
-        <div class="hint">손가락으로 정확히 누르기 어려울 때 사용해요.</div>
-      </div>
-      <div class="setting-field">
-        <label for="setWait">기다려 주는 시간</label>
-        <select id="setWait">
-          <option value="5">5초</option>
-          <option value="8">8초</option>
-          <option value="12">12초</option>
-          <option value="0">자동 힌트 없음</option>
-        </select>
-        <div class="hint">학생이 스스로 생각할 시간을 먼저 주고, 그 뒤에 조용히 힌트를 보여요.</div>
-      </div>
-      <div class="setting-field">
-        <label for="setTokens">칭찬 별 개수</label>
-        <select id="setTokens">
-          <option value="3">3개</option>
-          <option value="5">5개</option>
-          <option value="10">10개</option>
-        </select>
-        <div class="hint">별을 다 모으면 좋아하는 보상이나 쉬는 시간을 골라요.</div>
-      </div>
-      <div class="setting-field" style="grid-column:1/-1">
-        <label>화면과 상호작용</label>
-        <div class="switch-line"><span>쉬운 말로 안내</span><input type="checkbox" id="setEasy"></div>
-        <div class="switch-line"><span>끌어 놓을 때 정답 자리 미리 보여 주기 (오류 없는 학습)</span><input type="checkbox" id="setErrorless"></div>
-        <div class="switch-line"><span>손가락 진동 피드백 (지원되는 기기)</span><input type="checkbox" id="setHaptic"></div>
-      </div>
-    </div>
-    <div class="modal-note">이 설정은 <b>학생 개별화 교육계획(IEP)</b>과 교사의 관찰을 대신하지 않아요. 학생의 반응을 보고 지원을 조절해 주세요.</div>
-  </div>
-</dialog>
-
-<dialog class="modal" id="rewardDialog" aria-labelledby="rewardTitle">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="rewardTitle">⭐ 칭찬 별을 모두 모았어요!</div>
-        <div class="modal-sub">스스로 해냈어요. 좋아하는 보상을 하나 골라 볼까요?</div>
-      </div>
-      <button type="button" class="btn soft" id="closeRewardBtn">닫기</button>
-    </div>
-    <div class="aac-grid" id="rewardChoices"></div>
-    <div class="modal-note" style="background:#f0fdf4;border-color:#86efac">보상은 활동을 방해하지 않는 선에서 짧게 제공해 주세요. 다음 활동으로 돌아오는 시간을 미리 알려 주면 전환이 쉬워져요.</div>
-  </div>
-</dialog>
-
-<dialog class="modal" id="breakDialog" aria-labelledby="breakTitle">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="breakTitle">🌿 쉬는 시간</div>
-        <div class="modal-sub">숨을 천천히 들이쉬고 내쉬어요. 준비되면 다시 활동으로 돌아가요.</div>
-      </div>
-      <button type="button" class="btn soft" id="closeBreakBtn">돌아가기</button>
-    </div>
-    <div class="break-stage">
-      <div class="break-circle" id="breakCircle">천천히<br>숨 쉬기</div>
-      <div class="break-timer" id="breakTimer">01:00</div>
-      <div class="row-flex" style="justify-content:center">
-        <button type="button" class="btn soft" data-break-min="1">1분</button>
-        <button type="button" class="btn primary" data-break-min="3">3분</button>
-        <button type="button" class="btn soft" data-break-min="5">5분</button>
-        <button type="button" class="btn amber" id="breakPauseBtn">멈춤</button>
-      </div>
-      <div class="mode-help" id="breakChoiceText">지금 고르기: 조용히 앉아 숨 쉬기 · 물 한 모금 · 스트레칭</div>
-    </div>
-  </div>
-</dialog>
-
-<dialog class="modal wide" id="teacherDialog" aria-labelledby="teacherTitle">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="teacherTitle">📋 오늘의 학습 기록</div>
-        <div class="modal-sub">이 브라우저에만 저장돼요. 개별화 교육계획(IEP)과 진행 점검에 활용할 수 있어요.</div>
-      </div>
-      <button type="button" class="btn soft" id="closeTeacherBtn">닫기</button>
-    </div>
-    <div class="teacher-summary" id="teacherSummary"></div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="btn primary" id="exportCsvBtn">⬇ CSV로 저장</button>
-      <button type="button" class="btn soft" id="clearSessionBtn">기록 지우기</button>
-      <span class="muted" id="teacherNote"></span>
-    </div>
-    <div style="overflow:auto;max-height:280px;margin-top:10px">
-      <table class="data-table" aria-label="활동 시도 기록">
-        <thead><tr><th>시간</th><th>단계</th><th>결과</th><th>도움 수준</th><th>내용</th></tr></thead>
-        <tbody id="teacherLog"></tbody>
-      </table>
-    </div>
-    <div class="modal-note" style="background:#f7faff;border-color:#bfdbfe">
-      <b>교사용 체크리스트</b><br>
-      □ 학생이 스스로 시작했는가? □ 한 단계씩 안내했는가? □ 오류보다 성공 경험을 먼저 제공했는가?
-      □ 시각적 일정·먼저-다음 보드를 사용했는가? □ 쉬는 시간을 미리 알려 주었는가? □ 강점과 흥미를 반영했는가?
-    </div>
-  </div>
-</dialog>
-
-<dialog class="modal" id="aacDialog" aria-labelledby="aacTitle">
-  <div class="modal-inner">
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="aacTitle">💬 말판</div>
-        <div class="modal-sub">말로 표현하기 어려울 때 큰 그림을 눌러 요구와 감정을 전해 보세요.</div>
-      </div>
-      <button type="button" class="btn soft" id="closeAacBtn">닫기</button>
-    </div>
-    <div class="aac-sentence" id="aacSentence" aria-live="polite"><span class="muted">그림을 눌러 문장을 만들어 보세요.</span></div>
-    <div class="aac-grid" id="aacGrid"></div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="btn primary" id="aacSpeakBtn">🔊 문장 읽기</button>
-      <button type="button" class="btn soft" id="aacClearBtn">지우기</button>
-      <span class="muted">핵심 어휘: 도와주세요 · 더 · 그만 · 또 · 좋아요 · 쉬고 싶어요</span>
-    </div>
-  </div>
-</dialog>
 
   <script src="./assets/d1_client.js"></script>
-  <script src="./stepmath/math_core.js"></script>
-  <script src="./stepmath/stages_state.js"></script>
-  <script src="./stepmath/curriculum.js"></script>
-  <script src="./stepmath/support_ui.js"></script>
-  <script src="./stepmath/render_core.js"></script>
-  <script src="./stepmath/tools_basic.js"></script>
-  <script src="./stepmath/tools_advanced.js"></script>
-  <script src="./stepmath/vfx_engine.js"></script>
-  <script src="./stepmath/svg_assets.js"></script>
-  <script src="./stepmath/game_arena.js"></script>
-  <script src="./stepmath/practice_init.js"></script>
+  <script src="./stepmath/audio.js"></script>
+  <script src="./stepmath/engine.js"></script>
+  <script src="./stepmath/stages_part1.js"></script>
+  <script src="./stepmath/stages_part2.js"></script>
+  <script src="./stepmath/main.js"></script>
 </body>
 </html>

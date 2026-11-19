@@ -86,12 +86,10 @@ function renderSort() {
     return `<button type="button" class="sort-item" data-sort="${i}" data-sort-item="${i}" data-kind="${kId}" aria-label="${kind.label} 끌어서 바구니에 담기" title="${kind.label}">${kind.emoji}</button>`;
   }).join('');
   body.innerHTML = `
-    <div class="guide">색과 모양을 살펴보고 <b>같은 것끼리</b> 모아 보세요. 과일을 <b>손가락으로 끌어서</b> 같은 바구니에 놓아요.</div>
     <div class="sort-baskets">${basketHtml}</div>
-    <div class="sort-tray" aria-label="분류할 과일">${tray || '<b style="color:#16a34a">분류 완성! 모든 것을 바구니에 담았어요 🎉</b>'}</div>
-    <div class="row-flex">
-      <button type="button" class="btn soft" data-sort-reset>🔄 다시 섞기</button>
-      <span class="muted">${state.sort.items.length ? `남은 것 ${state.sort.items.length}개` : '모두 분류했어요'}</span>
+    <div class="sort-tray" aria-label="분류할 과일">${tray || '<b style="color:#16a34a">모두 담았어요! 🎉</b>'}</div>
+    <div class="row-flex" style="justify-content:flex-end">
+      <button type="button" class="btn soft sm" data-sort-reset>🔄 다시 섞기</button>
     </div>`;
 
   const place = (i) => {
@@ -150,34 +148,31 @@ function renderCount() {
   const { first } = activeCalc();
   const n = clamp(Math.trunc(Number(first) || 0), 0, 100);
   const body = $('toolBody');
+  const isSmallStage = state.stage <= 3;
   setToolHead('🔢 세기 · 10칸 판', '점을 손가락으로 끌어 칸에 놓으며 하나씩 세어 보세요');
-  const totalCells = Math.max(20, Math.ceil(Math.max(n, 1) / 10) * 10);
-  const tray = [1, 10, 100].map((v) => `
+  const totalCells = isSmallStage ? 10 : Math.max(20, Math.ceil(Math.max(n, 1) / 10) * 10);
+  const tokenSizes = isSmallStage ? [1] : [1, 10, 100];
+  const tray = tokenSizes.map((v) => `
     <div class="drag-token${v === 10 ? ' green' : v === 100 ? ' amber' : ''}" data-count-token="${v}" role="button" tabindex="0" aria-label="${v}개 끌기">
       <span class="big">${v === 1 ? '●' : v === 10 ? '▥' : '▦'}</span><span class="tiny">${v}개</span>
     </div>`).join('');
   body.innerHTML = `
-    <div class="guide">점을 <b>손가락으로 끌어</b> 칸에 놓아요. 한 칸에 하나씩, 왼쪽 위부터 채워요.</div>
-    <div class="drag-tray"><span class="tray-label">끌어서 놓기</span>${tray}</div>
-    <div data-drop="count-add" aria-label="세기 판">${tenFrameHTML(totalCells, n, 0, state.countPlay.idx, { frameId: 'count', dragFilled: true })}</div>
-    ${bundleSummaryHTML(n, { extra: `<span class="bundle-item">전체 <b>${n}</b>개</span>` })}
-    <div class="row-flex">
-      <div class="num-card"><span class="v">${n}</span><span class="c">${countWord(n)}</span></div>
-      <div class="row-flex" style="flex:1;margin-top:0">
-        <button type="button" class="btn primary" data-count="p1">＋1</button>
-        <button type="button" class="btn primary" data-count="p5">＋5</button>
-        <button type="button" class="btn primary" data-count="p10">＋10</button>
-        <button type="button" class="btn amber" data-count="p100">＋100</button>
-        <button type="button" class="btn soft" data-count="m1">－1</button>
-        <button type="button" class="btn soft" data-count="reset">0으로</button>
-        <button type="button" class="btn violet" data-count="play">▶ 하나씩 짚어 세기</button>
+    <div class="drag-tray">
+      <span class="tray-label">끌어서 놓기</span>
+      ${tray}
+      <div class="drop-plate" data-drop="count-minus" style="min-height:52px;padding:7px 12px;border-color:#fda4af;background:#fff1f2;margin-left:auto">
+        <div class="plate-title" style="margin:0"><span>➖ 하나 빼기</span></div>
       </div>
     </div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-count-bundle="ten">10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-count-bundle="hundred">100개 묶기</button>
-      <div class="drop-plate" data-drop="count-minus" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2;flex:1">
-        <div class="plate-title" style="margin:0"><span>➖ 여기로 끌면 하나 빼기</span></div>
+    <div data-drop="count-add" aria-label="세기 판">${tenFrameHTML(totalCells, n, 0, state.countPlay.idx, { frameId: 'count', dragFilled: true })}</div>
+    <div class="row-flex" style="align-items:center;justify-content:space-between">
+      <div class="num-card"><span class="v">${n}</span><span class="c">${countWord(n)}</span></div>
+      <div class="row-flex" style="margin-top:0">
+        <button type="button" class="btn primary" data-count="p1">＋1</button>
+        ${isSmallStage ? '' : '<button type="button" class="btn primary" data-count="p10">＋10</button>'}
+        <button type="button" class="btn soft" data-count="m1">－1</button>
+        <button type="button" class="btn soft" data-count="reset">0으로</button>
+        <button type="button" class="btn violet" data-count="play">▶ 세기</button>
       </div>
     </div>`;
 
@@ -330,18 +325,19 @@ function interactiveNumberLineHTML(start, target, op) {
       <span class="nl-num">${i % 2 === 0 ? i : ''}</span>
     </button>`).join('');
   const pos = (v) => `${((clamp(v, 0, 20) + 0.5) / 21) * 100}%`;
+  const diff = marker - start;
+  const stepJump = state.nlStep || 1;
   return `<div class="nl-interactive" aria-label="0부터 20까지 끌 수 있는 수직선">
     <div class="nl-track" data-nl-track>
       <div class="nl-stops">${stops}</div>
-      <div class="nl-target" style="left:${pos(target)}" title="목표">🎯</div>
-      <div class="nl-marker" data-nl-marker style="left:${pos(marker)}" role="button" tabindex="0" aria-label="현재 ${marker}, 목표 ${target}. 좌우로 끌어서 옮기세요">🐸</div>
+      <div class="nl-start-flag" style="left:${pos(start)}" title="출발">🚩</div>
+      <div class="nl-marker" data-nl-marker style="left:${pos(marker)}" role="button" tabindex="0" aria-label="현재 ${marker}. 좌우로 끌어서 옮기세요">🐸</div>
     </div>
     <div class="nl-step-actions">
-      <button type="button" class="btn soft" data-nl-step="-1">◀ -1 점프</button>
-      <span class="nl-pos-badge" data-nl-badge>현재 ${marker} · 목표 ${target}</span>
-      <button type="button" class="btn soft" data-nl-step="1">+1 점프 ▶</button>
+      <button type="button" class="btn soft" data-nl-step="-${stepJump}">◀ -${stepJump}</button>
+      <span class="nl-pos-badge" data-nl-badge>현재 ${marker} (${diff >= 0 ? `+${diff}` : diff}칸)</span>
+      <button type="button" class="btn soft" data-nl-step="${stepJump}">+${stepJump} ▶</button>
     </div>
-    <div class="nl-caption">🐸를 손가락으로 좌우로 끌어 <b>${target}</b> 자리에 놓아 보세요. (${start}에서 ${op === '+' ? '앞으로' : '뒤로'} ${Math.abs(target - start)}칸)</div>
   </div>`;
 }
 
@@ -350,13 +346,14 @@ function renderCompare() {
   const a = state.compare.a;
   const b = state.compare.b;
   const body = $('toolBody');
-  const sign = a > b ? '>' : a < b ? '<' : '=';
-  const diff = Math.abs(a - b);
+  const prob = state.activeProblem && state.activeProblem.stageId === 5 ? state.activeProblem : null;
+  const signMode = Boolean(prob && prob.mode === 'sign');
+  const sign = signMode ? (state.compare.sign || '?') : (a > b ? '>' : a < b ? '<' : '=');
   const theme = currentTheme();
   const maxLen = Math.min(Math.max(a, b, 1), 15);
   const plate = (which, value, cls) => `
     <div class="drop-plate ${cls}" data-drop="cmp:${which}" aria-label="${which === 'a' ? '첫 번째' : '두 번째'} 수 놓는 곳">
-      <div class="plate-title"><span>${which === 'a' ? '🔵 첫 번째 수' : '🟢 두 번째 수'}</span><span class="plate-count">${value}</span></div>
+      <div class="plate-title"><span>${which === 'a' ? '🔵 왼쪽' : '🟢 오른쪽'}</span><span class="plate-count">${value}</span></div>
       <div class="plate-items">${Array.from({ length: value }, (_, i) => `<span class="counter-chip${which === 'b' ? ' green' : ''}" data-cmp-move="${which}" role="button" tabindex="0" aria-label="${i + 1}번째 점">●</span>`).join('') || '<span class="muted">점을 끌어다 놓아요</span>'}</div>
     </div>`;
   let pairCols = '';
@@ -366,45 +363,30 @@ function renderCompare() {
     const matched = hasA && hasB;
     pairCols += `<div class="pair-col ${matched ? 'matched' : 'extra'}" style="--pair-order:${i}">
       <span class="pair-emoji">${hasA ? theme.a : '·'}</span>
-      <span class="pair-state">${matched ? '짝' : hasA ? '남음' : '남음'}</span>
+      <span class="pair-state">${matched ? '짝' : '남음'}</span>
       <span class="pair-emoji">${hasB ? theme.b : '·'}</span>
     </div>`;
   }
-  setToolHead('⚖️ 어느 쪽이 더 많을까?', '점을 끌어 양쪽에 놓고 하나씩 짝을 지어 보세요');
+  setToolHead('⚖️ 어느 쪽이 더 많을까?', '점을 끌어 놓거나 알맞은 기호를 넣어 비교해요');
+  const signTrayHTML = signMode ? `
+    <div class="drag-tray" style="justify-content:center">
+      <span class="tray-label">기호 끌어서 넣기</span>
+      ${['>', '=', '<'].map((s) => `<div class="drag-token violet${state.compare.sign === s ? ' green' : ''}" data-cmp-sign="${s}" role="button" tabindex="0"><span class="big">${s}</span></div>`).join('')}
+    </div>` : `
+    <div class="drag-tray"><span class="tray-label">점을 끌어서 맞추기</span>
+      <div class="drag-token" data-cmp-token="a" role="button" tabindex="0"><span class="big">●</span><span class="tiny">왼쪽 +1</span></div>
+      <div class="drag-token green" data-cmp-token="b" role="button" tabindex="0"><span class="big">●</span><span class="tiny">오른쪽 +1</span></div>
+      <div class="drop-plate" data-drop="cmp-minus" style="min-height:52px;padding:7px 12px;border-color:#fda4af;background:#fff1f2;margin-left:auto"><div class="plate-title" style="margin:0"><span>➖ 하나 빼기</span></div></div>
+    </div>`;
   body.innerHTML = `
-    <div class="guide">점을 <b>양쪽 접시로 끌어다 놓아요</b>. 점을 다른 접시로 옮기면 수가 바뀌어요.</div>
     <div class="two-plates">${plate('a', a, 'first')}${plate('b', b, 'second')}</div>
-    <div class="drag-tray"><span class="tray-label">점을 끌어서 놓기</span>
-      <div class="drag-token" data-cmp-token="a" role="button" tabindex="0"><span class="big">●</span><span class="tiny">첫째 +1</span></div>
-      <div class="drag-token green" data-cmp-token="b" role="button" tabindex="0"><span class="big">●</span><span class="tiny">둘째 +1</span></div>
-      <div class="drop-plate" data-drop="cmp-minus" style="min-height:52px;padding:7px 10px;border-color:#fda4af;background:#fff1f2"><div class="plate-title" style="margin:0"><span>➖ 여기로 끌면 하나 빼기</span></div></div>
-    </div>
+    ${signTrayHTML}
     <div class="compare-cards">
-      <div class="num-card"><span class="v">${a}</span><span class="c">첫 번째 · ${countWord(a)}</span></div>
-      <div class="sign-badge">${sign}</div>
-      <div class="num-card green"><span class="v">${b}</span><span class="c">두 번째 · ${countWord(b)}</span></div>
+      <div class="num-card"><span class="v">${a}</span><span class="c">${countWord(a)}</span></div>
+      <div class="sign-badge${signMode ? ' sign-drop' : ''}" ${signMode ? 'data-drop="cmp-sign"' : ''}>${sign}</div>
+      <div class="num-card green"><span class="v">${b}</span><span class="c">${countWord(b)}</span></div>
     </div>
-    <div class="row-flex" style="margin-top:0;justify-content:center">
-      <button type="button" class="btn soft" data-cmp="a:-1">첫째 －1</button>
-      <button type="button" class="btn soft" data-cmp="a:1">첫째 ＋1</button>
-      <button type="button" class="btn soft" data-cmp="b:-1">둘째 －1</button>
-      <button type="button" class="btn soft" data-cmp="b:1">둘째 ＋1</button>
-      <button type="button" class="btn primary" data-cmp-load>계산기에 ${a} + ${b} 넣기</button>
-    </div>
-    ${bundleSummaryHTML(a, { extra: `<span class="bundle-item">첫째 ${a}개</span>` })}
-    ${bundleSummaryHTML(b, { extra: `<span class="bundle-item">둘째 ${b}개</span>` })}
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-cmp-bundle="ten">10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-cmp-bundle="hundred">100개 묶기</button>
-    </div>
-    <div class="pair-grid">${pairCols}</div>
-    <div class="guide" style="text-align:center">
-      ${a === b ? `두 수가 <b>${a}개</b>로 똑같아요! (${a} = ${b})`
-        : a > b ? `첫 번째 수(${a})가 두 번째 수(${b})보다 <b>${diff}개 더 많아요!</b> (${a} > ${b})`
-          : `두 번째 수(${b})가 첫 번째 수(${a})보다 <b>${diff}개 더 많아요!</b> (${a} < ${b})`}
-    </div>
-    ${numberLineSVG({ max: 20, marks: [{ value: a, label: String(a), color: '#2563eb' }, { value: b, label: String(b), color: '#16a34a' }] })}
-    ${Math.max(a, b) > 15 ? '<div class="muted">15보다 큰 수는 그림 대신 수직선과 숫자로 비교해요.</div>' : ''}`;
+    <div class="pair-grid">${pairCols}</div>`;
 
   const setCompare = (which, value, msg) => {
     state.compare[which] = clamp(Math.trunc(value), 0, 20);
@@ -412,11 +394,22 @@ function renderCompare() {
     renderTool();
     if (msg) speak(msg);
   };
-  body.querySelectorAll('[data-cmp]').forEach((btn) => {
-    btn.onclick = () => {
-      const [which, delta] = btn.dataset.cmp.split(':');
-      setCompare(which, state.compare[which] + Number(delta), countWord(state.compare[which] + Number(delta)));
-    };
+  const pickSign = (s) => {
+    state.compare.sign = s;
+    const ok = s === state.compare.expectedSign;
+    recordTrial(ok ? 'independent' : 'error', state.promptLevel, `비교 기호 ${s}`);
+    if (!ok) {
+      haptic(35);
+      speak('더 많은 쪽으로 입이 벌어져요. 다시 골라 볼까요?');
+    }
+    renderTool();
+  };
+  bindDrag(body, '[data-cmp-sign]', (el) => ({ sign: el.dataset.cmpSign }), (p, zone) => {
+    if (zone && zone.dataset.drop === 'cmp-sign') pickSign(p.sign);
+  }, {
+    onStart: () => { if (state.settings.errorless) showHintTarget('[data-drop="cmp-sign"]', body); },
+    onTap: (p) => pickSign(p.sign),
+    onActivate: (p) => pickSign(p.sign),
   });
   bindDrag(body, '[data-cmp-token]', (el) => ({ add: 1, which: el.dataset.cmpToken }), (p, zone) => {
     if (!zone) return;
@@ -447,19 +440,6 @@ function renderCompare() {
       setCompare(to, state.compare[to] + 1, `${countWord(state.compare[to] + 1)}`);
     }
   });
-  body.querySelectorAll('[data-cmp-bundle]').forEach((btn) => {
-    btn.onclick = () => {
-      if (btn.dataset.cmpBundle === 'ten') {
-        if (Math.max(a, b) < 10) { speak('10개가 모이면 묶을 수 있어요.'); return; }
-        awardToken('10개를 십 묶음 하나로 묶었어요!');
-        speak(`10개는 십 묶음 하나예요. 첫째는 십 ${Math.floor(a / 10)}개, 둘째는 십 ${Math.floor(b / 10)}개예요.`);
-      } else {
-        speak('100개가 모이면 백 묶음 하나로 묶을 수 있어요. 10개씩 먼저 묶어 보세요.');
-      }
-    };
-  });
-  const load = body.querySelector('[data-cmp-load]');
-  if (load) load.onclick = () => loadExpression(a, '+', b);
 }
 
 /* ---------- 4단계: 모으기와 가르기 ---------- */
@@ -478,86 +458,68 @@ function changeComposeSub(which, delta) {
 
 function renderCompose() {
   const calc = activeCalc();
-  const isSub = calc.op === '-';
+  const gather = state.composeGather;
+  const isGather = Boolean(gather && !calc.op || (gather && calc.op === '+'));
+  const isSub = !isGather && calc.op === '-';
   const body = $('toolBody');
-  let a = calc.first ?? (isSub ? 8 : 3);
-  let b = calc.second ?? (isSub ? 3 : 5);
+  let a = isGather ? gather.a : (calc.first ?? (isSub ? 8 : 3));
+  let b = isGather ? gather.b : (calc.second ?? (isSub ? 3 : 5));
   if (!Number.isFinite(a) || a < 0) a = isSub ? 8 : 3;
   if (!Number.isFinite(b) || b < 0) b = isSub ? 3 : 5;
   a = clamp(a, 0, 10);
   b = clamp(b, 0, 10);
   if (isSub && b > a) {
     setToolHead('➖ 가르기', '빼는 수가 처음 수보다 커요');
-    body.innerHTML = `
-      <div class="guide">처음 수 <b>${a}</b>보다 빼는 수 <b>${b}</b>가 커서 0보다 작아져요. 이때는 가로식으로 확인해요.</div>
-      <div class="row-flex">
-        <button type="button" class="btn primary" data-compose-ex="8,3">8 - 3</button>
-        <button type="button" class="btn green" data-compose-ex="7,2">7 - 2</button>
-        <button type="button" class="btn soft" data-compose-ex="5,5">5 - 5</button>
-      </div>`;
+    body.innerHTML = `<div class="row-flex"><button type="button" class="btn primary" data-compose-ex="8,3">8 - 3</button></div>`;
     body.querySelectorAll('[data-compose-ex]').forEach((btn) => {
-      btn.onclick = () => {
-        const [x, y] = btn.dataset.composeEx.split(',').map(Number);
-        loadExpression(x, '-', y);
-      };
+      btn.onclick = () => { const [x, y] = btn.dataset.composeEx.split(',').map(Number); loadExpression(x, '-', y); };
     });
     return;
   }
   if (isSub) b = Math.min(b, a);
   if (isSub && state.composeBaseA !== a) { state.composeBaseA = a; state.composeRemoved = 0; }
   const removed = isSub ? clamp(state.composeRemoved, 0, b) : 0;
-  const leftPart = isSub ? a - removed : a;
-  const rightPart = isSub ? b : b;
+  const moved = isGather ? clamp(gather.moved, 0, b) : 0;
+  const leftBlue = isSub ? a - removed : a;
+  const leftGreen = isGather ? moved : 0;
+  const rightCount = isGather ? b - moved : b;
   const total = isSub ? a : a + b;
-  const fits = isSub || a + b <= 10;
-  const headline = isSub
-    ? `<b>${countWord(a)}</b>에서 <b>${countWord(b)}</b>${subjectParticle(b)} 하나씩 끌어내면 <b>${countWord(a - b)}</b>이 남아요.`
-    : `<b>${countWord(a)}</b>과 <b>${countWord(b)}</b>를 모으면 <b>${countWord(a + b)}</b>이에요.`;
-  setToolHead(isSub ? '➖ 가르기' : '➕ 모으기와 가르기', '점을 손가락으로 끌어 옮기며 모으고 갈라 보세요');
-  const leftFrame = tenFrameHTML(10, Math.min(leftPart, 10), 0, -1, { frameId: 'composeA', dragFilled: true });
+  setToolHead(isSub ? '➖ 가르기' : '➕ 모으기', '점을 손가락으로 끌어 옮겨요');
+  const leftFrame = tenFrameHTML(10, leftBlue, leftGreen, -1, { frameId: 'composeA', dragFilled: true });
   const rightFrame = isSub
-    ? `<div class="drop-plate" data-drop="compose-minus" style="border-color:#fda4af;background:#fff1f2;min-height:180px">
-        <div class="plate-title"><span>➖ 빼는 곳 · ${removed}/${b}</span><span class="plate-count">${removed}</span></div>
+    ? `<div class="drop-plate" data-drop="compose-minus" style="border-color:#fda4af;background:#fff1f2;min-height:176px">
+        <div class="plate-title"><span>➖ 덜어낸 곳 · ${removed}/${b}</span><span class="plate-count">${removed}</span></div>
         <div class="plate-items">${Array.from({ length: removed }, (_, i) => `<span class="counter-chip rose" data-compose-restore="1" role="button" tabindex="0" aria-label="${i + 1}번째 뺀 점">●</span>`).join('') || '<span class="muted">왼쪽 점을 여기로 끌어와요</span>'}</div>
       </div>`
-    : tenFrameHTML(10, Math.min(rightPart, 10), 0, -1, { frameId: 'composeB', dragFilled: true, forceColor: 'green' });
+    : tenFrameHTML(10, rightCount, 0, -1, { frameId: 'composeB', dragFilled: true, forceColor: 'green' });
   body.innerHTML = `
-    <div class="guide">${headline} <b>점을 손가락으로 끌어다</b> 다른 칸으로 옮겨 보세요.</div>
     <div class="two-plates">
-      <div><div class="guide" style="margin-bottom:5px"><b>${isSub ? '처음 수' : '첫 번째 수'} ${leftPart}</b></div>${leftFrame}</div>
-      <div><div class="guide" style="margin-bottom:5px"><b>${isSub ? '빼는 곳' : '두 번째 수'} ${isSub ? b : rightPart}</b></div>${rightFrame}</div>
+      <div><div class="plate-head-mini"><b>${isSub ? `남은 수 ${leftBlue}` : `모은 칸 ${leftBlue + leftGreen}`}</b></div>${leftFrame}</div>
+      <div><div class="plate-head-mini"><b>${isSub ? `덜어낼 수 ${b}` : `더할 수 ${rightCount}`}</b></div>${rightFrame}</div>
     </div>
     <div class="bond">
-      <div class="bond-total">${total}</div>
+      <div class="bond-total">${isGather ? (moved === b ? total : `${leftBlue + leftGreen}`) : total}</div>
       <div class="bond-lines"></div>
-      <div class="bond-parts"><div class="bond-part">${leftPart}</div><div class="bond-part second">${isSub ? removed : rightPart}</div></div>
-    </div>
-    <div class="row-flex" style="justify-content:center;margin-top:0">
-      <button type="button" class="btn soft" data-compose="a:-1">${isSub ? '처음 수' : '첫째'} －1</button>
-      <button type="button" class="btn soft" data-compose="a:1">${isSub ? '처음 수' : '첫째'} ＋1</button>
-      <button type="button" class="btn soft" data-compose="b:-1">${isSub ? '빼는 수' : '둘째'} －1</button>
-      <button type="button" class="btn soft" data-compose="b:1">${isSub ? '빼는 수' : '둘째'} ＋1</button>
-    </div>
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-compose-bundle="ten">10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-compose-bundle="hundred">100개 묶기</button>
-    </div>
-    <div class="guide" style="text-align:center;font-size:15px">
-      ${isSub
-        ? `<b>${a} - ${removed} = ${leftPart}</b>${removed === b ? ` · <b>${a} - ${b} = ${a - b}</b> 완성!` : ` · ${b}개 중 ${removed}개를 덜어냈어요.`}`
-        : `<b>${a} + ${b} = ${total}</b><br/><b>${total} - ${a} = ${b}</b> · <b>${total} - ${b} = ${a}</b>`}
-    </div>
-    ${fits ? '' : '<div class="feedback" style="color:#b45309">10보다 커요. 10칸 판 안에서 다시 맞춰 보세요.</div>'}`;
+      <div class="bond-parts"><div class="bond-part">${leftBlue}</div><div class="bond-part second">${isSub ? removed : (isGather ? moved : rightCount)}</div></div>
+    </div>`;
 
   const transfer = (from, to) => {
     if (from === to) return;
+    if (isGather) {
+      if (from === 'composeB' && to === 'composeA' && gather.moved < gather.b) {
+        gather.moved += 1;
+        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '모으기');
+        renderTool();
+        if (gather.moved < gather.b) speak(`${countWord(a + gather.moved)}`);
+      }
+      return;
+    }
     if (isSub) {
       if (from === 'composeA' && to === 'compose-minus' && removed < b) {
         state.composeRemoved = removed + 1;
         recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '하나 덜어내기');
         renderTool();
-        if (state.composeRemoved >= b) awardToken('가르기를 완성했어요!');
-        else speak(`${countWord(a - state.composeRemoved)}개가 남았어요`);
+        if (state.composeRemoved < b) speak(`${countWord(a - state.composeRemoved)}개 남음`);
       }
       return;
     }
@@ -569,24 +531,14 @@ function renderCompose() {
     if (newA < 0 || newB < 0 || newA > 10 || newB > 10) return;
     recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${newA} + ${newB}`);
     loadExpression(newA, '+', newB, { quiet: true });
-    if (newA === 10 || newB === 10) awardToken('10을 만들었어요!');
-    else speak(`${newA}개와 ${newB}개로 나누었어요`);
   };
 
-  body.querySelectorAll('[data-compose]').forEach((btn) => {
-    btn.onclick = () => {
-      const [part, delta] = btn.dataset.compose.split(':');
-      if (isSub) changeComposeSub(part, Number(delta));
-      else changeCompose(part, Number(delta));
-    };
-  });
   bindDrag(body, '[data-cell-fill]', (el) => ({ frame: el.dataset.frame, value: Number(el.dataset.value) }), (p, zone) => {
     if (!zone) return;
     const drop = zone.dataset.drop || '';
     const target = drop.split(':')[0];
     if (isSub) {
       if (p.frame === 'composeA' && target === 'compose-minus') transfer('composeA', 'compose-minus');
-      else if (target === 'composeA') speak('이미 처음 수 칸이에요.');
     } else {
       transfer(p.frame, target);
     }
@@ -594,21 +546,20 @@ function renderCompose() {
     onStart: (p) => {
       if (!state.settings.errorless) return;
       if (isSub) showHintTarget('[data-drop="compose-minus"]', body);
-      else showHintTarget(`[data-drop="${p.frame === 'composeA' ? 'composeB' : 'composeA'}"]`, body);
+      else showHintTarget(`[data-drop="${p.frame === 'composeA' && !isGather ? 'composeB' : 'composeA'}"]`, body);
     },
     onTap: (p) => {
       if (isSub) {
         if (state.settings.errorless) showHintTarget('[data-drop="compose-minus"]', body);
-        speak('점을 오른쪽 빼는 곳으로 손가락으로 끌어와 보세요.');
+        speak('점을 오른쪽 빨간 칸으로 끌어와 보세요.');
       } else {
-        const targetFrame = p.frame === 'composeA' ? 'composeB' : 'composeA';
-        if (state.settings.errorless) showHintTarget(`[data-drop="${targetFrame}"]`, body);
-        speak('점을 옆 10칸 판으로 손가락으로 끌어 옮겨 보세요.');
+        if (state.settings.errorless) showHintTarget('[data-drop="composeA"]', body);
+        speak('초록 점을 왼쪽 칸으로 끌어 모아 보세요.');
       }
     },
     onActivate: (p) => {
       if (isSub) transfer('composeA', 'compose-minus');
-      else transfer(p.frame, p.frame === 'composeA' ? 'composeB' : 'composeA');
+      else transfer(p.frame, isGather ? 'composeA' : (p.frame === 'composeA' ? 'composeB' : 'composeA'));
     },
   });
   bindDrag(body, '[data-compose-restore]', () => ({ restore: 1 }), (p, zone) => {
@@ -616,26 +567,8 @@ function renderCompose() {
     const target = (zone.dataset.drop || '').split(':')[0];
     if (target === 'composeA' && state.composeRemoved > 0) {
       state.composeRemoved = Math.max(0, state.composeRemoved - 1);
-      recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '점 되돌리기');
       renderTool();
-      speak(`${countWord(a - state.composeRemoved)}개가 있어요`);
     }
-  }, {
-    onTap: () => speak('뺀 점을 왼쪽 10칸 판으로 끌어놓으면 되돌릴 수 있어요.'),
-  });
-  body.querySelectorAll('[data-compose-bundle]').forEach((btn) => {
-    btn.onclick = () => {
-      if (btn.dataset.composeBundle === 'ten') {
-        if (Math.max(a, b) < 10) { speak('10개가 모이면 십 묶음 하나로 묶을 수 있어요.'); return; }
-        awardToken('10개를 십 묶음 하나로 묶었어요!');
-        speak(`10개는 십 묶음 하나예요. ${a} + ${b} = ${total}이에요.`);
-      } else {
-        speak('100개는 십 묶음 10개예요. 10개씩 먼저 묶어 보세요.');
-      }
-    };
-  });
-  body.querySelectorAll('.bond-part, .bond-total').forEach((el) => {
-    el.onclick = () => speak(countWord(Number(el.textContent)));
   });
 }
 
@@ -644,110 +577,54 @@ function renderMakeTen() {
   const calc = activeCalc();
   if (calc.op && calc.op !== '+') {
     setToolHead('🔟 10 만들기', '10 만들기는 더하기 활동이에요');
-    $('toolBody').innerHTML = `
-      <div class="guide">지금 식은 <b>${calc.first ?? ''} ${calc.op} ${calc.second ?? ''}</b>이에요. 10 만들기는 더하기에서 사용하는 전략이에요.</div>
-      <div class="row-flex">
-        <button type="button" class="btn primary" data-mt-go="7">7단계 가르기로 확인하기</button>
-        <button type="button" class="btn green" data-mt="7,5">7 + 5로 연습하기</button>
-      </div>`;
+    $('toolBody').innerHTML = `<div class="row-flex"><button type="button" class="btn green" data-mt="7,5">7 + 5</button></div>`;
     $('toolBody').querySelectorAll('[data-mt]').forEach((btn) => {
-      btn.onclick = () => {
-        const [x, y] = btn.dataset.mt.split(',').map(Number);
-        loadExpression(x, '+', y);
-      };
+      btn.onclick = () => { const [x, y] = btn.dataset.mt.split(',').map(Number); loadExpression(x, '+', y); };
     });
-    const go = $('toolBody').querySelector('[data-mt-go]');
-    if (go) go.onclick = () => { state.stage = 7; render(); };
     return;
   }
   const body = $('toolBody');
   let a = calc.op === '+' && calc.first !== null ? calc.first : 7;
   let b = calc.op === '+' && calc.second !== null ? calc.second : 5;
-  a = clamp(Math.trunc(a), 0, 9);
+  a = clamp(Math.trunc(a), 0, 10);
   b = clamp(Math.trunc(b), 0, 20);
   const need = Math.max(0, 10 - a);
   const moved = Math.min(b, need);
   const rest = Math.max(0, b - moved);
   const total = a + b;
-  const tenMade = a === 10 || a + moved === 10;
-  const canMakeTen = total >= 10 && tenMade && b > 0;
-  const intro = a === 10
-    ? `10칸 판이 가득 찼어요! 남은 <b>${b}</b>개를 더하면 <b>${total}</b>이에요.`
-    : canMakeTen
-      ? (rest > 0
-        ? `① <b>${a}</b>에 <b>${moved}</b>개를 채워 <b>10</b>을 만들고, ② 남은 <b>${rest}</b>개를 더하면 <b>${total}</b>!`
-        : `① <b>${a}</b>에 <b>${moved}</b>개를 채우면 <b>10</b>! 남은 수가 없어서 그대로 <b>${total}</b>이에요.`)
-      : `두 수를 그냥 모으면 <b>${total}</b>이에요. 10을 만들 필요가 없어요.`;
-  const equation = canMakeTen && rest > 0
-    ? `<b>${a} + ${b} = (${a} + ${moved}) + ${rest} = 10 + ${rest} = ${total}</b>`
-    : `<b>${a} + ${b} = ${total}</b>`;
-  setToolHead('🔟 10을 먼저 만들기', '오른쪽 점을 왼쪽 빈칸으로 끌어 10을 만들어요');
+  const equation = a === 10
+    ? `<b>🔟 10 + ${b} = ${total}</b>`
+    : `<b>${a} + ${b} → (${a} + ${moved}) + ${rest} = 10 + ${rest}</b>`;
+  setToolHead('🔟 10을 먼저 만들기', '오른쪽 초록 점을 왼쪽 빈칸으로 끌어요');
   body.innerHTML = `
-    <div class="guide">${intro}</div>
     <div class="two-plates">
-      <div><div class="guide" style="margin-bottom:5px"><b>10칸 판 · ${a}개</b></div>${tenFrameHTML(10, a, 0, -1, { frameId: 'mtLeft', dragFilled: true })}</div>
-      <div><div class="guide" style="margin-bottom:5px"><b>더할 수 · ${b}개</b></div>${tenFrameHTML(Math.max(10, Math.ceil(Math.max(b, 1) / 10) * 10), b, 0, -1, { frameId: 'mtRight', dragFilled: true, forceColor: 'green' })}</div>
+      <div><div class="plate-head-mini"><b>10칸 판 · ${a}개</b></div>${tenFrameHTML(10, a, 0, -1, { frameId: 'mtLeft', dragFilled: true })}</div>
+      <div><div class="plate-head-mini"><b>남은 수 · ${b}개</b></div>${tenFrameHTML(Math.max(10, Math.ceil(Math.max(b, 1) / 10) * 10), b, 0, -1, { frameId: 'mtRight', dragFilled: true, forceColor: 'green' })}</div>
     </div>
-    <div class="guide" style="text-align:center;font-size:15px">${equation}</div>
-    ${canMakeTen ? '' : '<div class="feedback" style="color:#b45309">두 수의 합이 10보다 작아요. 4단계에서 모으기로 확인해 보세요.</div>'}
-    <div class="row-flex" style="margin-top:0">
-      <button type="button" class="bundle-big-btn blue" data-mt-bundle="ten">10개 묶기</button>
-      <button type="button" class="bundle-big-btn" data-mt-bundle="hundred">100개 묶기</button>
-    </div>
-    <div class="row-flex">
-      <button type="button" class="btn primary" data-mt="7,5">7 + 5</button>
-      <button type="button" class="btn green" data-mt="8,4">8 + 4</button>
-      <button type="button" class="btn amber" data-mt="9,6">9 + 6</button>
-      <button type="button" class="btn soft" data-mt="6,7">6 + 7</button>
-      <button type="button" class="btn soft" data-mt="5,8">5 + 8</button>
-    </div>`;
+    <div class="guide" style="text-align:center;font-size:17px">${equation}</div>`;
 
-  body.querySelectorAll('[data-mt]').forEach((btn) => {
-    btn.onclick = () => {
-      const [x, y] = btn.dataset.mt.split(',').map(Number);
-      loadExpression(x, '+', y);
-    };
-  });
   bindDrag(body, '[data-cell-fill]', (el) => ({ frame: el.dataset.frame, value: Number(el.dataset.value) }), (p, zone) => {
     if (!zone) return;
     const target = (zone.dataset.drop || '').split(':')[0];
     if (p.frame === 'mtRight' && target === 'mtLeft' && b > 0 && a < 10) {
       recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '10 만들기');
       loadExpression(a + 1, '+', b - 1, { quiet: true });
-      if (a + 1 === 10) awardToken('10을 만들었어요! 남은 수를 더해 보세요.');
-      else speak(`${a + 1}개. 10이 되려면 ${9 - a}개 더 필요해요.`);
-    } else if (target === 'mtRight' && p.frame === 'mtLeft') {
-      speak('왼쪽 10칸 판에서 오른쪽으로 옮기면 10을 만들 수 없어요.');
+      if (a + 1 < 10) speak(`${a + 1}개`);
     }
   }, {
-    onStart: (p) => { if (state.settings.errorless) showHintTarget(`[data-drop="${p.frame === 'mtRight' ? 'mtLeft' : 'mtRight'}"]`, body); },
+    onStart: (p) => { if (state.settings.errorless && p.frame === 'mtRight') showHintTarget('[data-drop="mtLeft"]', body); },
     onTap: (p) => {
       if (p.frame === 'mtRight') {
         if (state.settings.errorless) showHintTarget('[data-drop="mtLeft"]', body);
-        speak('오른쪽 초록 점을 왼쪽 10칸 판으로 손가락으로 끌어와 보세요.');
-      } else {
-        speak('오른쪽 초록 점을 왼쪽 10칸 판으로 끌어와 10을 만들어요.');
+        speak('오른쪽 초록 점을 왼쪽 빈칸으로 끌어와 10을 만들어요.');
       }
     },
     onActivate: (p) => {
       if (p.frame === 'mtRight' && b > 0 && a < 10) {
         recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, '10 만들기');
         loadExpression(a + 1, '+', b - 1, { quiet: true });
-        if (a + 1 === 10) awardToken('10을 만들었어요! 남은 수를 더해 보세요.');
-        else speak(`${a + 1}개. 10이 되려면 ${9 - a}개 더 필요해요.`);
       }
     },
-  });
-  body.querySelectorAll('[data-mt-bundle]').forEach((btn) => {
-    btn.onclick = () => {
-      if (btn.dataset.mtBundle === 'ten') {
-        if (a < 10) { speak('왼쪽 10칸 판을 먼저 가득 채워요.'); return; }
-        awardToken('10개를 십 묶음 하나로 묶었어요!');
-        speak('10개는 십 묶음 하나예요.');
-      } else {
-        speak('100개는 십 묶음 10개예요. 10개씩 먼저 묶어 보세요.');
-      }
-    };
   });
 }
 
@@ -831,29 +708,16 @@ function renderStrategy() {
     }
     line = interactiveNumberLineHTML(a, total, op);
   }
-  setToolHead('🛣️ 계산 전략 고르기', '🐸를 손가락으로 끌어 목표 자리에 놓아 보세요');
-  $('toolBody').innerHTML = `
-    <div class="tabs" style="background:#eef3f9">${strategies.map((s) => `<button type="button" class="tab${state.strategy === s.id ? ' active' : ''}" data-strategy="${s.id}">${s.label}</button>`).join('')}</div>
-    <div class="guide" style="font-size:14px">${explain}</div>
-    ${line}
-    <div class="row-flex">
-      <button type="button" class="btn primary" data-st="8,+,7">8 + 7</button>
-      <button type="button" class="btn green" data-st="9,+,4">9 + 4</button>
-      <button type="button" class="btn amber" data-st="13,-,5">13 - 5</button>
-      <button type="button" class="btn soft" data-st="15,-,8">15 - 8</button>
-    </div>`;
+  setToolHead('🛣️ 수직선 점프', '🐸를 손가락으로 끌어 목표 자리에 놓아 보세요');
+  $('toolBody').innerHTML = `${line}`;
   const body = $('toolBody');
   const moveMarker = (value) => {
     const v = clamp(Math.trunc(value), 0, 20);
     state.nlMarker = v;
     if (v === total) {
       recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `수직선 ${v}`);
-      awardToken('목표 자리에 정확히 놓았어요!');
-      announce(`${a}에서 ${v}까지 왔어요. 정답은 ${total}이에요.`);
     } else {
-      recordTrial('error', state.promptLevel, `수직선 ${v}`);
-      speak(`${v} 자리예요. 목표 ${total}까지 ${Math.abs(total - v)}칸 남았어요.`);
-      haptic(35);
+      speak(`${countWord(v)}`);
     }
     renderTool();
   };
@@ -861,7 +725,7 @@ function renderStrategy() {
     stop.onclick = () => {
       const idx = Number((stop.dataset.drop || 'nl:0').split(':')[1]);
       if (state.settings.errorless) showHintTarget(`[data-drop="nl:${total}"]`, body);
-      speak(`개구리를 손가락으로 끌어 ${idx} 자리로 옮겨 보세요.`);
+      speak(`${countWord(idx)}`);
     };
   });
   body.querySelectorAll('[data-nl-step]').forEach((btn) => {
@@ -879,9 +743,10 @@ function renderStrategy() {
     };
     const previewMarker = (val) => {
       curVal = val;
+      const diff = val - a;
       nlMarkerEl.style.left = `${((val + 0.5) / 21) * 100}%`;
-      nlMarkerEl.setAttribute('aria-label', `현재 ${val}, 목표 ${total}. 좌우로 끌어서 옮기세요`);
-      if (nlBadgeEl) nlBadgeEl.textContent = `현재 ${val} · 목표 ${total}`;
+      nlMarkerEl.setAttribute('aria-label', `현재 ${val}. 좌우로 끌어서 옮기세요`);
+      if (nlBadgeEl) nlBadgeEl.textContent = `현재 ${val} (${diff >= 0 ? `+${diff}` : diff}칸)`;
     };
     nlMarkerEl.onpointerdown = (ev) => {
       if (ev.button !== undefined && ev.button !== 0) return;

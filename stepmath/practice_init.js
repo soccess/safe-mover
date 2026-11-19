@@ -4,7 +4,6 @@
    8. 도구 디스패처 · 초기화
    ============================================================ */
 function resetStageActivity() {
-  if (window.SM_GAME) window.SM_GAME.resetMission();
   const stage = currentStage();
   switch (stage.tool) {
     case 'sort': newSortRound(); break;
@@ -25,357 +24,91 @@ function resetStageActivity() {
   announce('활동을 처음부터 다시 시작해요.');
 }
 function preparePracticeProblem(stageId) {
-  if (state.lessonStep === 0) return;
-  const cur = typeof getStageCurriculum === 'function' ? getStageCurriculum(stageId) : STAGE_CURRICULUM[stageId];
-  if (!cur || !cur.problems || !cur.problems.length) return;
-  const idx = clamp(state.practice.idxByStage[stageId] ?? 0, 0, cur.problems.length - 1);
-  state.practice.idxByStage[stageId] = idx;
-  const key = `${stageId}:${idx}`;
-  if (state.practice.activeKey !== key) {
-    state.practice.activeKey = key;
-    state.practice.selected = null;
-    state.practice.feedback = null;
-    state.practice.hintShown = false;
-    const prob = cur.problems[idx];
+  if (!window.StepMathGenerator) return;
+  if (!state.activeProblem || state.activeProblem.stageId !== stageId) {
+    const round = state.problemRound || 0;
+    const prob = window.StepMathGenerator.buildProblem(stageId, round);
+    state.activeProblem = prob;
+    state.problemSolved = false;
+    state.demoPlayedKey = '';
     if (prob && typeof prob.setup === 'function') prob.setup(state);
   }
 }
 
-function renderExampleAnimatedSvg(stageId, exIdx) {
-  const s = Number(stageId);
-  if (s === 1) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <rect x="8" y="10" width="84" height="54" rx="12" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
-      <text x="50" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#b91c1c">사과 바구니</text>
-      <circle cx="36" cy="48" r="10" fill="#ef4444" class="svg-bounce-1"/>
-      <circle cx="64" cy="48" r="10" fill="#ef4444" class="svg-bounce-2"/>
-      <path d="M98 37h24m-6-6l6 6-6 6" stroke="#2563eb" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" class="svg-pulse-x"/>
-      <rect x="128" y="10" width="84" height="54" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-      <text x="170" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#b45309">레몬 바구니</text>
-      <ellipse cx="170" cy="48" rx="12" ry="9" fill="#facc15" class="svg-bounce-1"/>
-    </svg>`;
-  }
-  if (s >= 2 && s <= 4) {
-    const count = s === 2 ? 4 : (s === 3 ? 7 : 10);
-    let dots = '';
-    for (let i = 0; i < 10; i++) {
-      const cx = 24 + (i % 5) * 32;
-      const cy = i < 5 ? 24 : 50;
-      const on = i < count;
-      dots += `<circle cx="${cx}" cy="${cy}" r="10" fill="${on ? '#2563eb' : '#e2e8f0'}" class="${on ? 'svg-pop-delay-' + (i % 4) : ''}"/>`;
-    }
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <rect x="6" y="6" width="166" height="62" rx="10" fill="#fff" stroke="#93c5fd" stroke-width="2.5"/>
-      ${dots}
-      <text x="196" y="43" text-anchor="middle" font-size="20" font-weight="900" fill="#1d4ed8" class="svg-bounce-1">${s === 4 ? '10+' : count}</text>
-    </svg>`;
-  }
-  if (s === 5) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <rect x="10" y="14" width="76" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2.2"/>
-      <text x="48" y="44" text-anchor="middle" font-size="22" font-weight="900" fill="#1e40af" class="svg-bounce-1">6</text>
-      <text x="110" y="45" text-anchor="middle" font-size="24" font-weight="900" fill="#d97706" class="svg-pulse-x">${exIdx ? '=' : '>'}</text>
-      <rect x="134" y="14" width="76" height="46" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2.2"/>
-      <text x="172" y="44" text-anchor="middle" font-size="22" font-weight="900" fill="#166534" class="svg-bounce-2">${exIdx ? '6' : '4'}</text>
-    </svg>`;
-  }
-  if (s >= 6 && s <= 10) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <line x1="16" y1="52" x2="204" y2="52" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="36" cy="52" r="5" fill="#2563eb"/>
-      <circle cx="110" cy="52" r="5" fill="#7c3aed"/>
-      <circle cx="184" cy="52" r="5" fill="#16a34a"/>
-      <path d="M36 48 Q73 10 110 48" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="5 3" class="svg-dash-flow"/>
-      <path d="M110 48 Q147 10 184 48" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="5 3" class="svg-dash-flow"/>
-      <circle cx="184" cy="36" r="8" fill="#facc15" class="svg-bounce-1"/>
-    </svg>`;
-  }
-  if (s >= 11 && s <= 14) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <rect x="14" y="14" width="38" height="46" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" class="svg-bounce-1"/>
-      <rect x="58" y="14" width="38" height="46" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" class="svg-bounce-2"/>
-      <rect x="102" y="14" width="38" height="46" rx="8" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" class="svg-bounce-1"/>
-      <text x="168" y="45" text-anchor="middle" font-size="16" font-weight="900" fill="#7c3aed" class="svg-pulse-x">묶음 쏙!</text>
-    </svg>`;
-  }
-  if (s === 15 || s === 16) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <circle cx="62" cy="37" r="28" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
-      <path d="M62 37 L62 9 A28 28 0 0 1 90 37 Z" fill="#f97316" class="svg-bounce-1"/>
-      <path d="M62 37 L90 37 A28 28 0 0 1 62 65 Z" fill="#fb923c" class="svg-bounce-2"/>
-      <line x1="34" y1="37" x2="90" y2="37" stroke="#b45309" stroke-width="1.5"/>
-      <line x1="62" y1="9" x2="62" y2="65" stroke="#b45309" stroke-width="1.5"/>
-      <text x="152" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#ea580c" class="svg-pulse-x">${s === 15 ? '1/4 + 2/4' : '0.4 + 0.3'}</text>
-    </svg>`;
-  }
-  if (s === 18) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <circle cx="66" cy="37" r="28" fill="#fff" stroke="#2563eb" stroke-width="3"/>
-      <line x1="66" y1="37" x2="66" y2="16" stroke="#1e293b" stroke-width="3" stroke-linecap="round" class="svg-clock-min"/>
-      <line x1="66" y1="37" x2="82" y2="37" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="66" cy="37" r="3.5" fill="#1e293b"/>
-      <text x="150" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="#1d4ed8" class="svg-bounce-1">${exIdx ? '2시 30분' : '9시 00분'}</text>
-    </svg>`;
-  }
-  if (s === 19) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <circle cx="48" cy="37" r="22" fill="#fde047" stroke="#ca8a04" stroke-width="3" class="svg-bounce-1"/>
-      <text x="48" y="42" text-anchor="middle" font-size="12" font-weight="900" fill="#854d0e">100</text>
-      <text x="84" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="#1e293b">+</text>
-      <circle cx="118" cy="37" r="19" fill="#fed7aa" stroke="#ea580c" stroke-width="3" class="svg-bounce-2"/>
-      <text x="118" y="42" text-anchor="middle" font-size="12" font-weight="900" fill="#9a3412">50</text>
-      <text x="176" y="43" text-anchor="middle" font-size="18" font-weight="900" fill="#15803d" class="svg-pulse-x">=150원</text>
-    </svg>`;
-  }
-  if (s === 20) {
-    return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-      <circle cx="38" cy="37" r="16" fill="#ef4444" class="svg-bounce-1"/>
-      <rect x="74" y="21" width="32" height="32" rx="4" fill="#3b82f6" class="svg-bounce-2"/>
-      <polygon points="146,20 128,53 164,53" fill="#eab308" class="svg-bounce-1"/>
-      <text x="192" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#7c3aed" class="svg-pulse-x">?</text>
-    </svg>`;
-  }
-  return `<svg class="ex-anim-svg" viewBox="0 0 220 74" aria-hidden="true">
-    <rect x="28" y="16" width="30" height="46" rx="6" fill="#ef4444" class="svg-bounce-1"/>
-    <rect x="74" y="32" width="30" height="30" rx="6" fill="#facc15" class="svg-bounce-2"/>
-    <rect x="120" y="22" width="30" height="40" rx="6" fill="#a855f7" class="svg-bounce-1"/>
-    <text x="184" y="43" text-anchor="middle" font-size="14" font-weight="900" fill="#0f766e">차곡차곡!</text>
-  </svg>`;
+function generateNewProblemForStage(stageId, incrementRound = true) {
+  if (!window.StepMathGenerator) return;
+  if (window.StepMathDemo) window.StepMathDemo.stop();
+  if (incrementRound) state.problemRound = ((state.problemRound || 0) + 1) % 5;
+  const prob = window.StepMathGenerator.buildProblem(stageId, state.problemRound || 0);
+  state.activeProblem = prob;
+  state.problemSolved = false;
+  state.demoPlayedKey = '';
+  if (prob && typeof prob.setup === 'function') prob.setup(state);
+  renderTool();
 }
 
-function renderLessonStageOverlay(stageId) {
-  const cur = typeof getStageCurriculum === 'function' ? getStageCurriculum(stageId) : STAGE_CURRICULUM[stageId];
+function playCurrentDemo(opts = {}) {
+  const prob = state.activeProblem;
   const body = $('toolBody');
-  if (!cur || !body) return;
+  if (!prob || !prob.demo || !body || !window.StepMathDemo) return;
+  state.demoPlayedKey = prob.id;
+  window.StepMathDemo.play(prob.demo, body, { loops: opts.loops || 2 });
+  if (!opts.quiet && prob.speakText) speak(prob.speakText);
+}
 
-  const isExample = state.lessonStep === 0;
-  const pIdx = clamp(state.practice.idxByStage[stageId] ?? 0, 0, cur.problems.length - 1);
-  const prob = cur.problems[pIdx];
-  const key = `${stageId}:${pIdx}`;
-  const isSolved = Boolean(state.practice.solved[key]);
-  const examples = Array.isArray(cur.examples) && cur.examples.length ? cur.examples : [cur.example];
-  const exIdx = clamp(state.exampleIdx || 0, 0, examples.length - 1);
-  state.exampleIdx = exIdx;
-  const ex = examples[exIdx];
-
-  const wrapper = document.createElement('div');
-  wrapper.style.display = 'flex';
-  wrapper.style.flexDirection = 'column';
-  wrapper.style.gap = '12px';
-
-  const modeBarHTML = `
-    <div class="lesson-mode-bar" role="tablist" aria-label="학습 순서 선택">
-      <button type="button" class="lesson-mode-tab example${isExample ? ' active' : ''}" data-lmode="example" role="tab" aria-selected="${isExample}">👀 1. 예시 문제 보기 (${exIdx + 1}/${examples.length})</button>
-      <button type="button" class="lesson-mode-tab practice${!isExample ? ' active' : ''}" data-lmode="practice" role="tab" aria-selected="${!isExample}">✏️ 2. 직접 문제 풀기 (${pIdx + 1}/${cur.problems.length})</button>
-    </div>`;
-
-  if (isExample) {
-    const exTabsHTML = examples.length > 1
-      ? `<div class="ex-tabs" role="tablist" aria-label="예시 선택">${examples.map((item, i) =>
-          `<button type="button" class="ex-tab${i === exIdx ? ' active' : ''}" data-ex-tab="${i}">예시 ${i + 1}</button>`
-        ).join('')}</div>`
-      : '';
-    wrapper.innerHTML = `${modeBarHTML}
-      <section class="example-card" aria-label="선생님 예시 문제">
-        <div class="example-top-row">
-          <span class="example-badge">👩‍🏫 먼저 예시를 보아요 · ${ex.title || `예시 ${exIdx + 1}`}</span>
-          ${exTabsHTML}
-        </div>
-        <div class="example-problem">${ex.problem}</div>
-        <div class="example-anim-wrap">${renderExampleAnimatedSvg(stageId, exIdx)}</div>
-        <div class="example-visual">${ex.visual}</div>
-        <div class="example-steps">${(ex.steps || []).map((st, i) => `<div class="example-step"><span class="step-num">${i + 1}</span><span>${st}</span></div>`).join('')}</div>
-        <div class="example-actions">
-          <button type="button" class="btn amber" data-ex-speak>🔊 예시 설명 듣기</button>
-          <button type="button" class="btn green" data-go-practice>✏️ 이제 내가 풀어볼까요? →</button>
-        </div>
-      </section>
-      <div class="tool-sandbox-label">👇 아래 교구도 직접 만져 볼 수 있어요</div>`;
-  } else {
-    const promptText = (state.settings.easy && prob.easyPrompt) ? prob.easyPrompt : prob.prompt;
-    const dotsHTML = cur.problems.map((_, i) => {
-      const done = Boolean(state.practice.solved[`${stageId}:${i}`]);
-      return `<span class="practice-dot${done ? ' done' : ''}${i === pIdx ? ' current' : ''}" title="문제 ${i + 1}"></span>`;
+function renderGoalHeader() {
+  const prob = state.activeProblem;
+  if (!prob) return;
+  const badgesEl = $('goalBadges');
+  const promptEl = $('goalPrompt');
+  const dotsEl = $('goalDots');
+  const solvedBar = $('goalSolvedBar');
+  const solvedMsg = $('solvedMsg');
+  const nextBtn = $('goalNextBtn');
+  if (badgesEl) {
+    badgesEl.innerHTML = (prob.goalBadges || []).map((b) => `<span class="goal-badge">${b}</span>`).join('');
+  }
+  if (promptEl) {
+    promptEl.textContent = prob.prompt || '';
+  }
+  if (dotsEl) {
+    const r = state.problemRound || 0;
+    dotsEl.innerHTML = Array.from({ length: 5 }, (_, i) => {
+      const done = i < r || (i === r && state.problemSolved);
+      return `<span class="practice-dot${done ? ' done' : ''}${i === r && !state.problemSolved ? ' current' : ''}"></span>`;
     }).join('');
-    const fb = state.practice.feedback;
-    const isLastProb = pIdx === cur.problems.length - 1;
-    let answerAreaHTML = '';
-    if (prob.type === 'choice') {
-      answerAreaHTML = `<div class="practice-choices">${prob.choices.map((c) => {
-        let cls = 'practice-choice';
-        if (state.practice.selected === c.value) cls += (c.value === prob.answer ? ' correct' : ' wrong');
-        return `<button type="button" class="${cls}" data-pchoice="${c.value}">${c.label}</button>`;
-      }).join('')}</div>`;
-    } else {
-      answerAreaHTML = `<div class="row-flex" style="margin-top:0">
-        <button type="button" class="btn primary" data-pcheck>✓ 다 했어요! 정답 확인</button>
-      </div>`;
+  }
+  if (solvedBar) solvedBar.hidden = !state.problemSolved;
+  if (solvedMsg) solvedMsg.textContent = `🎉 ${prob.okMsg || '참 잘했어요!'}`;
+  if (nextBtn) nextBtn.textContent = (state.problemRound || 0) >= 4 ? '다음 단계로 →' : '다음 문제 →';
+}
+
+function checkProblemSolved() {
+  const prob = state.activeProblem;
+  if (!prob) return false;
+  const body = $('toolBody');
+  if (!state.problemSolved && typeof prob.check === 'function' && prob.check(state)) {
+    state.problemSolved = true;
+    state.stageSolvedCount = (state.stageSolvedCount || 0) + 1;
+    if (window.StepMathDemo) window.StepMathDemo.stop();
+    clearHintTargets(body);
+    recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${prob.stageId}단계 완료`);
+    awardToken(prob.okMsg || '잘했어요!');
+    renderGoalHeader();
+    return true;
+  }
+  if (!state.problemSolved && state.settings.errorless && typeof prob.progress === 'function' && window.StepMathDemo && body) {
+    const prog = prob.progress(state);
+    if (prog && (prog.fromSelector || prog.toSelector)) {
+      window.StepMathDemo.showFollowGuide(prog.fromSelector, prog.toSelector, body);
     }
-    wrapper.innerHTML = `${modeBarHTML}
-      <section class="practice-card" aria-label="직접 문제 풀기">
-        <div class="practice-head">
-          <span class="practice-badge">✏️ 직접 풀기 · 문제 ${pIdx + 1} / ${cur.problems.length}</span>
-          <div class="practice-progress" aria-label="문제 진행 상태">${dotsHTML}</div>
-        </div>
-        <div class="practice-prompt">${promptText}</div>
-        ${state.practice.hintShown ? `<div class="practice-hint-box">💡 힌트: ${prob.hint}</div>` : ''}
-        ${answerAreaHTML}
-        ${fb ? `<div class="practice-feedback ${fb.ok ? 'ok' : 'retry'}">${fb.text}</div>` : ''}
-        <div class="practice-actions">
-          <div class="row-flex" style="margin-top:0">
-            <button type="button" class="btn soft" data-p-speak>🔊 문제 듣기</button>
-            <button type="button" class="btn amber" data-p-hint>💡 힌트</button>
-            <button type="button" class="btn soft" data-back-example>👀 예시 다시 보기</button>
-          </div>
-          ${(isSolved || (fb && fb.ok))
-            ? `<button type="button" class="btn green" data-p-next>${isLastProb ? '다음 놀이로 →' : `다음 문제 (${pIdx + 2}/${cur.problems.length}) →`}</button>`
-            : ''}
-        </div>
-      </section>
-      <div class="tool-sandbox-label">👇 아래 교구를 움직여 문제를 풀어 보세요</div>`;
   }
-
-  body.prepend(wrapper);
-
-  wrapper.querySelectorAll('[data-lmode]').forEach((btn) => {
-    btn.onclick = () => {
-      if (btn.dataset.lmode === 'example') {
-        state.lessonStep = 0;
-        state.practice.activeKey = '';
-      } else {
-        state.lessonStep = Math.max(1, state.lessonStep);
-      }
-      renderLessonPath();
-      renderTool();
-      speak(state.lessonStep === 0 ? '예시 문제를 먼저 살펴보아요.' : '이제 직접 문제를 풀어 볼까요?');
-    };
-  });
-
-  wrapper.querySelectorAll('[data-ex-tab]').forEach((btn) => {
-    btn.onclick = () => {
-      state.exampleIdx = Number(btn.dataset.exTab) || 0;
-      renderTool();
-      const chosen = examples[state.exampleIdx];
-      if (chosen) speak(chosen.speakText || chosen.problem);
-    };
-  });
-
-  const exSpeak = wrapper.querySelector('[data-ex-speak]');
-  if (exSpeak) exSpeak.onclick = () => speak(ex.speakText || ex.problem);
-
-  const goPractice = wrapper.querySelector('[data-go-practice]');
-  if (goPractice) {
-    goPractice.onclick = () => {
-      state.lessonStep = 1;
-      state.practice.activeKey = '';
-      renderLessonPath();
-      renderTool();
-      speak('좋아요! 이제 직접 문제를 풀어 볼까요?');
-    };
-  }
-
-  const backEx = wrapper.querySelector('[data-back-example]');
-  if (backEx) {
-    backEx.onclick = () => {
-      state.lessonStep = 0;
-      state.practice.activeKey = '';
-      renderLessonPath();
-      renderTool();
-      speak('예시 문제를 다시 보아요.');
-    };
-  }
-
-  const pSpeak = wrapper.querySelector('[data-p-speak]');
-  if (pSpeak) pSpeak.onclick = () => speak((state.settings.easy && prob.easyPrompt) ? prob.easyPrompt : prob.prompt);
-
-  const pHint = wrapper.querySelector('[data-p-hint]');
-  if (pHint) {
-    pHint.onclick = () => {
-      state.practice.hintShown = !state.practice.hintShown;
-      if (state.practice.hintShown) {
-        recordTrial('prompted', Math.max(1, state.promptLevel), `${stageId}단계 문제 힌트`);
-        speak(prob.hint);
-      }
-      renderTool();
-    };
-  }
-
-  wrapper.querySelectorAll('[data-pchoice]').forEach((btn) => {
-    btn.onclick = () => {
-      const val = btn.dataset.pchoice;
-      state.practice.selected = val;
-      const ok = val === prob.answer;
-      if (ok) {
-        state.practice.solved[key] = true;
-        state.practice.feedback = { ok: true, text: `🎉 ${prob.okMsg}` };
-        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${stageId}단계 문제 ${pIdx + 1} 정답`);
-        awardToken(prob.okMsg);
-      } else {
-        state.practice.hintShown = true;
-        state.practice.feedback = { ok: false, text: `괜찮아요! 다시 한 번 살펴볼까요? 💡 ${prob.hint}` };
-        recordTrial('error', state.promptLevel, `${stageId}단계 문제 ${pIdx + 1} 오답`);
-        haptic(40);
-        speak(`괜찮아요. ${prob.hint}`);
-      }
-      renderTool();
-    };
-  });
-
-  const pCheck = wrapper.querySelector('[data-pcheck]');
-  if (pCheck) {
-    pCheck.onclick = () => {
-      const ok = typeof prob.check === 'function' ? prob.check(state) : false;
-      if (ok) {
-        state.practice.solved[key] = true;
-        state.practice.feedback = { ok: true, text: `🎉 ${prob.okMsg}` };
-        recordTrial(state.promptLevel ? 'prompted' : 'independent', state.promptLevel, `${stageId}단계 교구 문제 ${pIdx + 1} 정답`);
-        awardToken(prob.okMsg);
-      } else {
-        state.practice.hintShown = true;
-        state.practice.feedback = { ok: false, text: `조금만 더 맞춰 볼까요? 💡 ${prob.hint}` };
-        recordTrial('error', state.promptLevel, `${stageId}단계 교구 문제 ${pIdx + 1} 미완성`);
-        haptic(40);
-        speak(prob.hint);
-      }
-      renderTool();
-    };
-  }
-
-  const pNext = wrapper.querySelector('[data-p-next]');
-  if (pNext) {
-    pNext.onclick = () => {
-      if (pIdx < cur.problems.length - 1) {
-        state.practice.idxByStage[stageId] = pIdx + 1;
-        state.practice.activeKey = '';
-        state.practice.selected = null;
-        state.practice.feedback = null;
-        state.practice.hintShown = false;
-        state.lessonStep = 2;
-        renderLessonPath();
-        renderTool();
-        speak(`문제 ${pIdx + 2}번이에요. 천천히 풀어 보세요.`);
-      } else {
-        state.lessonStep = 2;
-        advanceLesson();
-      }
-    };
-  }
+  renderGoalHeader();
+  return state.problemSolved;
 }
 
 function renderTool() {
   const stage = currentStage();
-  if (state.view === 'activity' && window.SM_GAME && !window.SM_GAME.isSandbox()) {
-    const meta = window.SM_GAME.STAGE_MONEY_META[stage.id];
-    setToolHead(meta ? meta.gameTitle : stage.title, meta ? `🪙 화폐 연결 · ${meta.moneyLink}` : stage.subtitle);
-    window.SM_GAME.renderGameArena(stage.id);
-    const body = $('toolBody');
-    body.dataset.stage = String(stage.id);
-    body.classList.remove('activity-enter');
-    Array.from(body.children).forEach((child, index) => child.style.setProperty('--activity-order', index));
-    void body.offsetWidth;
-    body.classList.add('activity-enter');
-    return;
-  }
   preparePracticeProblem(stage.id);
   switch (stage.tool) {
     case 'sort': renderSort(); break;
@@ -394,17 +127,23 @@ function renderTool() {
       setToolHead('단계별 교구', '단계를 골라 주세요');
       $('toolBody').innerHTML = '<div class="guide">위에서 학습 단계를 골라 보세요.</div>';
   }
-  if (window.SM_GAME && window.SM_GAME.isSandbox()) {
-    window.SM_GAME.renderGameArena(stage.id);
-  } else {
-    renderLessonStageOverlay(stage.id);
-  }
   const body = $('toolBody');
   body.dataset.stage = String(stage.id);
   body.classList.remove('activity-enter');
   Array.from(body.children).forEach((child, index) => child.style.setProperty('--activity-order', index));
   void body.offsetWidth;
   body.classList.add('activity-enter');
+
+  const solved = checkProblemSolved();
+  const prob = state.activeProblem;
+  if (!solved && prob && state.view === 'activity' && !$('app')?.hidden && state.demoPlayedKey !== prob.id) {
+    state.demoPlayedKey = prob.id;
+    setTimeout(() => {
+      if (state.activeProblem && state.activeProblem.id === prob.id && !state.problemSolved && state.view === 'activity' && !$('app')?.hidden) {
+        playCurrentDemo({ loops: 1, quiet: true });
+      }
+    }, 220);
+  }
 }
 
 /* ============================================================
@@ -499,22 +238,21 @@ function bundleHundred() {
   renderBundle();
 }
 const REWARD_CHOICES = [
-  { emoji: '🏆', label: '황금 트로피' },
-  { emoji: '🪙', label: '보너스 1000원 지폐' },
-  { emoji: '🎨', label: '자유 그림 그리기' },
-  { emoji: '🌿', label: '1분 쉬는 시간' },
+  { emoji: '👏', label: '하이파이브' },
+  { emoji: '🎵', label: '신나는 음악' },
+  { emoji: '🌿', label: '쉬는 시간' },
+  { emoji: '🎨', label: '그림 그리기' }
 ];
 const AAC_ITEMS = [
   { emoji: '🙋', label: '도와주세요', say: '도와주세요' },
-  { emoji: '➕', label: '더 할래요', say: '더 할래요' },
-  { emoji: '🛑', label: '그만할래요', say: '그만할래요' },
-  { emoji: '🔁', label: '또 할래요', say: '또 할래요' },
-  { emoji: '😊', label: '좋아요', say: '좋아요' },
+  { emoji: '➕', label: '더', say: '더 하고 싶어요' },
+  { emoji: '✋', label: '그만', say: '잠깐 그만할래요' },
+  { emoji: '🔁', label: '또', say: '한 번 더 할래요' },
+  { emoji: '👍', label: '좋아요', say: '좋아요' },
   { emoji: '🌿', label: '쉬고 싶어요', say: '쉬고 싶어요' },
-  { emoji: '💧', label: '물 마실래요', say: '물 마실래요' },
-  { emoji: '👍', label: '다 했어요', say: '다 했어요' },
+  { emoji: '👀', label: '다시 보기', say: '다시 보여 주세요' },
+  { emoji: '✅', label: '다 했어요', say: '다 했어요' }
 ];
-
 function openReward() {
   const wrap = $('rewardChoices');
   if (wrap) {
@@ -557,25 +295,6 @@ const HINTS = {
 function giveHint(auto) {
   if (auto && state.promptLevel > 0) { scheduleAutoHint(); return; }
   const stage = currentStage();
-  const gmStage = $('gmStage');
-  if (gmStage) {
-    if (!auto) {
-      state.promptLevel = Math.min(4, state.promptLevel + 1);
-      renderPromptMeter();
-      const hintBtn = $('toolBody')?.querySelector('[data-gm-hint]');
-      if (hintBtn && !state.practice.hintShown) hintBtn.click();
-    } else if (state.promptLevel === 0) {
-      state.promptLevel = 1;
-      renderPromptMeter();
-    }
-    const dropTarget = gmStage.querySelector('[data-drop]');
-    if (dropTarget) showHintTarget('[data-drop]', gmStage);
-    const qText = $('toolBody')?.querySelector('.gm-quest-text')?.textContent;
-    if (qText && auto) announce(qText);
-    recordTrial('prompted', state.promptLevel, auto ? '자동 힌트' : '도움 요청');
-    noteInteraction();
-    return;
-  }
   const hint = HINTS[stage.id] || { text: MICRO_LESSONS[stage.id]?.guided || '천천히 다시 해 보세요.', target: '#toolBody' };
   if (!auto) {
     state.promptLevel = Math.min(4, state.promptLevel + 1);
@@ -595,20 +314,6 @@ function giveHint(auto) {
 function modelStep(stageId) {
   const body = $('toolBody');
   if (!body) return false;
-  if (state.view === 'activity' && window.SM_GAME && !window.SM_GAME.isSandbox()) {
-    if (state.lessonStep === 0) {
-      state.lessonStep = 1;
-      renderLessonPath();
-      renderTool();
-    }
-    const gmStage = $('gmStage');
-    const act = gmStage && gmStage.querySelector('[role="button"], button');
-    if (act) {
-      showHintTarget('[data-drop], [role="button"], button', gmStage);
-      announce('같이 해 보아요! 반짝이는 곳을 손가락으로 움직여 보세요.');
-      return true;
-    }
-  }
   const activate = (sel) => {
     const el = body.querySelector(sel);
     if (!el || el.disabled) return false;
@@ -729,16 +434,6 @@ function init() {
   document.querySelectorAll('[data-course]').forEach((button) => {
     button.addEventListener('click', () => chooseCourse(button.dataset.course));
   });
-  document.querySelectorAll('[data-direct-stage]').forEach((button) => {
-    button.addEventListener('click', () => launchStageDirect(Number(button.dataset.directStage)));
-  });
-  const teacherToolsBtn = $('teacherToolsBtn');
-  if (teacherToolsBtn) {
-    teacherToolsBtn.onclick = () => {
-      const drawer = $('teacherToolsDrawer');
-      if (drawer) drawer.hidden = !drawer.hidden;
-    };
-  }
   $('allActivitiesBtn').onclick = () => {
     state.course = null;
     state.courseComplete = false;
@@ -752,25 +447,91 @@ function init() {
   $('gateSettingsBtn').onclick = () => { applySettings(); openDialog('settingsDialog'); };
   $('courseBtn').onclick = showCourseGate;
   $('viewActivityBtn').onclick = () => { setView('activity'); render(); };
-  $('viewCalcBtn').onclick = () => { setView('calc'); render(); };
-  $('bundleBtn').onclick = openBundle;
-  $('aacBtn').onclick = openAac;
-  $('breakBtn').onclick = openBreak;
-  $('teacherBtn').onclick = () => { renderTeacher(); openDialog('teacherDialog'); };
-  $('settingsBtn').onclick = () => { applySettings(); openDialog('settingsDialog'); };
-  $('retryBtn').onclick = resetStageActivity;
-  $('hintBtn').onclick = () => giveHint(false);
-  $('independentBtn').onclick = () => {
-    state.promptLevel = 0;
-    recordTrial('independent', 0, '스스로 했다고 표시');
-    awardToken('스스로 했어요! 아주 좋아요.');
-    renderPromptMeter();
+  $('viewCalcBtn').onclick = () => {
+    if (window.StepMathDemo) window.StepMathDemo.stop();
+    setView('calc');
+    render();
   };
-  $('helpedBtn').onclick = () => {
-    recordTrial('prompted', Math.max(1, state.promptLevel), '도움을 받고 해냄');
-    announce('도움을 받았어요. 다음에는 혼자 해 볼까요?');
-  };
-  $('nextTaskBtn').onclick = advanceLesson;
+  if ($('prevStageBtn')) {
+    $('prevStageBtn').onclick = () => {
+      const stages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
+      const idx = stages.indexOf(state.stage);
+      if (idx > 0) selectStage(stages[idx - 1]);
+    };
+  }
+  if ($('nextStageBtn')) {
+    $('nextStageBtn').onclick = () => {
+      const stages = state.course ? COURSES[state.course].stageIds : STAGES.map((s) => s.id);
+      const idx = stages.indexOf(state.stage);
+      if (idx >= 0 && idx < stages.length - 1) selectStage(stages[idx + 1]);
+    };
+  }
+  if ($('stagePickerBtn')) {
+    $('stagePickerBtn').onclick = () => {
+      renderNav();
+      openDialog('stagePickerDialog');
+    };
+  }
+  if ($('closeStagePickerBtn')) {
+    $('closeStagePickerBtn').onclick = () => closeDialog('stagePickerDialog');
+  }
+  if ($('hubBtn')) {
+    $('hubBtn').onclick = () => openDialog('hubDialog');
+  }
+  if ($('closeHubBtn')) {
+    $('closeHubBtn').onclick = () => closeDialog('hubDialog');
+  }
+  if ($('goalDemoBtn')) {
+    $('goalDemoBtn').onclick = () => playCurrentDemo({ loops: 2 });
+  }
+  if ($('goalSpeakBtn')) {
+    $('goalSpeakBtn').onclick = () => {
+      const prob = state.activeProblem;
+      if (prob) speak(prob.speakText || prob.prompt);
+    };
+  }
+  if ($('goalNewBtn')) {
+    $('goalNewBtn').onclick = () => {
+      generateNewProblemForStage(state.stage, false);
+      playCurrentDemo({ loops: 1 });
+    };
+  }
+  if ($('goalNextBtn')) {
+    $('goalNextBtn').onclick = () => {
+      if ((state.problemRound || 0) >= 4) {
+        advanceLesson();
+      } else {
+        generateNewProblemForStage(state.stage, true);
+      }
+    };
+  }
+  if ($('toolBody')) {
+    $('toolBody').addEventListener('pointerdown', () => {
+      if (window.StepMathDemo) window.StepMathDemo.stop();
+    }, { passive: true });
+  }
+  $('bundleBtn').onclick = () => { closeDialog('hubDialog'); openBundle(); };
+  $('aacBtn').onclick = () => { closeDialog('hubDialog'); openAac(); };
+  $('breakBtn').onclick = () => { closeDialog('hubDialog'); openBreak(); };
+  $('teacherBtn').onclick = () => { closeDialog('hubDialog'); renderTeacher(); openDialog('teacherDialog'); };
+  $('settingsBtn').onclick = () => { closeDialog('hubDialog'); applySettings(); openDialog('settingsDialog'); };
+  if ($('retryBtn')) $('retryBtn').onclick = resetStageActivity;
+  if ($('hintBtn')) $('hintBtn').onclick = () => giveHint(false);
+  if ($('independentBtn')) {
+    $('independentBtn').onclick = () => {
+      state.promptLevel = 0;
+      recordTrial('independent', 0, '스스로 했다고 표시');
+      awardToken('스스로 했어요! 아주 좋아요.');
+      renderPromptMeter();
+    };
+  }
+  if ($('helpedBtn')) {
+    $('helpedBtn').onclick = () => {
+      recordTrial('prompted', Math.max(1, state.promptLevel), '도움을 받고 해냄');
+      announce('도움을 받았어요. 다음에는 혼자 해 볼까요?');
+    };
+  }
+  if ($('nextTaskBtn')) $('nextTaskBtn').onclick = advanceLesson;
   $('closeBundleBtn').onclick = () => closeDialog('bundleDialog');
   $('bundleTenBtn').onclick = bundleTen;
   $('bundleHundredBtn').onclick = bundleHundred;
@@ -843,40 +604,39 @@ function init() {
   document.addEventListener('pointerdown', noteInteraction, { passive: true });
   document.addEventListener('keydown', noteInteraction, { passive: true });
   scheduleAutoHint();
-  $('goToolBtn').onclick = () => $('toolCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  $('lessonModelBtn').onclick = () => {
-    if (!modelStep(state.stage)) return;
-    if (state.lessonStep === 0) state.lessonStep = 1;
-    renderLessonPath();
-    renderTool();
-  };
-  $('lessonPrevBtn').onclick = () => {
-    if (state.lessonStep > 0) {
-      state.lessonStep -= 1;
-      if (state.lessonStep === 0) state.practice.activeKey = '';
+  if ($('goToolBtn')) $('goToolBtn').onclick = () => $('toolCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if ($('lessonModelBtn')) {
+    $('lessonModelBtn').onclick = () => {
+      if (!modelStep(state.stage)) return;
+      if (state.lessonStep === 0) state.lessonStep = 1;
       renderLessonPath();
       renderTool();
-      speak(['살펴보기로 돌아왔어요.', '함께 해보기로 돌아왔어요.'][state.lessonStep]);
-    }
-  };
-  $('lessonNextBtn').onclick = advanceLesson;
-
-  {
-    const b = $('voiceBtn');
-    if (b) {
-      b.classList.toggle('on', state.voice);
-      b.classList.toggle('off', !state.voice);
-      b.setAttribute('aria-pressed', state.voice ? 'true' : 'false');
-      b.textContent = state.voice ? '🔊 음성 안내' : '🔇 음성 꺼짐';
-    }
+    };
   }
-  $('voiceBtn').onclick = () => {
-    state.voice = !state.voice;
+  if ($('lessonPrevBtn')) {
+    $('lessonPrevBtn').onclick = () => {
+      if (state.lessonStep > 0) {
+        state.lessonStep -= 1;
+        renderLessonPath();
+        renderTool();
+      }
+    };
+  }
+  if ($('lessonNextBtn')) $('lessonNextBtn').onclick = advanceLesson;
+
+  const updateVoiceBtnUI = () => {
     const b = $('voiceBtn');
+    if (!b) return;
     b.classList.toggle('on', state.voice);
     b.classList.toggle('off', !state.voice);
     b.setAttribute('aria-pressed', state.voice ? 'true' : 'false');
     b.textContent = state.voice ? '🔊 음성 안내' : '🔇 음성 꺼짐';
+  };
+  updateVoiceBtnUI();
+
+  $('voiceBtn').onclick = () => {
+    state.voice = !state.voice;
+    updateVoiceBtnUI();
     if (window.D1Bridge && window.D1Bridge.setSpedPrefs) {
       window.D1Bridge.setSpedPrefs({ ttsAuto: state.voice });
     }
@@ -900,19 +660,12 @@ function init() {
     speak('기록을 모두 지웠어요');
   };
   $('helpBtn').onclick = () => {
-    const dlg = $('helpDialog');
-    if (typeof dlg.showModal === 'function') dlg.showModal();
-    else dlg.setAttribute('open', '');
+    closeDialog('hubDialog');
+    openDialog('helpDialog');
   };
-  $('closeHelpBtn').onclick = () => {
-    const dlg = $('helpDialog');
-    if (typeof dlg.close === 'function') dlg.close();
-    else dlg.removeAttribute('open');
-  };
+  $('closeHelpBtn').onclick = () => closeDialog('helpDialog');
   $('helpDialog').addEventListener('click', (e) => {
-    if (e.target === $('helpDialog')) {
-      if (typeof $('helpDialog').close === 'function') $('helpDialog').close();
-    }
+    if (e.target === $('helpDialog')) closeDialog('helpDialog');
   });
 
   window.addEventListener('keydown', (e) => {
