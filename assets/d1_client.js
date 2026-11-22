@@ -38,7 +38,204 @@
 
   const SAFE_MOVER_CUSTOM_KEY = "safe_mover.custom_words.v1";
   const STEPMATH_CUSTOM_KEY = "stepmath.custom_content.v1";
+  const KIOSK_CUSTOM_MENU_KEY = "safe_mover.kiosk.custom_menu.v1";
+  const GOOGLE_CSE_KEY = "safe_mover.google_cse.v1";
   const SPED_PREFS_KEY = "safe_mover.sped_prefs.v1";
+
+  const KIOSK_DEFAULT_CATALOG = [
+    { id: "hot_americano", name: "따뜻한 아메리카노", price: 3000, category: "coffee" },
+    { id: "iced_americano", name: "아이스 아메리카노", price: 3500, category: "coffee" },
+    { id: "hot_latte", name: "따뜻한 카페라떼", price: 4000, category: "coffee" },
+    { id: "iced_latte", name: "아이스 카페라떼", price: 4500, category: "coffee" },
+    { id: "iced_vanilla_latte", name: "아이스 바닐라라떼", price: 4800, category: "coffee" },
+    { id: "iced_caramel_macchiato", name: "카라멜 마끼아또", price: 5200, category: "coffee" },
+    { id: "iced_cafe_mocha", name: "아이스 카페모카", price: 5500, category: "coffee" },
+    { id: "hot_choco", name: "따뜻한 핫초코", price: 3800, category: "latte_tea" },
+    { id: "hot_tea", name: "따뜻한 녹차", price: 3000, category: "latte_tea" },
+    { id: "hot_yuja_tea", name: "따뜻한 유자차", price: 3500, category: "latte_tea" },
+    { id: "iced_matcha_latte", name: "아이스 말차라떼", price: 4500, category: "latte_tea" },
+    { id: "strawberry_latte", name: "딸기 라떼", price: 4800, category: "latte_tea" },
+    { id: "iced_lemonade", name: "아이스 레몬에이드", price: 4200, category: "ade_smoothie" },
+    { id: "grapefruit_ade", name: "아이스 자몽에이드", price: 4500, category: "ade_smoothie" },
+    { id: "strawberry_smoothie", name: "딸기 스무디", price: 5300, category: "ade_smoothie" },
+    { id: "mango_smoothie", name: "망고 스무디", price: 5300, category: "ade_smoothie" },
+    { id: "choco_frappe", name: "초코 휘핑 프라페", price: 5800, category: "ade_smoothie" },
+    { id: "green_tea_frappe", name: "말차 휘핑 프라페", price: 5800, category: "ade_smoothie" },
+    { id: "croissant", name: "버터 크루아상", price: 3200, category: "bakery" },
+    { id: "choco_donut", name: "초코 글레이즈 도넛", price: 2800, category: "bakery" },
+    { id: "choco_cake", name: "달콤 초코 브라우니", price: 4500, category: "bakery" },
+    { id: "cheese_muffin", name: "촉촉 치즈 머핀", price: 3000, category: "bakery" }
+  ];
+
+  const KIOSK_SVG_PRESETS = [
+    { id: "bubble_tea", label: "버블티", defaultColor: "#a16207" },
+    { id: "milkshake", label: "밀크쉐이크", defaultColor: "#f472b6" },
+    { id: "iced_tea", label: "복숭아 아이스티", defaultColor: "#fb923c" },
+    { id: "watermelon_juice", label: "수박 주스", defaultColor: "#ef4444" },
+    { id: "orange_juice", label: "오렌지 주스", defaultColor: "#f97316" },
+    { id: "grape_ade", label: "청포도 에이드", defaultColor: "#84cc16" },
+    { id: "einspanner", label: "아인슈페너", defaultColor: "#5c3317" },
+    { id: "dalgona_latte", label: "달고나 라떼", defaultColor: "#d97706" },
+    { id: "yogurt_smoothie", label: "요거트 스무디", defaultColor: "#60a5fa" },
+    { id: "ice_cream", label: "아이스크림", defaultColor: "#f472b6" },
+    { id: "bingsu", label: "빙수", defaultColor: "#38bdf8" },
+    { id: "macaron", label: "마카롱", defaultColor: "#ec4899" },
+    { id: "waffle", label: "와플", defaultColor: "#d97706" },
+    { id: "sandwich", label: "샌드위치", defaultColor: "#22c55e" },
+    { id: "bagel", label: "베이글", defaultColor: "#b45309" },
+    { id: "cookie", label: "쿠키", defaultColor: "#92400e" },
+    { id: "cake_slice", label: "딸기 케이크", defaultColor: "#fb7185" },
+    { id: "milk_bottle", label: "병우유", defaultColor: "#f8fafc" }
+  ];
+
+  function renderKioskPresetSvg(presetId, color = "#f97316", size = 86) {
+    const c = color || "#f97316";
+    const map = {
+      bubble_tea: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#fef3c7"/>
+        <line x1="56" y1="10" x2="48" y2="42" stroke="#1f2937" stroke-width="6.5" stroke-linecap="round"/>
+        <path d="M29 33h38l-5 45c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="#fffbeb" stroke="#78350f" stroke-width="2.4"/>
+        <path d="M31 44h34l-4 32c-.4 2.5-2.5 4-13 4s-12.6-1.5-13-4z" fill="${c}" opacity="0.88"/>
+        <ellipse cx="48" cy="33" rx="20" ry="5" fill="#fff" stroke="#78350f" stroke-width="2.2"/>
+        <circle cx="38" cy="72" r="3.6" fill="#1e1b18"/><circle cx="47" cy="74" r="3.6" fill="#1e1b18"/><circle cx="56" cy="72" r="3.6" fill="#1e1b18"/>
+        <circle cx="42" cy="65" r="3.4" fill="#1e1b18"/><circle cx="52" cy="66" r="3.4" fill="#1e1b18"/>
+      </svg>`,
+      milkshake: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#fce7f3"/>
+        <line x1="60" y1="12" x2="50" y2="38" stroke="#ec4899" stroke-width="4" stroke-linecap="round"/>
+        <path d="M32 40h32l-4 38c-.4 3-3 5-12 5s-11.6-2-12-5z" fill="${c}" stroke="#831843" stroke-width="2.4"/>
+        <path d="M30 40c0-10 8-16 18-16s18 6 18 16z" fill="#fffdf9" stroke="#cbd5e1" stroke-width="2"/>
+        <circle cx="48" cy="21" r="5" fill="#e11d48"/><path d="M48 16c2-4 5-5 7-4" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+      </svg>`,
+      iced_tea: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#ffedd5"/>
+        <line x1="58" y1="13" x2="49" y2="42" stroke="#ea580c" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M29 34h38l-5 44c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="rgba(255,255,255,0.65)" stroke="#9a3412" stroke-width="2.3"/>
+        <path d="M31 44h34l-4 32c-.4 2.8-2.5 4-13 4s-12.6-1.2-13-4z" fill="${c}" opacity="0.88"/>
+        <rect x="37" y="47" width="9" height="9" rx="2" fill="rgba(255,255,255,0.55)" transform="rotate(-10 37 47)"/>
+        <circle cx="63" cy="34" r="9" fill="#fda4af" stroke="#e11d48" stroke-width="1.8"/>
+      </svg>`,
+      watermelon_juice: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#fee2e2"/>
+        <line x1="57" y1="12" x2="49" y2="40" stroke="#16a34a" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M29 35h38l-5 43c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="#fff" fill-opacity="0.6" stroke="#64748b" stroke-width="2.2"/>
+        <path d="M31 44h34l-4 32c-.4 2.8-2.5 4-13 4s-12.6-1.2-13-4z" fill="${c}"/>
+        <circle cx="42" cy="57" r="1.8" fill="#1e293b"/><circle cx="52" cy="64" r="1.8" fill="#1e293b"/><circle cx="46" cy="70" r="1.8" fill="#1e293b"/>
+        <path d="M58 34a11 11 0 0 1 16 8z" fill="#ef4444" stroke="#16a34a" stroke-width="3"/>
+      </svg>`,
+      orange_juice: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#ffedd5"/>
+        <line x1="57" y1="12" x2="49" y2="40" stroke="#f59e0b" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M30 35h36l-4 43c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="rgba(255,255,255,0.65)" stroke="#c2410c" stroke-width="2.2"/>
+        <path d="M32 43h32l-3.5 33c-.4 2.8-2.5 4-12.5 4s-12.1-1.2-12.5-4z" fill="${c}"/>
+        <circle cx="64" cy="35" r="9.5" fill="#fb923c" stroke="#ea580c" stroke-width="2"/>
+        <circle cx="64" cy="35" r="5" fill="#ffedd5"/>
+      </svg>`,
+      grape_ade: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#ecfccb"/>
+        <line x1="57" y1="12" x2="49" y2="40" stroke="#65a30d" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M29 35h38l-5 43c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="rgba(255,255,255,0.65)" stroke="#4d7c0f" stroke-width="2.2"/>
+        <path d="M31 44h34l-4 32c-.4 2.8-2.5 4-13 4s-12.6-1.2-13-4z" fill="${c}" opacity="0.86"/>
+        <circle cx="41" cy="68" r="5" fill="#bef264"/><circle cx="51" cy="64" r="5" fill="#a3e635"/><circle cx="45" cy="57" r="4.5" fill="#d9f99d"/>
+        <circle cx="55" cy="52" r="2.2" fill="#fff"/>
+      </svg>`,
+      einspanner: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#f5ebe0"/>
+        <path d="M30 34h36l-4 44c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="#fff" stroke="#451a03" stroke-width="2.5"/>
+        <path d="M32 50h32l-3 26c-.4 2.5-2.5 4-13 4s-12.6-1.5-13-4z" fill="${c}"/>
+        <path d="M31 35h34v15H31z" fill="#fffbeb" stroke="#e2e8f0" stroke-width="1.5"/>
+        <path d="M31 35c2-6 8-9 17-9s15 3 17 9z" fill="#ffffff"/>
+      </svg>`,
+      dalgona_latte: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#fef3c7"/>
+        <path d="M29 36h38l-5 42c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="#fff" stroke="#92400e" stroke-width="2.4"/>
+        <path d="M31 48h34l-4 28c-.4 2.5-2.5 4-13 4s-12.6-1.5-13-4z" fill="#fffbeb"/>
+        <path d="M31 37c4-8 30-8 34 0l-2 11H33z" fill="${c}"/>
+        <rect x="40" y="29" width="14" height="10" rx="3" fill="#f59e0b" stroke="#92400e" stroke-width="1.6" transform="rotate(-12 47 34)"/>
+      </svg>`,
+      yogurt_smoothie: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="52" r="37" fill="#eff6ff"/>
+        <line x1="57" y1="12" x2="49" y2="38" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+        <path d="M29 36h38l-5 42c-.5 3.5-3 5-14 5s-13.5-1.5-14-5z" fill="#ffffff" stroke="#2563eb" stroke-width="2.4"/>
+        <path d="M31 44h34l-4 32c-.4 2.5-2.5 4-13 4s-12.6-1.5-13-4z" fill="${c}" opacity="0.35"/>
+        <circle cx="42" cy="34" r="5" fill="#1d4ed8"/><circle cx="52" cy="33" r="5" fill="#3b82f6"/><circle cx="47" cy="28" r="4.5" fill="#1e40af"/>
+      </svg>`,
+      ice_cream: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#fdf2f8"/>
+        <polygon points="36,52 60,52 48,86" fill="#f59e0b" stroke="#b45309" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M40 58l14 8M42 68l9 5" stroke="#fde68a" stroke-width="2"/>
+        <circle cx="48" cy="40" r="16" fill="${c}" stroke="#be185d" stroke-width="2.2"/>
+        <circle cx="48" cy="27" r="11" fill="#fff1f2" stroke="#fbcfe8" stroke-width="2"/>
+        <circle cx="48" cy="17" r="4" fill="#e11d48"/>
+      </svg>`,
+      bingsu: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#e0f2fe"/>
+        <path d="M22 52c0-17 12-28 26-28s26 11 26 28z" fill="#ffffff" stroke="#7dd3fc" stroke-width="2.4"/>
+        <path d="M34 33c6-6 22-6 28 0" fill="${c}" opacity="0.85"/>
+        <path d="M20 52h56c-2 16-12 24-28 24s-26-8-28-24z" fill="#0284c7" stroke="#0369a1" stroke-width="2.4"/>
+        <rect x="42" y="74" width="12" height="7" rx="2" fill="#0369a1"/>
+        <circle cx="48" cy="23" r="5" fill="#ef4444"/>
+      </svg>`,
+      macaron: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#fce7f3"/>
+        <path d="M22 44c0-10 12-16 26-16s26 6 26 16z" fill="${c}" stroke="#9d174d" stroke-width="2.4"/>
+        <rect x="20" y="44" width="56" height="10" rx="5" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/>
+        <path d="M22 54h52c0 10-12 16-26 16s-26-6-26-16z" fill="${c}" stroke="#9d174d" stroke-width="2.4"/>
+      </svg>`,
+      waffle: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#fef3c7"/>
+        <rect x="22" y="26" width="52" height="48" rx="12" fill="${c}" stroke="#78350f" stroke-width="2.5"/>
+        <g fill="#fef3c7" opacity="0.65">
+          <rect x="30" y="34" width="10" height="10" rx="2"/><rect x="43" y="34" width="10" height="10" rx="2"/><rect x="56" y="34" width="10" height="10" rx="2"/>
+          <rect x="30" y="47" width="10" height="10" rx="2"/><rect x="43" y="47" width="10" height="10" rx="2"/><rect x="56" y="47" width="10" height="10" rx="2"/>
+          <rect x="30" y="60" width="10" height="8" rx="2"/><rect x="43" y="60" width="10" height="8" rx="2"/><rect x="56" y="60" width="10" height="8" rx="2"/>
+        </g>
+        <rect x="41" y="22" width="14" height="10" rx="3" fill="#fde047" stroke="#ca8a04" stroke-width="1.8"/>
+      </svg>`,
+      sandwich: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#dcfce7"/>
+        <polygon points="18,64 78,64 48,26" fill="#fde68a" stroke="#b45309" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M20 56h56" stroke="#22c55e" stroke-width="5" stroke-linecap="round"/>
+        <path d="M24 50h48" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+        <polygon points="24,60 72,60 48,32" fill="#fffbeb" stroke="#d97706" stroke-width="2" stroke-linejoin="round"/>
+      </svg>`,
+      bagel: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#ffedd5"/>
+        <circle cx="48" cy="50" r="27" fill="${c}" stroke="#78350f" stroke-width="2.6"/>
+        <circle cx="48" cy="50" r="9.5" fill="#ffedd5" stroke="#78350f" stroke-width="2.2"/>
+        <ellipse cx="35" cy="36" rx="2.5" ry="1.4" fill="#fef3c7" transform="rotate(-25 35 36)"/>
+        <ellipse cx="59" cy="36" rx="2.5" ry="1.4" fill="#fef3c7" transform="rotate(25 59 36)"/>
+        <ellipse cx="48" cy="30" rx="2.5" ry="1.4" fill="#fef3c7"/>
+      </svg>`,
+      cookie: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#fef3c7"/>
+        <circle cx="48" cy="50" r="26" fill="${c}" stroke="#78350f" stroke-width="2.6"/>
+        <circle cx="38" cy="40" r="3.5" fill="#451a03"/><circle cx="57" cy="41" r="3" fill="#451a03"/>
+        <circle cx="46" cy="52" r="3.8" fill="#451a03"/><circle cx="36" cy="59" r="3" fill="#451a03"/>
+        <circle cx="58" cy="58" r="3.5" fill="#451a03"/>
+      </svg>`,
+      cake_slice: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#ffe4e6"/>
+        <polygon points="22,68 74,68 74,45 22,52" fill="#fffbeb" stroke="#be123c" stroke-width="2.4" stroke-linejoin="round"/>
+        <polygon points="22,52 74,45 62,28 22,42" fill="#fff" stroke="#be123c" stroke-width="2.4" stroke-linejoin="round"/>
+        <line x1="23" y1="60" x2="73" y2="56" stroke="${c}" stroke-width="4"/>
+        <circle cx="46" cy="32" r="6" fill="#e11d48"/><path d="M46 26l3-4" stroke="#16a34a" stroke-width="2" stroke-linecap="round"/>
+      </svg>`,
+      milk_bottle: `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
+        <circle cx="48" cy="50" r="38" fill="#eff6ff"/>
+        <path d="M38 24h20l4 14v38c0 4-3 6-14 6s-14-2-14-6V38z" fill="#ffffff" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round"/>
+        <rect x="36" y="18" width="24" height="7" rx="3" fill="${c}" stroke="#1d4ed8" stroke-width="2"/>
+        <rect x="34" y="47" width="28" height="18" fill="#dbeafe"/>
+        <text x="48" y="60" text-anchor="middle" font-size="10" font-weight="900" fill="#1e40af">MILK</text>
+      </svg>`
+    };
+    return map[presetId] || map.bubble_tea;
+  }
+
+  window.D1KioskSvg = {
+    PRESETS: KIOSK_SVG_PRESETS,
+    renderPresetSvg: renderKioskPresetSvg
+  };
 
   const DEFAULT_SPED_PREFS = {
     easyMode: false,     // 쉬운 말 모드 (짧고 구체적인 지시문)
@@ -552,6 +749,193 @@
     return clean;
   }
 
+  const kioskMenuListeners = new Set();
+  function loadKioskMenuConfigLocal() {
+    try {
+      const raw = localStorage.getItem(KIOSK_CUSTOM_MENU_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      return {
+        overrides: obj && obj.overrides && typeof obj.overrides === "object" ? obj.overrides : {},
+        added: Array.isArray(obj && obj.added) ? obj.added : []
+      };
+    } catch {
+      return { overrides: {}, added: [] };
+    }
+  }
+  function onKioskMenuChange(fn) {
+    kioskMenuListeners.add(fn);
+    return () => kioskMenuListeners.delete(fn);
+  }
+  function notifyKioskMenuChange() {
+    const cfg = loadKioskMenuConfigLocal();
+    kioskMenuListeners.forEach((fn) => {
+      try { fn(cfg); } catch {}
+    });
+  }
+  async function saveKioskMenuConfig(cfg) {
+    const clean = {
+      overrides: cfg && cfg.overrides && typeof cfg.overrides === "object" ? cfg.overrides : {},
+      added: Array.isArray(cfg && cfg.added) ? cfg.added : []
+    };
+    try { localStorage.setItem(KIOSK_CUSTOM_MENU_KEY, JSON.stringify(clean)); } catch {}
+    notifyKioskMenuChange();
+    const res = await apiFetch("/api/kv", {
+      method: "POST",
+      body: JSON.stringify({ key: KIOSK_CUSTOM_MENU_KEY, value: clean })
+    });
+    return { ok: Boolean(res && res.ok), config: clean };
+  }
+
+  function loadGoogleCseConfigLocal() {
+    try {
+      const raw = localStorage.getItem(GOOGLE_CSE_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      return { apiKey: String(obj.apiKey || ""), cx: String(obj.cx || "") };
+    } catch { return { apiKey: "", cx: "" }; }
+  }
+  async function saveGoogleCseConfig(apiKey, cx) {
+    const clean = { apiKey: String(apiKey || "").trim(), cx: String(cx || "").trim() };
+    try { localStorage.setItem(GOOGLE_CSE_KEY, JSON.stringify(clean)); } catch {}
+    await apiFetch("/api/kv", {
+      method: "POST",
+      body: JSON.stringify({ key: GOOGLE_CSE_KEY, value: clean })
+    });
+    return clean;
+  }
+
+  async function compressImageToMinimalWebp(source, startMaxDim = 156) {
+    const loadImg = (src) => new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("이미지를 불러오지 못했어요."));
+      img.src = src;
+    });
+
+    let objectUrl = null;
+    let imgEl = null;
+    try {
+      if (typeof File !== "undefined" && (source instanceof File || source instanceof Blob)) {
+        objectUrl = URL.createObjectURL(source);
+        imgEl = await loadImg(objectUrl);
+      } else {
+        const urlStr = String(source || "").trim();
+        if (!urlStr) throw new Error("이미지 주소가 비어 있습니다.");
+        // 우선 Worker 이미지 프록시(CORS 우회) 시도 후 실패 시 직접 로드
+        const proxyUrl = getApiBase() + "/api/image-proxy?url=" + encodeURIComponent(urlStr);
+        try {
+          imgEl = await loadImg(proxyUrl);
+        } catch (_) {
+          imgEl = await loadImg(urlStr);
+        }
+      }
+
+      let maxDim = startMaxDim;
+      let bestUrl = "";
+      for (const quality of [0.64, 0.48, 0.34, 0.24]) {
+        const ratio = Math.min(1, maxDim / Math.max(imgEl.naturalWidth || maxDim, imgEl.naturalHeight || maxDim));
+        const w = Math.max(32, Math.round((imgEl.naturalWidth || maxDim) * ratio));
+        const h = Math.max(32, Math.round((imgEl.naturalHeight || maxDim) * ratio));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(imgEl, 0, 0, w, h);
+        let dataUrl = canvas.toDataURL("image/webp", quality);
+        if (!dataUrl.startsWith("data:image/webp")) {
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        bestUrl = dataUrl;
+        if (dataUrl.length <= 13500) break; // ~10KB 이하 목표
+        maxDim = Math.max(96, Math.round(maxDim * 0.82));
+      }
+
+      const bytes = Math.round((bestUrl.length * 3) / 4);
+      const mime = (bestUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);/) || [])[1] || "image/webp";
+      return { dataUrl: bestUrl, bytes, mime };
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  async function saveMenuImageToD1(dataUrl) {
+    const id = "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    const res = await apiFetch("/api/menu-images", {
+      method: "POST",
+      body: JSON.stringify({ id, data_url: dataUrl })
+    });
+    if (res && res.ok) {
+      return {
+        ok: true,
+        imageId: res.id || id,
+        imageUrl: getApiBase() + "/api/menu-images?id=" + encodeURIComponent(res.id || id) + "&raw=1",
+        dataUrl,
+        bytes: res.bytes || Math.round((dataUrl.length * 3) / 4),
+        storedIn: "d1-table"
+      };
+    }
+    return {
+      ok: true,
+      imageId: "",
+      imageUrl: "",
+      dataUrl,
+      bytes: Math.round((dataUrl.length * 3) / 4),
+      storedIn: "d1-kv"
+    };
+  }
+
+  async function searchGoogleImages(query) {
+    const q = String(query || "").trim();
+    if (!q) return { ok: false, error: "검색어를 입력해 주세요." };
+    const cse = loadGoogleCseConfigLocal();
+    const qs = new URLSearchParams({ q });
+    if (cse.apiKey) qs.set("key", cse.apiKey);
+    if (cse.cx) qs.set("cx", cse.cx);
+
+    try {
+      const base = getApiBase();
+      const resp = await fetch(base + "/api/image-search?" + qs.toString());
+      if (resp.status !== 404) {
+        const data = await resp.json().catch(() => null);
+        if (data) return data;
+      }
+    } catch (_) {}
+
+    // Worker 미배포 시 브라우저에서 직접 Google Custom Search JSON API 호출
+    if (!cse.apiKey || !cse.cx) {
+      return {
+        ok: false,
+        needs_config: true,
+        error: "Google Custom Search API Key와 검색엔진 ID(CX)를 먼저 입력해 주세요."
+      };
+    }
+    try {
+      const gUrl = new URL("https://www.googleapis.com/customsearch/v1");
+      gUrl.searchParams.set("key", cse.apiKey);
+      gUrl.searchParams.set("cx", cse.cx);
+      gUrl.searchParams.set("q", q);
+      gUrl.searchParams.set("searchType", "image");
+      gUrl.searchParams.set("num", "8");
+      gUrl.searchParams.set("safe", "active");
+      const gRes = await fetch(gUrl.toString());
+      const gJson = await gRes.json().catch(() => ({}));
+      if (!gRes.ok) {
+        return { ok: false, error: (gJson.error && gJson.error.message) || `HTTP ${gRes.status}` };
+      }
+      const items = (gJson.items || []).map((it) => ({
+        title: it.title || "",
+        link: it.link || "",
+        thumbnail: (it.image && it.image.thumbnailLink) || it.link || "",
+        width: it.image ? it.image.width : 0,
+        height: it.image ? it.image.height : 0
+      }));
+      return { ok: true, items };
+    } catch (e) {
+      return { ok: false, error: e && e.message ? e.message : "구글 이미지 검색 실패" };
+    }
+  }
+
   async function syncCustomContentFromD1() {
     try {
       const w = await apiFetch("/api/kv?key=" + encodeURIComponent(SAFE_MOVER_CUSTOM_KEY), { method: "GET" });
@@ -565,6 +949,21 @@
         if (parsed && typeof parsed === "object") {
           localStorage.setItem(STEPMATH_CUSTOM_KEY, JSON.stringify(parsed));
           if (typeof window.applyCurriculumToApp === "function") window.applyCurriculumToApp();
+        }
+      }
+      const k = await apiFetch("/api/kv?key=" + encodeURIComponent(KIOSK_CUSTOM_MENU_KEY), { method: "GET" });
+      if (k && k.found && k.item && k.item.v) {
+        const parsed = typeof k.item.v === "string" ? JSON.parse(k.item.v) : k.item.v;
+        if (parsed && typeof parsed === "object") {
+          localStorage.setItem(KIOSK_CUSTOM_MENU_KEY, JSON.stringify(parsed));
+          notifyKioskMenuChange();
+        }
+      }
+      const g = await apiFetch("/api/kv?key=" + encodeURIComponent(GOOGLE_CSE_KEY), { method: "GET" });
+      if (g && g.found && g.item && g.item.v) {
+        const parsed = typeof g.item.v === "string" ? JSON.parse(g.item.v) : g.item.v;
+        if (parsed && typeof parsed === "object") {
+          localStorage.setItem(GOOGLE_CSE_KEY, JSON.stringify(parsed));
         }
       }
     } catch (_) {}
@@ -802,6 +1201,91 @@
               </div>
               <div class="d1-msg" id="d1CustomMsg"></div>
             </div>
+
+            <div class="d1-t-section" id="d1KioskEditorSection">
+              <h3>5. ☕ 마음카페 키오스크 메뉴 · 가격 관리 (SVG · 구글 이미지 검색 → 초저용량 D1 저장)</h3>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px">
+                <div style="background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:12px">
+                  <div style="font-weight:800;font-size:13.5px;color:#0f172a;margin-bottom:8px">➕ 새 메뉴 추가하기</div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <input type="text" id="d1KmName" class="d1-input" placeholder="메뉴 이름 (예: 흑당 버블티)" style="flex:1.4;min-width:130px" />
+                    <input type="number" id="d1KmPrice" class="d1-input" placeholder="가격(원)" min="100" step="100" value="4500" style="width:105px" />
+                  </div>
+                  <div class="d1-class-row" style="margin-bottom:6px">
+                    <select id="d1KmCat" class="d1-input" style="flex:1">
+                      <option value="coffee">☕ 에스프레소 커피</option>
+                      <option value="latte_tea">🥛 라떼 · 전통차</option>
+                      <option value="ade_smoothie">🫧 에이드 · 스무디</option>
+                      <option value="bakery">🥐 베이커리 · 디저트</option>
+                    </select>
+                    <select id="d1KmTemp" class="d1-input">
+                      <option value="ICE">ICE</option>
+                      <option value="HOT">HOT</option>
+                      <option value="BAKERY">빵·디저트</option>
+                    </select>
+                    <input type="color" id="d1KmColor" value="#a16207" title="메뉴 대표 색상" style="width:38px;height:34px;border:1px solid #cbd5e1;border-radius:8px;padding:2px;cursor:pointer" />
+                  </div>
+                  <div class="d1-class-row" style="margin-bottom:8px">
+                    <input type="text" id="d1KmDesc" class="d1-input" placeholder="설명 (예: 달콤하고 쫀득한 버블티)" style="width:100%" />
+                  </div>
+
+                  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px;margin-bottom:8px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+                      <span style="font-size:12px;font-weight:800;color:#334155">🎨 그림 방식 선택:</span>
+                      <div style="display:flex;gap:5px">
+                        <button type="button" class="d1-chip active" id="d1KmTabSvg">✨ 다양한 SVG (18종)</button>
+                        <button type="button" class="d1-chip" id="d1KmTabImg">🔍 구글 이미지 검색 / 사진</button>
+                      </div>
+                    </div>
+
+                    <div id="d1KmSvgBox">
+                      <div id="d1KmPresetGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;max-height:170px;overflow:auto;padding:2px"></div>
+                    </div>
+
+                    <div id="d1KmImgBox" style="display:none">
+                      <div class="d1-class-row" style="margin-bottom:6px">
+                        <input type="text" id="d1KmImgQuery" class="d1-input" placeholder="구글 이미지 검색어 (예: 딸기 케이크)" style="flex:1;min-width:120px" />
+                        <button type="button" class="d1-btn-sm primary" id="d1KmImgSearchBtn">🔍 검색</button>
+                        <button type="button" class="d1-btn-sm" id="d1KmCseToggleBtn" title="Google API 키 설정">⚙️</button>
+                      </div>
+                      <div id="d1KmCseConfigBox" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:7px;margin-bottom:6px">
+                        <div style="font-size:11.5px;color:#1e3a8a;font-weight:700;margin-bottom:4px">Google Custom Search API 키 설정 (1회 저장 후 D1 연동)</div>
+                        <div class="d1-class-row" style="margin:0;gap:5px">
+                          <input type="text" id="d1KmCseKey" class="d1-input" placeholder="Google API Key" style="flex:1;min-width:110px;font-size:11.5px" />
+                          <input type="text" id="d1KmCseCx" class="d1-input" placeholder="Search Engine ID (CX)" style="flex:1;min-width:110px;font-size:11.5px" />
+                          <button type="button" class="d1-btn-sm primary" id="d1KmCseSaveBtn">저장</button>
+                        </div>
+                      </div>
+                      <div class="d1-class-row" style="margin-bottom:6px;justify-content:space-between">
+                        <label class="d1-btn-sm" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer">
+                          📁 내 사진 올리기 (자동 압축)
+                          <input type="file" id="d1KmFileInput" accept="image/*" style="display:none" />
+                        </label>
+                        <button type="button" class="d1-btn-sm" id="d1KmClearImgBtn">이미지 지우기</button>
+                      </div>
+                      <div id="d1KmImgResults" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:145px;overflow:auto"></div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px dashed #cbd5e1">
+                      <div id="d1KmPreviewBox" style="width:60px;height:60px;border-radius:12px;border:1.5px solid #cbd5e1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0"></div>
+                      <div id="d1KmPreviewMeta" style="font-size:11.5px;color:#475569;line-height:1.4">SVG 프리셋이 선택되어 있어요.</div>
+                    </div>
+                  </div>
+
+                  <div class="d1-class-row" style="margin:0">
+                    <button type="button" class="d1-btn-sm primary" id="d1KmAddBtn">🛒 키오스크에 메뉴 추가</button>
+                    <button type="button" class="d1-btn-sm danger" id="d1KmResetAllBtn">기본값 복원</button>
+                  </div>
+                </div>
+
+                <div style="background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:12px;display:flex;flex-direction:column">
+                  <div style="font-weight:800;font-size:13.5px;color:#0f172a;margin-bottom:6px">💰 전체 메뉴 가격 수정 · 숨김/삭제</div>
+                  <div style="font-size:11.5px;color:#64748b;margin-bottom:6px">가격을 바꾼 뒤 [저장]을 누르면 키오스크에 바로 적용됩니다.</div>
+                  <div id="d1KmMenuList" style="flex:1;max-height:360px;overflow:auto;display:flex;flex-direction:column;gap:5px"></div>
+                </div>
+              </div>
+              <div class="d1-msg" id="d1KioskMsg"></div>
+            </div>
           </div>
         </div>
       `;
@@ -872,7 +1356,13 @@
         document.getElementById("d1TeacherAuthBox").style.display = "none";
         document.getElementById("d1TeacherBody").style.display = "block";
         authMsg.textContent = "";
-        refreshTeacherDashboard();
+        await refreshTeacherDashboard();
+        const modalEl = document.getElementById("d1TeacherModal");
+        if (modalEl && modalEl.dataset.pendingFocus === "kiosk") {
+          modalEl.dataset.pendingFocus = "";
+          const sec = document.getElementById("d1KioskEditorSection");
+          if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       } else {
         authMsg.textContent = "PIN 번호가 맞지 않습니다. (기본 PIN: 1234)";
       }
@@ -1038,6 +1528,302 @@
       document.getElementById("d1CustomMsg").textContent = "추가한 수학 공책 자료를 모두 삭제했습니다.";
       renderCustomMathList();
     });
+
+    // 5. 마음카페 키오스크 메뉴 · 가격 관리 이벤트
+    let selectedPreset = KIOSK_SVG_PRESETS[0].id;
+    let selectedImgMode = "svg"; // 'svg' | 'img'
+    let pendingCompressedImg = null; // { dataUrl, bytes, mime }
+
+    const updateKmPreview = () => {
+      const box = document.getElementById("d1KmPreviewBox");
+      const meta = document.getElementById("d1KmPreviewMeta");
+      const color = document.getElementById("d1KmColor").value || "#f97316";
+      if (!box || !meta) return;
+      if (selectedImgMode === "img" && pendingCompressedImg && pendingCompressedImg.dataUrl) {
+        box.innerHTML = `<img src="${pendingCompressedImg.dataUrl}" alt="메뉴 미리보기" style="width:100%;height:100%;object-fit:cover" />`;
+        const kb = (pendingCompressedImg.bytes / 1024).toFixed(1);
+        meta.innerHTML = `✅ <b>초저용량 압축 이미지 준비됨</b><br>용량: <b>${kb} KB</b> (${pendingCompressedImg.mime}) → D1 저장`;
+      } else {
+        const pInfo = KIOSK_SVG_PRESETS.find((p) => p.id === selectedPreset) || KIOSK_SVG_PRESETS[0];
+        box.innerHTML = renderKioskPresetSvg(selectedPreset, color, 54);
+        meta.innerHTML = `✨ <b>SVG 아이콘: ${esc(pInfo.label)}</b><br>용량 0KB 벡터 그래픽 · 색상 변경 가능`;
+      }
+    };
+
+    const renderPresetGrid = () => {
+      const grid = document.getElementById("d1KmPresetGrid");
+      if (!grid) return;
+      const color = document.getElementById("d1KmColor").value || "#f97316";
+      grid.innerHTML = KIOSK_SVG_PRESETS.map((p) => `
+        <button type="button" data-km-preset="${p.id}" style="border:2px solid ${selectedPreset === p.id ? "#2563eb" : "#e2e8f0"};background:${selectedPreset === p.id ? "#eff6ff" : "#fff"};border-radius:10px;padding:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px">
+          ${renderKioskPresetSvg(p.id, selectedPreset === p.id ? color : p.defaultColor, 36)}
+          <span style="font-size:10px;font-weight:700;color:#334155;line-height:1.1">${esc(p.label)}</span>
+        </button>
+      `).join("");
+      grid.querySelectorAll("[data-km-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedPreset = btn.dataset.kmPreset;
+          const pInfo = KIOSK_SVG_PRESETS.find((x) => x.id === selectedPreset);
+          if (pInfo && pInfo.defaultColor) {
+            document.getElementById("d1KmColor").value = pInfo.defaultColor;
+          }
+          selectedImgMode = "svg";
+          renderPresetGrid();
+          updateKmPreview();
+        });
+      });
+    };
+
+    renderPresetGrid();
+    updateKmPreview();
+
+    document.getElementById("d1KmColor").addEventListener("input", () => {
+      renderPresetGrid();
+      updateKmPreview();
+    });
+    document.getElementById("d1KmTabSvg").addEventListener("click", () => {
+      selectedImgMode = "svg";
+      document.getElementById("d1KmTabSvg").classList.add("active");
+      document.getElementById("d1KmTabImg").classList.remove("active");
+      document.getElementById("d1KmSvgBox").style.display = "block";
+      document.getElementById("d1KmImgBox").style.display = "none";
+      updateKmPreview();
+    });
+    document.getElementById("d1KmTabImg").addEventListener("click", () => {
+      selectedImgMode = "img";
+      document.getElementById("d1KmTabImg").classList.add("active");
+      document.getElementById("d1KmTabSvg").classList.remove("active");
+      document.getElementById("d1KmSvgBox").style.display = "none";
+      document.getElementById("d1KmImgBox").style.display = "block";
+      const cse = loadGoogleCseConfigLocal();
+      document.getElementById("d1KmCseKey").value = cse.apiKey || "";
+      document.getElementById("d1KmCseCx").value = cse.cx || "";
+      updateKmPreview();
+    });
+    document.getElementById("d1KmCseToggleBtn").addEventListener("click", () => {
+      const box = document.getElementById("d1KmCseConfigBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    });
+    document.getElementById("d1KmCseSaveBtn").addEventListener("click", async () => {
+      const k = document.getElementById("d1KmCseKey").value;
+      const cx = document.getElementById("d1KmCseCx").value;
+      await saveGoogleCseConfig(k, cx);
+      document.getElementById("d1KioskMsg").textContent = "Google 이미지 검색 API 키가 D1에 저장되었습니다.";
+      document.getElementById("d1KmCseConfigBox").style.display = "none";
+    });
+    document.getElementById("d1KmClearImgBtn").addEventListener("click", () => {
+      pendingCompressedImg = null;
+      selectedImgMode = "svg";
+      document.getElementById("d1KmTabSvg").click();
+      updateKmPreview();
+    });
+    document.getElementById("d1KmFileInput").addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const msgEl = document.getElementById("d1KioskMsg");
+      msgEl.textContent = "이미지를 초저용량 WebP로 압축 중...";
+      try {
+        pendingCompressedImg = await compressImageToMinimalWebp(file);
+        selectedImgMode = "img";
+        updateKmPreview();
+        msgEl.textContent = `압축 완료! (${(pendingCompressedImg.bytes / 1024).toFixed(1)} KB)`;
+      } catch (err) {
+        msgEl.textContent = "이미지 압축 실패: " + (err && err.message ? err.message : "");
+      }
+      e.target.value = "";
+    });
+
+    const runImgSearch = async () => {
+      const q = document.getElementById("d1KmImgQuery").value.trim() || document.getElementById("d1KmName").value.trim();
+      const msgEl = document.getElementById("d1KioskMsg");
+      const resBox = document.getElementById("d1KmImgResults");
+      if (!q) {
+        msgEl.textContent = "검색어를 입력해 주세요.";
+        return;
+      }
+      msgEl.textContent = `"${q}" 구글 이미지 검색 중...`;
+      resBox.innerHTML = "";
+      const res = await searchGoogleImages(q);
+      if (!res || !res.ok) {
+        msgEl.textContent = (res && res.error) || "검색 실패";
+        if (res && res.needs_config) {
+          document.getElementById("d1KmCseConfigBox").style.display = "block";
+        }
+        return;
+      }
+      const items = res.items || [];
+      if (!items.length) {
+        msgEl.textContent = "검색 결과가 없습니다. 다른 검색어를 입력해 보세요.";
+        return;
+      }
+      msgEl.textContent = `검색 결과 ${items.length}개 · 원하는 이미지를 눌러 자동 압축하세요!`;
+      resBox.innerHTML = items.map((it, idx) => `
+        <button type="button" data-gimg-idx="${idx}" title="${esc(it.title)}" style="border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;padding:2px;cursor:pointer;height:66px;overflow:hidden">
+          <img src="${esc(it.thumbnail || it.link)}" alt="${esc(it.title)}" style="width:100%;height:100%;object-fit:cover;border-radius:6px" />
+        </button>
+      `).join("");
+      resBox.querySelectorAll("[data-gimg-idx]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const item = items[Number(btn.dataset.gimgIdx)];
+          if (!item) return;
+          msgEl.textContent = "선택한 이미지를 초저용량 WebP로 압축 중...";
+          try {
+            pendingCompressedImg = await compressImageToMinimalWebp(item.link || item.thumbnail);
+            selectedImgMode = "img";
+            updateKmPreview();
+            msgEl.textContent = `선택 완료! (${(pendingCompressedImg.bytes / 1024).toFixed(1)} KB 초저용량 압축됨)`;
+          } catch (_) {
+            try {
+              pendingCompressedImg = await compressImageToMinimalWebp(item.thumbnail);
+              selectedImgMode = "img";
+              updateKmPreview();
+              msgEl.textContent = `썸네일 압축 완료! (${(pendingCompressedImg.bytes / 1024).toFixed(1)} KB)`;
+            } catch (e2) {
+              msgEl.textContent = "보안 정책으로 이 이미지는 직접 변환할 수 없어요. 다른 이미지를 고르거나 파일로 올려주세요.";
+            }
+          }
+        });
+      });
+    };
+    document.getElementById("d1KmImgSearchBtn").addEventListener("click", runImgSearch);
+    document.getElementById("d1KmImgQuery").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") runImgSearch();
+    });
+
+    document.getElementById("d1KmAddBtn").addEventListener("click", async () => {
+      const name = document.getElementById("d1KmName").value.trim();
+      const price = Math.max(100, Number.parseInt(document.getElementById("d1KmPrice").value, 10) || 0);
+      const category = document.getElementById("d1KmCat").value;
+      const temp = document.getElementById("d1KmTemp").value;
+      const color = document.getElementById("d1KmColor").value || "#f97316";
+      const desc = document.getElementById("d1KmDesc").value.trim() || `${name} 메뉴예요.`;
+      const msgEl = document.getElementById("d1KioskMsg");
+
+      if (!name || price <= 0) {
+        msgEl.textContent = "메뉴 이름과 올바른 가격을 입력해 주세요.";
+        return;
+      }
+
+      let imageId = "";
+      let imageUrl = "";
+      let imageData = "";
+      if (selectedImgMode === "img" && pendingCompressedImg && pendingCompressedImg.dataUrl) {
+        msgEl.textContent = "압축 이미지를 D1 DB에 저장하는 중...";
+        const savedImg = await saveMenuImageToD1(pendingCompressedImg.dataUrl);
+        imageId = savedImg.imageId || "";
+        imageUrl = savedImg.imageUrl || "";
+        imageData = savedImg.dataUrl || "";
+      }
+
+      const cfg = loadKioskMenuConfigLocal();
+      cfg.added.unshift({
+        id: "custom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        name,
+        price,
+        category,
+        temp,
+        color,
+        accent: "#fef3c7",
+        desc,
+        easyDesc: desc,
+        svgPreset: selectedPreset,
+        imageId,
+        imageUrl,
+        imageData
+      });
+      await saveKioskMenuConfig(cfg);
+      document.getElementById("d1KmName").value = "";
+      document.getElementById("d1KmDesc").value = "";
+      pendingCompressedImg = null;
+      updateKmPreview();
+      renderKioskMenuManagerList();
+      msgEl.textContent = `"${name}" (${price.toLocaleString()}원) 메뉴가 D1에 저장되고 키오스크에 즉시 반영되었습니다!`;
+    });
+
+    document.getElementById("d1KmResetAllBtn").addEventListener("click", async () => {
+      if (!confirm("교사가 추가한 메뉴와 가격 변경 사항을 모두 기본값으로 되돌릴까요?")) return;
+      await saveKioskMenuConfig({ overrides: {}, added: [] });
+      renderKioskMenuManagerList();
+      document.getElementById("d1KioskMsg").textContent = "키오스크 메뉴와 가격이 기본값으로 복원되었습니다.";
+    });
+  }
+
+  function renderKioskMenuManagerList() {
+    const el = document.getElementById("d1KmMenuList");
+    if (!el) return;
+    const cfg = loadKioskMenuConfigLocal();
+    const rows = [
+      ...cfg.added.map((m) => ({ ...m, isCustom: true })),
+      ...KIOSK_DEFAULT_CATALOG.map((m) => {
+        const ov = cfg.overrides[m.id] || {};
+        return {
+          ...m,
+          price: ov.price !== undefined ? Number(ov.price) : m.price,
+          hidden: Boolean(ov.hidden),
+          isCustom: false
+        };
+      })
+    ];
+
+    el.innerHTML = rows.map((m) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:${m.isCustom ? "#f0fdf4" : m.hidden ? "#f1f5f9" : "#f8fafc"};border:1px solid ${m.isCustom ? "#86efac" : "#e2e8f0"};border-radius:8px;padding:5px 8px;opacity:${m.hidden ? "0.6" : "1"}">
+        <div style="min-width:0;flex:1">
+          <div style="font-size:12px;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${m.isCustom ? "🆕 " : ""}${esc(m.name)} ${m.hidden ? "(숨김)" : ""}
+          </div>
+        </div>
+        <input type="number" class="d1-input" data-km-price="${esc(m.id)}" value="${Number(m.price || 0)}" min="100" step="100" style="width:82px;padding:3px 6px;font-size:12px" />
+        <button type="button" class="d1-btn-sm primary" data-km-save="${esc(m.id)}" data-custom="${m.isCustom ? "1" : "0"}" style="padding:3px 7px;font-size:11px">저장</button>
+        ${m.isCustom
+          ? `<button type="button" class="d1-btn-sm danger" data-km-del="${esc(m.id)}" style="padding:3px 7px;font-size:11px">삭제</button>`
+          : `<button type="button" class="d1-btn-sm" data-km-toggle="${esc(m.id)}" style="padding:3px 7px;font-size:11px">${m.hidden ? "보이기" : "숨김"}</button>`}
+      </div>
+    `).join("");
+
+    el.querySelectorAll("[data-km-save]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.kmSave;
+        const isCustom = btn.dataset.custom === "1";
+        const inp = el.querySelector(`[data-km-price="${CSS.escape(id)}"]`);
+        const newPrice = Math.max(100, Number.parseInt(inp && inp.value, 10) || 0);
+        const cur = loadKioskMenuConfigLocal();
+        if (isCustom) {
+          const item = cur.added.find((x) => x.id === id);
+          if (item) item.price = newPrice;
+        } else {
+          cur.overrides[id] = { ...(cur.overrides[id] || {}), price: newPrice };
+        }
+        await saveKioskMenuConfig(cur);
+        document.getElementById("d1KioskMsg").textContent = `가격(${newPrice.toLocaleString()}원)이 저장·적용되었습니다.`;
+        renderKioskMenuManagerList();
+      });
+    });
+
+    el.querySelectorAll("[data-km-toggle]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.kmToggle;
+        const cur = loadKioskMenuConfigLocal();
+        const prevHidden = Boolean(cur.overrides[id] && cur.overrides[id].hidden);
+        cur.overrides[id] = { ...(cur.overrides[id] || {}), hidden: !prevHidden };
+        await saveKioskMenuConfig(cur);
+        renderKioskMenuManagerList();
+      });
+    });
+
+    el.querySelectorAll("[data-km-del]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.kmDel;
+        const cur = loadKioskMenuConfigLocal();
+        const target = cur.added.find((x) => x.id === id);
+        cur.added = cur.added.filter((x) => x.id !== id);
+        if (target && target.imageId) {
+          apiFetch("/api/menu-images?id=" + encodeURIComponent(target.imageId), { method: "DELETE" });
+        }
+        await saveKioskMenuConfig(cur);
+        renderKioskMenuManagerList();
+        document.getElementById("d1KioskMsg").textContent = "추가 메뉴를 삭제했습니다.";
+      });
+    });
   }
 
   function renderCustomWordsList() {
@@ -1144,6 +1930,7 @@
     await loadTeacherRecords();
     renderCustomWordsList();
     renderCustomMathList();
+    renderKioskMenuManagerList();
   }
 
   async function loadTeacherRecords() {
@@ -1325,17 +2112,24 @@
     modal.classList.add("open");
   }
 
-  function openTeacherModal() {
+  function openTeacherModal(focusSection = "") {
     ensureModals();
     const modal = document.getElementById("d1TeacherModal");
     modal.classList.add("open");
+    const focusTarget = () => {
+      if (focusSection === "kiosk") {
+        const sec = document.getElementById("d1KioskEditorSection");
+        if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
     if (teacherUnlocked) {
       document.getElementById("d1TeacherAuthBox").style.display = "none";
       document.getElementById("d1TeacherBody").style.display = "block";
-      refreshTeacherDashboard();
+      refreshTeacherDashboard().then(focusTarget);
     } else {
       document.getElementById("d1TeacherPinInput").value = "";
       document.getElementById("d1TeacherPinInput").focus();
+      modal.dataset.pendingFocus = focusSection || "";
     }
   }
 
@@ -1671,6 +2465,11 @@
     deleteRecord,
     deleteRecordsBulk,
     setKV,
-    getKV
+    getKV,
+    getKioskMenuConfig: loadKioskMenuConfigLocal,
+    saveKioskMenuConfig,
+    onKioskMenuChange,
+    renderKioskPresetSvg,
+    KIOSK_SVG_PRESETS
   };
 })();

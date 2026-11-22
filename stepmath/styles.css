@@ -653,3 +653,71 @@ html, body {
     font-size: 15px;
   }
 }
+
+/* ============================================================
+   frontend-design + ui-ux-pro-max: Toybox Arcade HUD Polish
+   ============================================================ */
+.map-hero h1, .result-card h2, .big-play-btn, .wc-title, .res-btn {
+  font-family: 'Jua', 'Fredoka', 'Pretendard', 'Malgun Gothic', sans-serif;
+}
+#hudBar {
+  border-bottom: 3px solid rgba(56, 189, 248, 0.28);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.32);
+}
+.hud-btn {
+  border-width: 2px;
+  box-shadow: 0 3px 0 rgba(15, 23, 42, 0.75);
+}
+.hud-btn:active {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.75);
+}
+.hud-btn.map-btn {
+  box-shadow: 0 3px 0 #312e81, 0 5px 12px rgba(79, 70, 229, 0.35);
+}
+.big-play-btn {
+  border: 3px solid #fef08a;
+  box-shadow: 0 6px 0 #14532d, 0 12px 26px rgba(34, 197, 94, 0.48);
+}
+.big-play-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #14532d;
+}
+.world-card {
+  border-width: 2.5px;
+  box-shadow: 0 5px 0 rgba(15, 23, 42, 0.8), 0 10px 20px rgba(0, 0, 0, 0.28);
+}
+.world-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 0 #0284c7, 0 14px 28px rgba(56, 189, 248, 0.32);
+}
+.world-card.current {
+  box-shadow: 0 6px 0 #ca8a04, 0 0 0 3px rgba(250, 204, 21, 0.35);
+}
+.pad-btn {
+  box-shadow: 0 5px 0 rgba(15, 23, 42, 0.7), 0 10px 22px rgba(0, 0, 0, 0.35);
+}
+.pad-btn.action {
+  box-shadow: 0 5px 0 #991b1b, 0 10px 22px rgba(239, 68, 68, 0.4);
+}
+.pad-btn:active, .pad-btn.active {
+  transform: translateY(3px) scale(0.95);
+}
+.result-card {
+  border-width: 3.5px;
+  box-shadow: 0 8px 0 #ca8a04, 0 26px 64px rgba(0, 0, 0, 0.58);
+}
+.res-btn {
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+.res-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

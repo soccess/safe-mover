@@ -412,3 +412,48 @@ p.sub {
 .d1-item b { color: #FDBA74; }
 
 .portal-card p, .portal-card h2, .card-desc { word-break: keep-all; }
+
+/* ============================================================
+   frontend-design + ui-ux-pro-max: Claymorphic Arcade Polish
+   ============================================================ */
+h1, .card h2, .cat-badge {
+  font-family: 'Jua', 'Fredoka', 'Pretendard', 'Malgun Gothic', sans-serif;
+}
+h1 {
+  font-size: clamp(32px, 4.4vw, 42px);
+  letter-spacing: -0.2px;
+  text-shadow: 0 4px 18px rgba(56, 189, 248, 0.25);
+}
+.card {
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 0 rgba(15, 23, 42, 0.28), 0 20px 44px rgba(0, 0, 0, 0.42), inset 0 2px 0 rgba(255, 255, 255, 0.95);
+}
+.card:hover {
+  transform: translateY(-9px) scale(1.025);
+  box-shadow: 0 12px 0 rgba(250, 204, 21, 0.55), 0 26px 56px rgba(0, 0, 0, 0.5), 0 0 36px rgba(253, 224, 71, 0.35);
+}
+.card:active {
+  transform: translateY(-2px) scale(0.99);
+}
+.card .go {
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 15px;
+  font-family: 'Jua', 'Pretendard', sans-serif;
+  font-size: 15px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22), 0 6px 14px rgba(0, 200, 83, 0.35);
+}
+.d1-btn {
+  border-radius: 12px;
+  box-shadow: 0 3px 0 rgba(194, 65, 12, 0.45);
+}
+.d1-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(194, 65, 12, 0.45);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

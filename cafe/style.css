@@ -1159,3 +1159,53 @@ html, body {
   .top-bar { flex-wrap: wrap; }
   .pmode-btn { font-size: 10.5px; padding: 3px 7px; }
 }
+
+/* ============================================================
+   frontend-design + ui-ux-pro-max: Claymorphic 3D HUD Polish
+   ============================================================ */
+.recipe-picker-btn, .complete-card h2, .primary-action-btn, .kod-title strong {
+  font-family: "Jua", "Fredoka", "Pretendard", "Malgun Gothic", sans-serif;
+}
+.top-bar {
+  border: 2px solid rgba(214, 198, 178, 0.95);
+  box-shadow: 0 4px 0 rgba(168, 139, 115, 0.35), 0 12px 28px rgba(68, 46, 26, 0.16);
+}
+.pill-btn, .recipe-picker-btn, .kod-btn {
+  border-width: 2px;
+  box-shadow: 0 3px 0 rgba(180, 155, 128, 0.55);
+}
+.pill-btn:active, .recipe-picker-btn:active, .kod-btn:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: 0 1px 0 rgba(180, 155, 128, 0.55);
+}
+.pill-btn.active {
+  box-shadow: 0 3px 0 #2e5239;
+}
+.pmode-btn.active {
+  box-shadow: 0 2px 0 #2e5239;
+}
+.action-btn, .tool-btn {
+  box-shadow: 0 4px 0 rgba(168, 139, 115, 0.55), 0 6px 14px rgba(44, 36, 30, 0.1);
+}
+.action-btn:active:not(:disabled), .tool-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(168, 139, 115, 0.55);
+}
+.kod-make-btn, .primary-action-btn {
+  box-shadow: 0 4px 0 #23422d, 0 8px 18px rgba(72, 117, 85, 0.3);
+}
+.kod-make-btn:active, .primary-action-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #23422d;
+}
+.complete-card {
+  border-width: 3.5px;
+  box-shadow: 0 8px 0 #2e5239, 0 24px 56px rgba(0, 0, 0, 0.28);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

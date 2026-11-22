@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>마음카페 키오스크 - 주문 내역 · 메뉴 관리</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Jua&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #fff8ee;
+      --card: #ffffff;
+      --ink: #1f1714;
+      --muted: #6b584b;
+      --primary: #10b981;
+      --primary-lip: #047857;
+      --accent: #f97316;
+      --accent-lip: #c2410c;
+      --danger: #e11d48;
+      --danger-lip: #9f1239;
+      --indigo: #4f46e5;
+      --indigo-lip: #312e81;
+      --border: #edd7bc;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(253, 224, 71, 0.35) 0%, transparent 40%),
+        radial-gradient(circle at 88% 15%, rgba(56, 189, 248, 0.25) 0%, transparent 38%),
+        linear-gradient(160deg, #fffbeb 0%, #fff7ed 55%, #ecfdf5 100%);
+      color: var(--ink);
+      padding: 18px 16px 40px;
+    }
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .topbar {
+      background: rgba(255, 255, 255, 0.96);
+      border: 3px solid #fbbf24;
+      border-radius: 22px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      box-shadow: 0 6px 0 #d97706, 0 14px 30px rgba(180, 83, 9, 0.14);
+    }
+    .title-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .title-box h1 {
+      margin: 0;
+      font-family: "Jua", "Fredoka", "Pretendard", sans-serif;
+      font-size: 24px;
+      color: #064e3b;
+    }
+    .count-pill {
+      background: linear-gradient(135deg, #fde047, #f59e0b);
+      color: #78350f;
+      font-family: "Jua", sans-serif;
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 2px solid #fff;
+      box-shadow: 0 3px 0 #b45309;
+    }
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border: 2px solid #e7d3bc;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 8px 14px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 3px 0 #d6bfa6;
+      transition: transform 0.12s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d6bfa6; }
+    .btn.primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-color: #047857;
+      color: #fff;
+      box-shadow: 0 3px 0 #064e3b;
+    }
+    .btn.danger {
+      background: linear-gradient(135deg, #fb7185, #e11d48);
+      border-color: #be123c;
+      color: #fff;
+      box-shadow: 0 3px 0 var(--danger-lip);
+    }
+    .btn.indigo {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-color: #3730a3;
+      color: #fff;
+      box-shadow: 0 3px 0 var(--indigo-lip);
+    }
+    .btn.sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      border: 2.5px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-family: "Jua", "Pretendard", sans-serif;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #dec4a4;
+      transition: transform 0.14s ease;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-color: #c2410c;
+      color: #fff;
+      box-shadow: 0 4px 0 #9a3412;
+    }
+    .status-line {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .panel { display: none; flex-direction: column; gap: 12px; }
+    .panel.active { display: flex; }
+
+    .order-card {
+      background: var(--card);
+      border: 2.5px solid var(--border);
+      border-radius: 22px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 5px 0 #e2c5a2, 0 10px 24px rgba(120, 53, 15, 0.08);
+    }
+    .order-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-bottom: 1.5px dashed #ecd6bc;
+      padding-bottom: 9px;
+    }
+    .order-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .order-num {
+      background: #1e293b;
+      color: #fde047;
+      font-family: "Jua", sans-serif;
+      font-size: 15px;
+      padding: 3px 12px;
+      border-radius: 999px;
+    }
+    .order-total {
+      font-family: "Jua", sans-serif;
+      font-size: 19px;
+      color: #c2410c;
+    }
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #fffaf2;
+      border: 1.5px solid #f1dcc3;
+      border-radius: 14px;
+      padding: 9px 12px;
+    }
+    .item-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 180px;
+      flex: 1;
+    }
+    .item-name {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    .item-sub {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .edit-inline {
+      width: 100%;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px dashed #e2c5a2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .inp {
+      border: 2px solid #e2c5a2;
+      border-radius: 10px;
+      padding: 5px 9px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      background: #fff;
+      color: var(--ink);
+    }
+    .empty-box {
+      background: rgba(255, 255, 255, 0.92);
+      border: 2.5px dashed #e2c5a2;
+      border-radius: 22px;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.6;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 10px;
+    }
+    .menu-manage-card {
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 0 #e2c5a2;
+    }
+    .menu-manage-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .menu-manage-name {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+    .menu-manage-price {
+      font-family: "Jua", sans-serif;
+      font-size: 16px;
+      color: #ea580c;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="title-box">
+        <h1>🧾 키오스크 주문 내역</h1>
+        <span id="orderTotalCount" class="count-pill">총 0건</span>
+      </div>
+      <div class="actions-row">
+        <button type="button" id="btnRefresh" class="btn primary">🔄 새로고침</button>
+        <button type="button" id="btnResetOrders" class="btn danger">🗑️ 주문 전체 초기화</button>
+        <a class="btn" href="./kiosk/index.html">🖥️ 키오스크</a>
+        <a class="btn" href="./index.html">🏠 목록</a>
+      </div>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="orders">🧾 주문 내역 (수정·삭제)</button>
+      <button type="button" class="tab-btn" data-tab="menus">☕ 키오스크 메뉴 (수정·삭제)</button>
+    </div>
+
+    <div class="status-line">
+      <span id="syncStatusText">주문 내역을 불러오고 있어요...</span>
+      <span>키오스크에서 결제된 주문이 실시간으로 표시됩니다.</span>
+    </div>
+
+    <!-- 패널 1: 키오스크 주문 내역만 표시 + 각 메뉴 수정/삭제 + 초기화 -->
+    <section id="ordersPanel" class="panel active" aria-label="키오스크 주문 내역">
+      <div id="ordersContainer"></div>
+    </section>
+
+    <!-- 패널 2: 키오스크 메뉴 수정/삭제 + 초기화 -->
+    <section id="menusPanel" class="panel" aria-label="키오스크 메뉴 수정 및 삭제">
+      <div class="actions-row" style="justify-content:flex-end">
+        <button type="button" id="btnResetMenus" class="btn danger sm">↺ 메뉴 전체 기본값 초기화</button>
+      </div>
+      <div id="menusContainer" class="menu-grid"></div>
+    </section>
+  </div>
+
+  <script>window.D1_HIDE_FLOATING = true;</script>
+  <script src="./assets/d1_client.js"></script>
+  <script>
+    (() => {
+      const KIOSK_ORDERS_KEY = "safe_mover.kiosk.orders.v1";
+      const PUBLIC_ORDERS_KEY = "safe_mover.kiosk.orders.public.v1";
+      const DEFAULT_MENUS = [
+        { id: "hot_americano", name: "따뜻한 아메리카노", price: 3000, category: "coffee" },
+        { id: "iced_americano", name: "아이스 아메리카노", price: 3500, category: "coffee" },
+        { id: "hot_latte", name: "따뜻한 카페라떼", price: 4000, category: "coffee" },
+        { id: "iced_latte", name: "아이스 카페라떼", price: 4500, category: "coffee" },
+        { id: "iced_vanilla_latte", name: "아이스 바닐라라떼", price: 4800, category: "coffee" },
+        { id: "iced_caramel_macchiato", name: "카라멜 마끼아또", price: 5200, category: "coffee" },
+        { id: "iced_cafe_mocha", name: "아이스 카페모카", price: 5500, category: "coffee" },
+        { id: "hot_choco", name: "따뜻한 핫초코", price: 3800, category: "latte_tea" },
+        { id: "hot_tea", name: "따뜻한 녹차", price: 3000, category: "latte_tea" },
+        { id: "hot_yuja_tea", name: "따뜻한 유자차", price: 3500, category: "latte_tea" },
+        { id: "iced_matcha_latte", name: "아이스 말차라떼", price: 4500, category: "latte_tea" },
+        { id: "strawberry_latte", name: "딸기 라떼", price: 4800, category: "latte_tea" },
+        { id: "iced_lemonade", name: "아이스 레몬에이드", price: 4200, category: "ade_smoothie" },
+        { id: "grapefruit_ade", name: "아이스 자몽에이드", price: 4500, category: "ade_smoothie" },
+        { id: "strawberry_smoothie", name: "딸기 스무디", price: 5300, category: "ade_smoothie" },
+        { id: "mango_smoothie", name: "망고 스무디", price: 5300, category: "ade_smoothie" },
+        { id: "choco_frappe", name: "초코 휘핑 프라페", price: 5800, category: "ade_smoothie" },
+        { id: "green_tea_frappe", name: "말차 휘핑 프라페", price: 5800, category: "ade_smoothie" },
+        { id: "croissant", name: "버터 크루아상", price: 3200, category: "bakery" },
+        { id: "choco_donut", name: "초코 글레이즈 도넛", price: 2800, category: "bakery" },
+        { id: "choco_cake", name: "달콤 초코 브라우니", price: 4500, category: "bakery" },
+        { id: "cheese_muffin", name: "촉촉 치즈 머핀", price: 3000, category: "bakery" }
+      ];
+
+      let orders = [];
+      let editingOrderItem = null; // { orderId, idx }
+      let editingMenuId = null;
+
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => String(s || "").replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[ch]));
+      const won = (n) => `${Number(n || 0).toLocaleString("ko-KR")}원`;
+
+      function apiBase() {
+        return (window.D1Bridge && window.D1Bridge.getApiBase)
+          ? window.D1Bridge.getApiBase()
+          : "https://safe-mover-d1-api.school-guardian.workers.dev";
+      }
+
+      function loadLocalOrders() {
+        try {
+          const raw = localStorage.getItem(KIOSK_ORDERS_KEY);
+          const arr = raw ? JSON.parse(raw) : [];
+          return Array.isArray(arr) ? arr : [];
+        } catch { return []; }
+      }
+
+      async function saveAllOrders(nextList) {
+        const trimmed = Array.isArray(nextList) ? nextList.slice(0, 30) : [];
+        orders = trimmed;
+        try { localStorage.setItem(KIOSK_ORDERS_KEY, JSON.stringify(trimmed)); } catch {}
+        if (window.D1Bridge && typeof window.D1Bridge.setKV === "function") {
+          window.D1Bridge.setKV(KIOSK_ORDERS_KEY, trimmed);
+        }
+        try {
+          await fetch(apiBase() + "/api/kv", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: PUBLIC_ORDERS_KEY, value: trimmed })
+          });
+        } catch {}
+      }
+
+      async function fetchOrdersFromAllSources() {
+        const local = loadLocalOrders();
+        let remotePublic = null;
+        let remoteScoped = null;
+        try {
+          const r = await fetch(apiBase() + "/api/kv?key=" + encodeURIComponent(PUBLIC_ORDERS_KEY));
+          if (r.ok) {
+            const j = await r.json();
+            if (j && j.found && j.item && j.item.v) {
+              const parsed = typeof j.item.v === "string" ? JSON.parse(j.item.v) : j.item.v;
+              if (Array.isArray(parsed)) remotePublic = parsed;
+            }
+          }
+        } catch {}
+
+        if (window.D1Bridge && typeof window.D1Bridge.getKV === "function") {
+          try {
+            const sc = await window.D1Bridge.getKV(KIOSK_ORDERS_KEY);
+            if (Array.isArray(sc)) remoteScoped = sc;
+          } catch {}
+        }
+
+        // 공개 D1 키가 명시적으로 존재하면 최신 동기화 상태로 반영, 없으면 병합
+        if (Array.isArray(remotePublic)) {
+          orders = remotePublic;
+          try { localStorage.setItem(KIOSK_ORDERS_KEY, JSON.stringify(orders)); } catch {}
+        } else {
+          const map = new Map();
+          for (const o of [...local, ...(remoteScoped || [])]) {
+            if (o && o.id && !map.has(o.id)) map.set(o.id, o);
+          }
+          orders = [...map.values()].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""))).slice(0, 30);
+        }
+
+        $("syncStatusText").textContent = `최근 확인: ${new Date().toLocaleTimeString("ko-KR")}`;
+        renderOrders();
+      }
+
+      function recalcOrderTotal(ord) {
+        ord.totalPrice = (ord.items || []).reduce((acc, it) => acc + (Number(it.unitPrice) || 0) * (Number(it.qty) || 1), 0);
+      }
+
+      function renderOrders() {
+        $("orderTotalCount").textContent = `총 ${orders.length}건`;
+        const box = $("ordersContainer");
+        if (!orders.length) {
+          box.innerHTML = `<div class="empty-box">아직 키오스크로 주문한 내역이 없습니다.<br>키오스크에서 음료를 주문하면 여기에 바로 표시됩니다.</div>`;
+          return;
+        }
+
+        box.innerHTML = orders.map((ord) => {
+          const dining = ord.diningType === "take_out" ? "🛍️ 포장" : "🍽️ 매장";
+          const timeStr = ord.createdAt ? new Date(ord.createdAt).toLocaleString("ko-KR", { hour12: false }) : "";
+          const itemsHtml = (ord.items || []).map((it, idx) => {
+            const qty = Number(it.qty) || 1;
+            const unitPrice = Number(it.unitPrice) || 0;
+            const isEditing = editingOrderItem && editingOrderItem.orderId === ord.id && editingOrderItem.idx === idx;
+            return `<div class="item-row">
+              <div class="item-main">
+                <div class="item-name">${esc(it.name)} × ${qty}개</div>
+                <div class="item-sub">${esc(it.optionsLabel || "기본")} · 개당 ${won(unitPrice)} · 소계 ${won(unitPrice * qty)}</div>
+              </div>
+              <div class="item-actions">
+                <button type="button" class="btn indigo sm" data-edit-item="${esc(ord.id)}" data-idx="${idx}">✏️ 수정</button>
+                <button type="button" class="btn danger sm" data-del-item="${esc(ord.id)}" data-idx="${idx}">🗑️ 삭제</button>
+              </div>
+              ${isEditing ? `<div class="edit-inline">
+                <input type="text" class="inp" id="editItemName" value="${esc(it.name)}" placeholder="메뉴명" style="flex:1;min-width:120px" />
+                <input type="text" class="inp" id="editItemOpt" value="${esc(it.optionsLabel || "기본")}" placeholder="옵션" style="width:110px" />
+                <input type="number" class="inp" id="editItemQty" value="${qty}" min="1" max="50" style="width:68px" />
+                <input type="number" class="inp" id="editItemPrice" value="${unitPrice}" min="100" step="100" style="width:92px" />
+                <button type="button" class="btn primary sm" id="btnSaveItemEdit">저장</button>
+                <button type="button" class="btn sm" id="btnCancelItemEdit">취소</button>
+              </div>` : ""}
+            </div>`;
+          }).join("");
+
+          return `<article class="order-card">
+            <div class="order-head">
+              <div class="order-meta">
+                <span class="order-num">대기번호 #${esc(ord.orderNumber)}</span>
+                <span>${dining}</span>
+                <span>${esc(ord.methodLabel || "결제완료")}</span>
+                ${timeStr ? `<span>${esc(timeStr)}</span>` : ""}
+              </div>
+              <div class="actions-row">
+                <strong class="order-total">${won(ord.totalPrice)}</strong>
+                <button type="button" class="btn danger sm" data-del-order="${esc(ord.id)}">🗑️ 주문 삭제</button>
+              </div>
+            </div>
+            <div class="item-list">${itemsHtml}</div>
+          </article>`;
+        }).join("");
+
+        box.querySelectorAll("[data-edit-item]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            editingOrderItem = { orderId: btn.dataset.editItem, idx: Number(btn.dataset.idx) };
+            renderOrders();
+          });
+        });
+
+        box.querySelectorAll("[data-del-item]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const ordId = btn.dataset.delItem;
+            const idx = Number(btn.dataset.idx);
+            const next = orders.map((o) => ({ ...o, items: [...(o.items || [])] }));
+            const target = next.find((o) => o.id === ordId);
+            if (!target) return;
+            target.items.splice(idx, 1);
+            const filtered = target.items.length ? next : next.filter((o) => o.id !== ordId);
+            if (target.items.length) recalcOrderTotal(target);
+            editingOrderItem = null;
+            await saveAllOrders(filtered);
+            renderOrders();
+          });
+        });
+
+        box.querySelectorAll("[data-del-order]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const ordId = btn.dataset.delOrder;
+            const filtered = orders.filter((o) => o.id !== ordId);
+            editingOrderItem = null;
+            await saveAllOrders(filtered);
+            renderOrders();
+          });
+        });
+
+        const saveBtn = $("btnSaveItemEdit");
+        if (saveBtn && editingOrderItem) {
+          saveBtn.addEventListener("click", async () => {
+            const next = orders.map((o) => ({ ...o, items: [...(o.items || [])] }));
+            const target = next.find((o) => o.id === editingOrderItem.orderId);
+            const item = target && target.items[editingOrderItem.idx];
+            if (!item) return;
+            item.name = $("editItemName").value.trim() || item.name;
+            item.optionsLabel = $("editItemOpt").value.trim() || "기본";
+            item.qty = Math.max(1, Math.min(50, Number.parseInt($("editItemQty").value, 10) || 1));
+            item.unitPrice = Math.max(100, Number.parseInt($("editItemPrice").value, 10) || item.unitPrice);
+            recalcOrderTotal(target);
+            editingOrderItem = null;
+            await saveAllOrders(next);
+            renderOrders();
+          });
+        }
+        const cancelBtn = $("btnCancelItemEdit");
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", () => {
+            editingOrderItem = null;
+            renderOrders();
+          });
+        }
+      }
+
+      function getMenuCfg() {
+        return (window.D1Bridge && window.D1Bridge.getKioskMenuConfig)
+          ? window.D1Bridge.getKioskMenuConfig()
+          : { overrides: {}, added: [] };
+      }
+
+      async function saveMenuCfg(cfg) {
+        if (window.D1Bridge && window.D1Bridge.saveKioskMenuConfig) {
+          await window.D1Bridge.saveKioskMenuConfig(cfg);
+        } else {
+          try { localStorage.setItem("safe_mover.kiosk.custom_menu.v1", JSON.stringify(cfg)); } catch {}
+        }
+        renderMenus();
+      }
+
+      function renderMenus() {
+        const cfg = getMenuCfg();
+        const ov = cfg.overrides || {};
+        const added = (cfg.added || []).map((m) => ({ ...m, isCustom: true }));
+        const defaults = DEFAULT_MENUS
+          .filter((m) => !(ov[m.id] && ov[m.id].hidden))
+          .map((m) => ({
+            ...m,
+            name: (ov[m.id] && ov[m.id].name) || m.name,
+            price: ov[m.id] && ov[m.id].price !== undefined ? Number(ov[m.id].price) : m.price,
+            isCustom: false
+          }));
+        const list = [...added, ...defaults];
+        const box = $("menusContainer");
+        if (!list.length) {
+          box.innerHTML = `<div class="empty-box" style="grid-column:1/-1">표시 중인 메뉴가 없습니다. [메뉴 전체 기본값 초기화]를 눌러 복원하세요.</div>`;
+          return;
+        }
+        box.innerHTML = list.map((m) => {
+          const isEdit = editingMenuId === m.id;
+          return `<div class="menu-manage-card">
+            <div class="menu-manage-top">
+              <span class="menu-manage-name">${m.isCustom ? "🆕 " : ""}${esc(m.name)}</span>
+              <strong class="menu-manage-price">${won(m.price)}</strong>
+            </div>
+            <div class="actions-row">
+              <button type="button" class="btn indigo sm" data-menu-edit="${esc(m.id)}">✏️ 수정</button>
+              <button type="button" class="btn danger sm" data-menu-del="${esc(m.id)}" data-custom="${m.isCustom ? "1" : "0"}">🗑️ 삭제</button>
+            </div>
+            ${isEdit ? `<div class="edit-inline">
+              <input type="text" class="inp" id="editMenuName" value="${esc(m.name)}" style="flex:1;min-width:110px" />
+              <input type="number" class="inp" id="editMenuPrice" value="${Number(m.price)}" min="100" step="100" style="width:90px" />
+              <button type="button" class="btn primary sm" id="btnSaveMenuEdit" data-custom="${m.isCustom ? "1" : "0"}">저장</button>
+              <button type="button" class="btn sm" id="btnCancelMenuEdit">취소</button>
+            </div>` : ""}
+          </div>`;
+        }).join("");
+
+        box.querySelectorAll("[data-menu-edit]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            editingMenuId = btn.dataset.menuEdit;
+            renderMenus();
+          });
+        });
+        box.querySelectorAll("[data-menu-del]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.menuDel;
+            const isCustom = btn.dataset.custom === "1";
+            const cur = getMenuCfg();
+            if (isCustom) {
+              cur.added = (cur.added || []).filter((x) => x.id !== id);
+            } else {
+              cur.overrides[id] = { ...(cur.overrides[id] || {}), hidden: true };
+            }
+            editingMenuId = null;
+            await saveMenuCfg(cur);
+          });
+        });
+
+        const saveMenuBtn = $("btnSaveMenuEdit");
+        if (saveMenuBtn && editingMenuId) {
+          saveMenuBtn.addEventListener("click", async () => {
+            const isCustom = saveMenuBtn.dataset.custom === "1";
+            const name = $("editMenuName").value.trim();
+            const price = Math.max(100, Number.parseInt($("editMenuPrice").value, 10) || 100);
+            const cur = getMenuCfg();
+            if (isCustom) {
+              const target = (cur.added || []).find((x) => x.id === editingMenuId);
+              if (target) {
+                if (name) target.name = name;
+                target.price = price;
+              }
+            } else {
+              cur.overrides[editingMenuId] = {
+                ...(cur.overrides[editingMenuId] || {}),
+                ...(name ? { name } : {}),
+                price
+              };
+            }
+            editingMenuId = null;
+            await saveMenuCfg(cur);
+          });
+        }
+        const cancelMenuBtn = $("btnCancelMenuEdit");
+        if (cancelMenuBtn) {
+          cancelMenuBtn.addEventListener("click", () => {
+            editingMenuId = null;
+            renderMenus();
+          });
+        }
+      }
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tab = btn.dataset.tab;
+          document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b === btn));
+          $("ordersPanel").classList.toggle("active", tab === "orders");
+          $("menusPanel").classList.toggle("active", tab === "menus");
+          if (tab === "menus") renderMenus();
+        });
+      });
+
+      $("btnRefresh").addEventListener("click", fetchOrdersFromAllSources);
+      $("btnResetOrders").addEventListener("click", async () => {
+        if (!confirm("키오스크로 주문한 모든 내역을 초기화할까요?")) return;
+        editingOrderItem = null;
+        await saveAllOrders([]);
+        renderOrders();
+      });
+      $("btnResetMenus").addEventListener("click", async () => {
+        if (!confirm("삭제·수정한 메뉴를 모두 기본값으로 초기화할까요?")) return;
+        editingMenuId = null;
+        await saveMenuCfg({ overrides: {}, added: [] });
+      });
+
+      window.addEventListener("storage", (e) => {
+        if (e.key === KIOSK_ORDERS_KEY) fetchOrdersFromAllSources();
+        if (e.key === "safe_mover.kiosk.custom_menu.v1") renderMenus();
+      });
+      window.addEventListener("focus", fetchOrdersFromAllSources);
+      if (window.D1Bridge && window.D1Bridge.onKioskMenuChange) {
+        window.D1Bridge.onKioskMenuChange(renderMenus);
+      }
+
+      fetchOrdersFromAllSources();
+      renderMenus();
+      setInterval(fetchOrdersFromAllSources, 5000);
+    })();
+  </script>
+</body>
+</html>

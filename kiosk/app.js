@@ -13,8 +13,7 @@
   // 1. 메뉴 데이터 (마음카페 18종 음료 + 4종 베이커리)
   // ==========================================================================
   const CATEGORIES = [
-    { id: "all", label: "✨ 전체" },
-    { id: "crafted", label: "🏅 실습에서 만든 음료" },
+    { id: "all", label: "✨ 전체 메뉴" },
     { id: "coffee", label: "☕ 에스프레소 커피" },
     { id: "latte_tea", label: "🥛 라떼 · 전통차" },
     { id: "ade_smoothie", label: "🫧 에이드 · 스무디 · 프라페" },
@@ -78,10 +77,11 @@
   ];
 
   // ==========================================================================
-  // 2. 강력한 Web Audio API 신스 음향 엔진 + 선택형 BGM
+  // 2. 경쾌한 게임형 Web Audio API 신스 음향 엔진 + 카페 타이쿤 BGM
   // ==========================================================================
   const SoundFX = (() => {
     let ctx = null;
+    let master = null;
     let bgmTimer = null;
     let bgmStep = 0;
 
@@ -89,7 +89,20 @@
       if (!state.soundEnabled && !state.bgmEnabled) return null;
       if (!ctx) {
         const AC = window.AudioContext || window.webkitAudioContext;
-        if (AC) ctx = new AC();
+        if (AC) {
+          ctx = new AC();
+          const comp = ctx.createDynamicsCompressor();
+          comp.threshold.value = -16;
+          comp.knee.value = 18;
+          comp.ratio.value = 6;
+          comp.attack.value = 0.005;
+          comp.release.value = 0.14;
+          const out = ctx.createGain();
+          out.gain.value = 0.92;
+          comp.connect(out);
+          out.connect(ctx.destination);
+          master = comp;
+        }
       }
       if (ctx && ctx.state === "suspended") {
         ctx.resume().catch(() => {});
@@ -97,7 +110,7 @@
       return ctx;
     }
 
-    function tone(freq, dur, type = "sine", vol = 0.08, delay = 0, endFreq = null) {
+    function tone(freq, dur, type = "sine", vol = 0.09, delay = 0, endFreq = null) {
       if (!state.soundEnabled) return;
       const c = getCtx();
       if (!c) return;
@@ -110,12 +123,12 @@
         osc.frequency.exponentialRampToValueAtTime(Math.max(40, endFreq), t + dur);
       }
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(vol, t + 0.012);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       osc.connect(gain);
-      gain.connect(c.destination);
+      gain.connect(master || c.destination);
       osc.start(t);
-      osc.stop(t + dur + 0.02);
+      osc.stop(t + dur + 0.025);
     }
 
     function noiseBurst(dur, filterFreq, vol = 0.08, delay = 0) {
@@ -132,7 +145,7 @@
       const filter = c.createBiquadFilter();
       filter.type = "bandpass";
       filter.frequency.value = filterFreq;
-      filter.Q.value = 1.4;
+      filter.Q.value = 1.6;
 
       const gain = c.createGain();
       const t = c.currentTime + delay;
@@ -141,153 +154,226 @@
 
       src.connect(filter);
       filter.connect(gain);
-      gain.connect(c.destination);
+      gain.connect(master || c.destination);
       src.start(t);
     }
 
     function touchPop() {
-      tone(520, 0.09, "sine", 0.075, 0, 780);
-      tone(1040, 0.05, "triangle", 0.03, 0.01);
+      // 경쾌한 게임 마림바 버블 팝!
+      tone(660, 0.075, "triangle", 0.085, 0, 990);
+      tone(1320, 0.06, "sine", 0.045, 0.02);
     }
 
     function categorySwipe() {
-      tone(440, 0.07, "triangle", 0.06, 0, 620);
-      noiseBurst(0.05, 1600, 0.03);
+      // 빠른 하프/스위시 아르페지오
+      tone(523.25, 0.06, "triangle", 0.07, 0);
+      tone(659.25, 0.06, "triangle", 0.07, 0.035);
+      tone(783.99, 0.08, "sine", 0.065, 0.07);
+      noiseBurst(0.05, 2200, 0.03);
     }
 
     function optionSelect() {
-      tone(587.33, 0.1, "triangle", 0.07, 0);
-      tone(880, 0.12, "sine", 0.05, 0.04);
+      // 반짝이는 게임 토글음
+      tone(659.25, 0.075, "triangle", 0.08, 0);
+      tone(987.77, 0.11, "sine", 0.07, 0.04);
+      tone(1318.5, 0.09, "sine", 0.035, 0.075);
     }
 
     function flyToCart() {
-      tone(380, 0.18, "sine", 0.08, 0, 980);
-      tone(784, 0.14, "triangle", 0.06, 0.12);
-      tone(1046.5, 0.18, "sine", 0.07, 0.2);
+      // 아이템 획득 4음 상행 글리산도 + 착지 벨!
+      tone(523.25, 0.07, "triangle", 0.08, 0);
+      tone(659.25, 0.07, "triangle", 0.08, 0.05);
+      tone(783.99, 0.07, "triangle", 0.08, 0.1);
+      tone(1046.5, 0.16, "sine", 0.09, 0.15);
+      tone(1567.98, 0.14, "sine", 0.045, 0.22);
+    }
+
+    function surpriseRoll() {
+      // 룰렛/랜덤 추천 스핀음
+      const seq = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+      seq.forEach((f, i) => {
+        tone(f, 0.065, "triangle", 0.075, i * 0.045);
+      });
+      tone(1318.5, 0.22, "sine", 0.09, 0.28);
+    }
+
+    function cardRotate() {
+      tone(420, 0.07, "triangle", 0.075, 0, 680);
+      noiseBurst(0.045, 2400, 0.04);
+    }
+
+    function cardFlip() {
+      tone(580, 0.08, "sine", 0.075, 0, 360);
+      tone(720, 0.09, "triangle", 0.06, 0.05);
+    }
+
+    function cardInsert() {
+      tone(587.33, 0.09, "triangle", 0.085, 0);
+      tone(880, 0.11, "triangle", 0.085, 0.06);
+      tone(1174.66, 0.16, "sine", 0.08, 0.12);
     }
 
     function billSnap() {
-      // 지폐가 찰싹! 붙는 바삭한 소리
-      noiseBurst(0.085, 2400, 0.11, 0);
-      tone(240, 0.08, "triangle", 0.07, 0, 140);
-      tone(660, 0.09, "sine", 0.045, 0.03);
+      // 바삭한 지폐 스냅 + 경쾌한 실로폰 업!
+      noiseBurst(0.075, 2800, 0.1, 0);
+      tone(330, 0.06, "triangle", 0.075, 0, 520);
+      tone(783.99, 0.09, "sine", 0.06, 0.035);
     }
 
     function coinClink(value) {
-      // 금속 동전 짤랑! (500원 더 묵직, 100원 더 높고 맑게)
-      const base = value >= 500 ? 1850 : 2450;
-      tone(base, 0.18, "sine", 0.075, 0);
-      tone(base * 1.48, 0.14, "triangle", 0.05, 0.012);
-      tone(base * 2.1, 0.11, "sine", 0.03, 0.035);
+      // 경쾌한 아케이드 2음 코인 사운드! (500원은 묵직, 작은 동전은 맑고 높게)
+      const base = value >= 500 ? 987.77 : value >= 100 ? 1174.66 : value >= 50 ? 1318.5 : 1479.98;
+      tone(base, 0.085, "triangle", 0.09, 0);
+      tone(base * 1.334, 0.22, "sine", 0.095, 0.065);
+      tone(base * 2.0, 0.14, "sine", 0.035, 0.08);
     }
 
     function comboDing(step = 0) {
-      const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+      // 콤보 상승 팬타토닉 + 반짝 화음
+      const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5];
       const f = scale[Math.min(scale.length - 1, Math.max(0, step))];
-      tone(f, 0.16, "triangle", 0.065, 0);
-      tone(f * 1.5, 0.14, "sine", 0.035, 0.03);
+      tone(f, 0.14, "triangle", 0.085, 0);
+      tone(f * 1.25, 0.15, "sine", 0.055, 0.03);
+      tone(f * 1.5, 0.18, "sine", 0.045, 0.06);
     }
 
     function acceptorMotor() {
-      // 지폐 투입기 위이잉-삐빅!
-      tone(170, 0.36, "sawtooth", 0.045, 0, 260);
-      noiseBurst(0.28, 900, 0.05, 0.02);
-      tone(1174.66, 0.1, "sine", 0.08, 0.42);
-      tone(1567.98, 0.14, "sine", 0.08, 0.54);
+      // 경쾌한 지폐 투입기 스캔 + 승인 삐빅!
+      tone(220, 0.28, "triangle", 0.055, 0, 380);
+      noiseBurst(0.24, 1400, 0.045, 0.02);
+      tone(1046.5, 0.08, "triangle", 0.09, 0.32);
+      tone(1318.5, 0.08, "triangle", 0.09, 0.41);
+      tone(1567.98, 0.16, "sine", 0.09, 0.5);
     }
 
     function cardBeep() {
-      // 카드 단말기 삐빅! + 승인 멜로디
-      tone(1480, 0.09, "square", 0.045, 0);
-      tone(1480, 0.09, "square", 0.045, 0.13);
-      tone(783.99, 0.14, "triangle", 0.07, 0.32);
-      tone(1046.5, 0.2, "triangle", 0.08, 0.45);
+      // POS 카드 단말기 경쾌한 삐빅 + 승인 4연음!
+      tone(1567.98, 0.075, "square", 0.038, 0);
+      tone(1567.98, 0.075, "square", 0.038, 0.11);
+      tone(783.99, 0.1, "triangle", 0.085, 0.26);
+      tone(987.77, 0.1, "triangle", 0.085, 0.35);
+      tone(1174.66, 0.1, "triangle", 0.085, 0.44);
+      tone(1567.98, 0.24, "sine", 0.095, 0.53);
     }
 
     function registerChaChing() {
       // 금고 열림 차르릉-땡!
-      noiseBurst(0.12, 3200, 0.08, 0);
-      tone(1318.5, 0.25, "sine", 0.09, 0.06);
-      tone(2093.0, 0.45, "sine", 0.08, 0.14);
-      tone(2637.0, 0.38, "triangle", 0.05, 0.18);
+      noiseBurst(0.11, 3400, 0.08, 0);
+      tone(1318.5, 0.22, "triangle", 0.095, 0.05);
+      tone(1975.5, 0.38, "sine", 0.09, 0.12);
+      tone(2637.0, 0.36, "sine", 0.055, 0.16);
     }
 
     function receiptPrint() {
-      // 감열지 영수증 지이잉-틱!
+      // 리드미컬한 영수증 출력 사운드
       for (let i = 0; i < 6; i++) {
-        noiseBurst(0.06, 1800 + i * 140, 0.045, i * 0.09);
+        noiseBurst(0.05, 2000 + i * 180, 0.045, i * 0.075);
+        tone(600 + i * 70, 0.04, "triangle", 0.035, i * 0.075);
       }
-      tone(880, 0.08, "triangle", 0.06, 0.58);
+      tone(1046.5, 0.11, "sine", 0.08, 0.48);
     }
 
     function fanfare() {
-      // 웅장하고 신나는 아케이드 팡파레
-      const notes = [
-        [523.25, 0, 0.14],
-        [659.25, 0.1, 0.14],
-        [783.99, 0.2, 0.14],
-        [1046.5, 0.32, 0.38],
-        [783.99, 0.48, 0.12],
-        [1046.5, 0.6, 0.45]
+      // 신나는 아케이드 스테이지 클리어 팡파레!
+      const lead = [
+        [523.25, 0, 0.11],
+        [659.25, 0.09, 0.11],
+        [783.99, 0.18, 0.11],
+        [1046.5, 0.28, 0.24],
+        [880.00, 0.46, 0.11],
+        [1046.5, 0.56, 0.14],
+        [1318.5, 0.70, 0.46]
       ];
-      notes.forEach(([f, d, len]) => {
-        tone(f, len, "triangle", 0.085, d);
-        tone(f * 0.5, len, "sine", 0.05, d);
-        tone(f * 1.5, len * 0.7, "sine", 0.03, d + 0.02);
+      lead.forEach(([f, d, len]) => {
+        tone(f, len, "triangle", 0.095, d);
+        tone(f * 0.5, len, "sine", 0.055, d);
+        tone(f * 1.5, len * 0.7, "sine", 0.035, d + 0.015);
       });
+      // 마지막 화음 반짝임
+      tone(523.25, 0.48, "sine", 0.05, 0.70);
+      tone(783.99, 0.48, "sine", 0.05, 0.70);
+      tone(1567.98, 0.35, "sine", 0.035, 0.80);
     }
 
     function gentleBoing() {
-      tone(310, 0.14, "sine", 0.07, 0, 220);
-      tone(230, 0.18, "triangle", 0.05, 0.08, 170);
+      // 귀엽고 부드러운 고무 튕김음
+      tone(340, 0.11, "triangle", 0.075, 0, 220);
+      tone(250, 0.15, "sine", 0.06, 0.07, 185);
     }
 
     function startBgm() {
       stopBgm();
       if (!state.bgmEnabled) return;
+      // 128 BPM 경쾌한 카페 타이쿤 게임 BGM (마림바 멜로디 + 워킹 베이스)
       const chords = [
-        [261.63, 329.63, 392.00, 493.88], // Cmaj7
-        [220.00, 261.63, 329.63, 392.00], // Am7
-        [174.61, 220.00, 261.63, 349.23], // Fmaj7
-        [196.00, 246.94, 293.66, 392.00]  // G6
+        [261.63, 329.63, 392.00], // C
+        [220.00, 261.63, 329.63], // Am
+        [174.61, 220.00, 261.63], // F
+        [196.00, 246.94, 293.66]  // G
       ];
-      const melody = [523.25, 659.25, 587.33, 523.25, 440, 523.25, 587.33, 659.25];
+      const bass = [130.81, 130.81, 110.00, 110.00, 87.31, 87.31, 98.00, 98.00];
+      const melody = [
+        523.25, 659.25, 783.99, 659.25,
+        523.25, 659.25, 880.00, 783.99,
+        698.46, 659.25, 587.33, 523.25,
+        587.33, 659.25, 783.99, 659.25
+      ];
       bgmTimer = setInterval(() => {
         if (!state.bgmEnabled) return;
         const c = getCtx();
         if (!c) return;
-        const chord = chords[Math.floor(bgmStep / 4) % chords.length];
-        const beat = bgmStep % 4;
         const t = c.currentTime;
-        if (beat === 0) {
-          chord.forEach((f) => {
-            const osc = c.createOscillator();
-            const g = c.createGain();
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(f, t);
-            g.gain.setValueAtTime(0.0001, t);
-            g.gain.linearRampToValueAtTime(0.014, t + 0.05);
-            g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
-            osc.connect(g);
-            g.connect(c.destination);
-            osc.start(t);
-            osc.stop(t + 1.15);
-          });
-        }
+        const dest = master || c.destination;
+
+        // 마림바 리드
         const mFreq = melody[bgmStep % melody.length];
         const mOsc = c.createOscillator();
         const mGain = c.createGain();
         mOsc.type = "triangle";
         mOsc.frequency.setValueAtTime(mFreq, t);
         mGain.gain.setValueAtTime(0.0001, t);
-        mGain.gain.linearRampToValueAtTime(0.018, t + 0.02);
-        mGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+        mGain.gain.linearRampToValueAtTime(0.024, t + 0.015);
+        mGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.19);
         mOsc.connect(mGain);
-        mGain.connect(c.destination);
+        mGain.connect(dest);
         mOsc.start(t);
-        mOsc.stop(t + 0.3);
+        mOsc.stop(t + 0.21);
+
+        // 바운시 베이스 (매 2스텝)
+        if (bgmStep % 2 === 0) {
+          const bFreq = bass[Math.floor(bgmStep / 2) % bass.length];
+          const bOsc = c.createOscillator();
+          const bGain = c.createGain();
+          bOsc.type = "sine";
+          bOsc.frequency.setValueAtTime(bFreq, t);
+          bGain.gain.setValueAtTime(0.0001, t);
+          bGain.gain.linearRampToValueAtTime(0.022, t + 0.02);
+          bGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+          bOsc.connect(bGain);
+          bGain.connect(dest);
+          bOsc.start(t);
+          bOsc.stop(t + 0.28);
+        }
+
+        // 오프비트 코드 스탭
+        if (bgmStep % 4 === 2) {
+          const chord = chords[Math.floor(bgmStep / 4) % chords.length];
+          chord.forEach((f) => {
+            const cOsc = c.createOscillator();
+            const cGain = c.createGain();
+            cOsc.type = "sine";
+            cOsc.frequency.setValueAtTime(f * 2, t);
+            cGain.gain.setValueAtTime(0.0001, t);
+            cGain.gain.linearRampToValueAtTime(0.008, t + 0.015);
+            cGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+            cOsc.connect(cGain);
+            cGain.connect(dest);
+            cOsc.start(t);
+            cOsc.stop(t + 0.18);
+          });
+        }
         bgmStep++;
-      }, 420);
+      }, 235);
     }
 
     function stopBgm() {
@@ -302,6 +388,10 @@
       categorySwipe,
       optionSelect,
       flyToCart,
+      surpriseRoll,
+      cardRotate,
+      cardFlip,
+      cardInsert,
       billSnap,
       coinClink,
       comboDing,
@@ -317,7 +407,7 @@
   })();
 
   // ==========================================================================
-  // 3. 풀스크린 Canvas VFX 엔진 (파티클 · 링 · 컨페티 · 팝업 텍스트)
+  // 3. 풀스크린 Canvas VFX 엔진 (파티클 · 2중 충격파 링 · 폭죽 컨페티 · 팝업 텍스트)
   // ==========================================================================
   const VFX = (() => {
     const canvas = document.getElementById("vfxCanvas");
@@ -343,54 +433,61 @@
       }
     }
 
-    function burst(x, y, colors = ["#fbbf24", "#10b981", "#38bdf8", "#fb7185"], count = 18) {
+    function burst(x, y, colors = ["#fbbf24", "#10b981", "#38bdf8", "#ec4899"], count = 22) {
       for (let i = 0; i < count; i++) {
-        const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
-        const spd = 110 + Math.random() * 210;
+        const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.45;
+        const spd = 120 + Math.random() * 240;
         particles.push({
           x, y,
           vx: Math.cos(ang) * spd,
-          vy: Math.sin(ang) * spd - 45,
-          size: 4 + Math.random() * 5,
+          vy: Math.sin(ang) * spd - 55,
+          size: 4.5 + Math.random() * 5.5,
           color: colors[i % colors.length],
           alpha: 1,
           life: 0,
-          maxLife: 0.45 + Math.random() * 0.3,
-          star: i % 3 === 0
+          maxLife: 0.48 + Math.random() * 0.34,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 8,
+          star: i % 2 === 0
         });
       }
-      rings.push({ x, y, r: 8, maxR: 75, color: colors[0], alpha: 0.85 });
+      rings.push({ x, y, r: 8, maxR: 86, color: colors[0], alpha: 0.9, width: 3.5 });
+      rings.push({ x, y, r: 4, maxR: 54, color: colors[1 % colors.length], alpha: 0.75, width: 2.5 });
       ensureLoop();
     }
 
-    function floatText(x, y, text, color = "#059669") {
+    function floatText(x, y, text, color = "#059669", big = false) {
       popups.push({
         x, y,
-        vy: -75,
+        vy: big ? -95 : -78,
         text,
         color,
+        big,
         life: 0,
-        maxLife: 0.95
+        maxLife: big ? 1.15 : 0.95
       });
       ensureLoop();
     }
 
-    function launchConfetti(count = 75) {
-      const palette = ["#f59e0b", "#10b981", "#3b82f6", "#ec4899", "#eab308", "#8b5cf6"];
+    function launchConfetti(count = 110) {
+      const palette = ["#f97316", "#fbbf24", "#10b981", "#38bdf8", "#ec4899", "#8b5cf6"];
       const w = window.innerWidth;
+      const h = window.innerHeight;
       for (let i = 0; i < count; i++) {
+        const fromSide = i < count * 0.45;
+        const leftSide = i % 2 === 0;
         confetti.push({
-          x: Math.random() * w,
-          y: -20 - Math.random() * 140,
-          vx: (Math.random() - 0.5) * 180,
-          vy: 160 + Math.random() * 260,
-          w: 8 + Math.random() * 7,
-          h: 5 + Math.random() * 6,
+          x: fromSide ? (leftSide ? 24 : w - 24) : Math.random() * w,
+          y: fromSide ? h * 0.68 : -20 - Math.random() * 140,
+          vx: fromSide ? (leftSide ? 160 + Math.random() * 280 : -(160 + Math.random() * 280)) : (Math.random() - 0.5) * 200,
+          vy: fromSide ? -(420 + Math.random() * 300) : 170 + Math.random() * 260,
+          w: 8 + Math.random() * 8,
+          h: 5 + Math.random() * 7,
           rot: Math.random() * Math.PI * 2,
-          vRot: (Math.random() - 0.5) * 10,
+          vRot: (Math.random() - 0.5) * 12,
           color: palette[i % palette.length],
           life: 0,
-          maxLife: 2.3 + Math.random() * 1.1
+          maxLife: 2.5 + Math.random() * 1.2
         });
       }
       ensureLoop();
@@ -411,7 +508,7 @@
 
       for (let i = rings.length - 1; i >= 0; i--) {
         const r = rings[i];
-        r.r += (r.maxR - r.r) * 0.16;
+        r.r += (r.maxR - r.r) * 0.18;
         r.alpha -= dt * 2.2;
         if (r.alpha <= 0.02) {
           rings.splice(i, 1);
@@ -420,7 +517,7 @@
         ctx.save();
         ctx.globalAlpha = r.alpha;
         ctx.strokeStyle = r.color;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = r.width || 3;
         ctx.beginPath();
         ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
         ctx.stroke();
@@ -434,21 +531,23 @@
           particles.splice(i, 1);
           continue;
         }
-        p.vy += 420 * dt;
+        p.vy += 430 * dt;
         p.x += p.vx * dt;
         p.y += p.vy * dt;
+        p.rot += p.vRot * dt;
         p.alpha = 1 - p.life / p.maxLife;
         ctx.save();
         ctx.globalAlpha = p.alpha;
         ctx.fillStyle = p.color;
         ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
         if (p.star) {
           ctx.beginPath();
           for (let k = 0; k < 5; k++) {
             const a1 = (k * 2 * Math.PI) / 5 - Math.PI / 2;
             const a2 = a1 + Math.PI / 5;
-            ctx.lineTo(Math.cos(a1) * p.size * 1.4, Math.sin(a1) * p.size * 1.4);
-            ctx.lineTo(Math.cos(a2) * p.size * 0.6, Math.sin(a2) * p.size * 0.6);
+            ctx.lineTo(Math.cos(a1) * p.size * 1.45, Math.sin(a1) * p.size * 1.45);
+            ctx.lineTo(Math.cos(a2) * p.size * 0.62, Math.sin(a2) * p.size * 0.62);
           }
           ctx.closePath();
           ctx.fill();
@@ -463,16 +562,17 @@
       for (let i = confetti.length - 1; i >= 0; i--) {
         const c = confetti[i];
         c.life += dt;
-        if (c.life >= c.maxLife || c.y > window.innerHeight + 40) {
+        if (c.life >= c.maxLife || c.y > window.innerHeight + 50) {
           confetti.splice(i, 1);
           continue;
         }
-        c.vy += 260 * dt;
-        c.x += c.vx * dt + Math.sin(c.life * 6) * 0.8;
+        c.vy += 320 * dt;
+        c.vx *= 0.992;
+        c.x += c.vx * dt + Math.sin(c.life * 7) * 0.9;
         c.y += c.vy * dt;
         c.rot += c.vRot * dt;
         ctx.save();
-        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, c.life - 1.6) / 1.5);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, c.life - 1.8) / 1.5);
         ctx.translate(c.x, c.y);
         ctx.rotate(c.rot);
         ctx.fillStyle = c.color;
@@ -488,17 +588,23 @@
           continue;
         }
         t.y += t.vy * dt;
-        t.vy *= 0.94;
-        const alpha = Math.min(1, (1 - t.life / t.maxLife) * 1.4);
+        t.vy *= 0.93;
+        const p = t.life / t.maxLife;
+        const popScale = p < 0.18 ? 0.6 + (p / 0.18) * 0.55 : p < 0.34 ? 1.15 - ((p - 0.18) / 0.16) * 0.15 : 1;
+        const alpha = Math.min(1, (1 - p) * 1.45);
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.font = "900 18px 'Pretendard','Malgun Gothic',sans-serif";
+        ctx.translate(t.x, t.y);
+        ctx.scale(popScale, popScale);
+        ctx.font = t.big
+          ? "900 22px 'Jua','Pretendard','Malgun Gothic',sans-serif"
+          : "900 18px 'Jua','Pretendard','Malgun Gothic',sans-serif";
         ctx.textAlign = "center";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.strokeStyle = "#ffffff";
-        ctx.strokeText(t.text, t.x, t.y);
+        ctx.strokeText(t.text, 0, 0);
         ctx.fillStyle = t.color;
-        ctx.fillText(t.text, t.x, t.y);
+        ctx.fillText(t.text, 0, 0);
         ctx.restore();
       }
 
@@ -518,10 +624,69 @@
     return { burst, floatText, launchConfetti, shakeScreen, elementCenter };
   })();
 
+  function getActiveMenuItems() {
+    let cfg = { overrides: {}, added: [] };
+    if (window.D1Bridge && typeof window.D1Bridge.getKioskMenuConfig === "function") {
+      cfg = window.D1Bridge.getKioskMenuConfig();
+    } else {
+      try {
+        const raw = localStorage.getItem("safe_mover.kiosk.custom_menu.v1");
+        if (raw) cfg = JSON.parse(raw) || cfg;
+      } catch {}
+    }
+    const overrides = (cfg && cfg.overrides) || {};
+    const added = Array.isArray(cfg && cfg.added) ? cfg.added : [];
+
+    const baseList = MENU_ITEMS
+      .filter((m) => !(overrides[m.id] && overrides[m.id].hidden))
+      .map((m) => {
+        const ov = overrides[m.id];
+        if (!ov) return m;
+        return {
+          ...m,
+          price: ov.price !== undefined ? Math.max(100, Number(ov.price) || m.price) : m.price,
+          name: ov.name || m.name
+        };
+      });
+
+    const customList = added
+      .filter((m) => m && m.id && m.name)
+      .map((m) => ({
+        id: m.id,
+        name: m.name,
+        price: Math.max(100, Number(m.price) || 3500),
+        category: m.category || "latte_tea",
+        temp: m.temp || (m.category === "bakery" ? "BAKERY" : "ICE"),
+        best: false,
+        isCustom: true,
+        color: m.color || "#f97316",
+        accent: m.accent || "#fef3c7",
+        desc: m.desc || `${m.name} 메뉴예요.`,
+        easyDesc: m.easyDesc || m.desc || `${m.name} 메뉴예요.`,
+        svgPreset: m.svgPreset || "bubble_tea",
+        imageId: m.imageId || "",
+        imageUrl: m.imageUrl || "",
+        imageData: m.imageData || ""
+      }));
+
+    return [...customList, ...baseList];
+  }
+
   // ==========================================================================
-  // 4. SVG 일러스트 생성기 (메뉴 22종 + 한국 화폐 6종)
+  // 4. SVG 일러스트 생성기 (기본 22종 + 교사 추가 18종 SVG + 초저용량 D1 이미지)
   // ==========================================================================
   function renderItemSvg(item, size = 88) {
+    if (!item) return "";
+    const imgSrc = item.imageData || item.imageUrl;
+    if (imgSrc) {
+      const fallbackSvg = (window.D1KioskSvg && item.svgPreset)
+        ? window.D1KioskSvg.renderPresetSvg(item.svgPreset, item.color, size)
+        : "";
+      return `<img class="kiosk-custom-img" src="${imgSrc}" alt="${item.name}" width="${size}" height="${size}" style="width:${size}px;height:${size}px" onerror="this.style.display='none'" />`;
+    }
+    if (item.svgPreset && window.D1KioskSvg && typeof window.D1KioskSvg.renderPresetSvg === "function") {
+      return window.D1KioskSvg.renderPresetSvg(item.svgPreset, item.color, size);
+    }
     if (item.category === "bakery") {
       if (item.bakeryType === "croissant") {
         return `<svg viewBox="0 0 96 96" width="${size}" height="${size}">
@@ -672,6 +837,16 @@
     if (window.D1Bridge && typeof window.D1Bridge.setKV === "function") {
       window.D1Bridge.setKV(KIOSK_ORDERS_KEY, trimmed);
     }
+    try {
+      const base = (window.D1Bridge && window.D1Bridge.getApiBase)
+        ? window.D1Bridge.getApiBase()
+        : "https://safe-mover-d1-api.school-guardian.workers.dev";
+      fetch(base + "/api/kv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "safe_mover.kiosk.orders.public.v1", value: trimmed })
+      }).catch(() => {});
+    } catch {}
   }
 
   function loadCount() {
@@ -700,6 +875,9 @@
     madeDrinks: loadMadeDrinks(),
     completedCount: loadCount(),
     orderNumber: 101 + (loadCount() % 80),
+    combo: 0,
+    lastComboAt: 0,
+    displayedTotalPrice: 0,
     soundEnabled: true,
     bgmEnabled: false,
     voiceEnabled: false,
@@ -787,10 +965,88 @@
     setStepTracker(screenName === "menu" ? "menu" : screenName === "receipt" ? "receipt" : "welcome");
   }
 
+  let priceRollRaf = null;
+  function animatePriceRoll(targetVal) {
+    const el = $("cartTotalPrice");
+    if (!el) return;
+    if (priceRollRaf) cancelAnimationFrame(priceRollRaf);
+    const startVal = state.displayedTotalPrice || 0;
+    const diff = targetVal - startVal;
+    if (diff === 0) {
+      el.textContent = formatWon(targetVal);
+      return;
+    }
+    const startT = performance.now();
+    const dur = 300;
+    function step(now) {
+      const t = Math.min(1, (now - startT) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const cur = Math.round(startVal + diff * eased);
+      state.displayedTotalPrice = cur;
+      el.textContent = formatWon(cur);
+      if (t < 1) {
+        priceRollRaf = requestAnimationFrame(step);
+      } else {
+        state.displayedTotalPrice = targetVal;
+        el.textContent = formatWon(targetVal);
+        priceRollRaf = null;
+      }
+    }
+    priceRollRaf = requestAnimationFrame(step);
+  }
+
+  let comboHideTimer = null;
+  function triggerCombo(anchorEl = null, labelPrefix = "COMBO") {
+    const now = Date.now();
+    state.combo = (now - state.lastComboAt < 3400) ? state.combo + 1 : 1;
+    state.lastComboAt = now;
+    const badge = $("comboBadge");
+    if (badge && state.combo >= 2) {
+      badge.classList.remove("hidden");
+      badge.textContent = state.combo >= 5 ? `⚡ ${state.combo} FEVER!` : `🔥 ${state.combo} ${labelPrefix}!`;
+      badge.style.animation = "none";
+      void badge.offsetWidth;
+      badge.style.animation = "";
+      if (comboHideTimer) clearTimeout(comboHideTimer);
+      comboHideTimer = setTimeout(() => badge.classList.add("hidden"), 2600);
+      if (anchorEl) {
+        const pt = VFX.elementCenter(anchorEl);
+        VFX.floatText(pt.x, pt.y - 42, state.combo >= 5 ? `⚡ ${state.combo} FEVER!` : `🔥 ${state.combo} COMBO!`, "#f97316", true);
+      }
+    }
+  }
+
   function updateScoreBadge(pop = false) {
+    const count = state.completedCount;
     const badge = $("scoreBadge");
-    badge.textContent = `★ ${state.completedCount}`;
-    if (pop) {
+    if (badge) badge.textContent = `★ ${count}`;
+
+    const ranks = [
+      { min: 0, label: "Lv.1 새내기" },
+      { min: 3, label: "Lv.2 인기 캐셔" },
+      { min: 7, label: "Lv.3 스피드 매니저" },
+      { min: 12, label: "Lv.4 카페 스타" },
+      { min: 20, label: "Lv.5 전설의 마스터" }
+    ];
+    let rankLabel = ranks[0].label;
+    let nextGoal = 3;
+    let prevGoal = 0;
+    for (let i = 0; i < ranks.length; i++) {
+      if (count >= ranks[i].min) {
+        rankLabel = ranks[i].label;
+        prevGoal = ranks[i].min;
+        nextGoal = ranks[i + 1] ? ranks[i + 1].min : ranks[i].min + 10;
+      }
+    }
+    const rankEl = $("rankBadge");
+    if (rankEl) rankEl.textContent = rankLabel;
+    const xpFill = $("xpFill");
+    if (xpFill) {
+      const pct = Math.min(100, Math.max(12, Math.round(((count - prevGoal) / Math.max(1, nextGoal - prevGoal)) * 100)));
+      xpFill.style.width = `${pct}%`;
+    }
+
+    if (pop && badge) {
       badge.classList.remove("pop");
       void badge.offsetWidth;
       badge.classList.add("pop");
@@ -801,11 +1057,12 @@
   // 7. 미션 생성 및 체크
   // ==========================================================================
   function generateMission() {
+    const allItems = getActiveMenuItems();
     const customer = MISSION_CUSTOMERS[Math.floor(Math.random() * MISSION_CUSTOMERS.length)];
-    const drinks = MENU_ITEMS.filter((m) => m.category !== "bakery");
-    const bakeries = MENU_ITEMS.filter((m) => m.category === "bakery");
-    const pick1 = drinks[Math.floor(Math.random() * drinks.length)];
-    const wantSecond = Math.random() < 0.72;
+    const drinks = allItems.filter((m) => m.category !== "bakery");
+    const bakeries = allItems.filter((m) => m.category === "bakery");
+    const pick1 = drinks[Math.floor(Math.random() * drinks.length)] || allItems[0];
+    const wantSecond = bakeries.length > 0 && Math.random() < 0.72;
     const pool2 = wantSecond ? bakeries : drinks.filter((d) => d.id !== pick1.id);
     const pick2 = pool2[Math.floor(Math.random() * pool2.length)];
     const cashActivity = Math.random() < 0.5 ? "match" : "change";
@@ -837,57 +1094,57 @@
     $("missionText").textContent = state.mission.text;
 
     const listEl = $("missionChecklist");
+    const allTargetsDone = state.mission.targets.every((t) => {
+      const inCart = state.cart
+        .filter((c) => c.itemId === t.itemId)
+        .reduce((acc, c) => acc + c.qty, 0);
+      return inCart >= t.qty;
+    });
+    banner.classList.toggle("quest-ready", allTargetsDone);
+
     listEl.innerHTML = state.mission.targets.map((t) => {
       const inCart = state.cart
         .filter((c) => c.itemId === t.itemId)
         .reduce((acc, c) => acc + c.qty, 0);
       const ok = inCart >= t.qty;
       return `<span class="mission-chip ${ok ? "done" : ""}">${ok ? "✅" : "⬜"} ${t.name} (${Math.min(inCart, t.qty)}/${t.qty})</span>`;
-    }).join("") + `<span class="mission-chip">${state.mission.cashActivity === "match" ? "🪙 현금: 화폐 짝짓기" : "💰 현금: 거스름돈 계산"}</span>`;
+    }).join("") + `<span class="mission-chip ${allTargetsDone ? "done" : ""}">${allTargetsDone ? "🎉 준비 완료! 이제 결제 버튼을 누르세요!" : (state.mission.cashActivity === "match" ? "🪙 현금: 화폐 짝짓기" : "💰 현금: 거스름돈 계산")}</span>`;
   }
 
   // ==========================================================================
-  // 8. 카페실습 연동 + 카테고리 & 메뉴 그리드 렌더링 + 비행 애니메이션
+  // 8. 전체 메뉴 + 카테고리 & 메뉴 그리드 렌더링 + 비행 애니메이션
   // ==========================================================================
   function getMadeStats() {
-    const entries = Object.values(state.madeDrinks || {}).filter((d) => d && d.count > 0 && MENU_ITEMS.some((m) => m.id === d.id));
+    const allItems = getActiveMenuItems();
+    const entries = Object.values(state.madeDrinks || {}).filter((d) => d && d.count > 0 && allItems.some((m) => m.id === d.id));
     const totalCups = entries.reduce((acc, d) => acc + (Number(d.count) || 0), 0);
     return { kinds: entries.length, totalCups, entries };
   }
 
   function renderCafeSyncStatus() {
+    const allItems = getActiveMenuItems();
     const stats = getMadeStats();
     const welcomeBadge = $("welcomeCafeSyncBadge");
     if (welcomeBadge) {
       welcomeBadge.innerHTML = stats.kinds > 0
-        ? `🏅 카페실습에서 만든 음료 <strong>${stats.kinds}종 (${stats.totalCups}잔)</strong>이 키오스크에 연동되었어요!`
-        : `☕ 3D 카페실습에서 음료를 만들면 키오스크에 <strong>내가 만든 음료</strong>로 바로 나타나요!`;
+        ? `☕ 전체 ${allItems.length}종 메뉴 오픈! (3D 실습 완성 ${stats.kinds}종 반영됨)`
+        : `☕ 전체 ${allItems.length}종 메뉴 오픈! 지금 바로 골라보세요!`;
     }
     const syncText = $("cafeSyncText");
-    const filterBtn = $("btnFilterCrafted");
     if (syncText) {
-      syncText.innerHTML = stats.kinds > 0
-        ? `카페실습 제작 음료 <strong>${stats.kinds}종 (총 ${stats.totalCups}잔)</strong>이 연동되어 있어요!`
-        : `아직 카페실습에서 완성한 음료가 없어요. 3D 카페에서 음료를 만들면 여기에 표시돼요!`;
-    }
-    if (filterBtn) {
-      filterBtn.classList.toggle("active", state.category === "crafted");
-      filterBtn.textContent = state.category === "crafted"
-        ? "✨ 전체 메뉴 보기"
-        : `🏅 만든 음료만 보기 (${stats.kinds})`;
+      syncText.innerHTML = `음료 · 디저트 <strong>전체 ${allItems.length}가지 메뉴</strong>가 모두 열려 있어요!`;
     }
   }
 
   function renderCategories() {
     const bar = $("categoryBar");
-    const madeStats = getMadeStats();
+    const allItems = getActiveMenuItems();
     renderCafeSyncStatus();
 
     bar.innerHTML = CATEGORIES.map((c) => {
-      let cnt = 0;
-      if (c.id === "all") cnt = MENU_ITEMS.length;
-      else if (c.id === "crafted") cnt = madeStats.kinds;
-      else cnt = MENU_ITEMS.filter((m) => m.category === c.id).length;
+      const cnt = c.id === "all"
+        ? allItems.length
+        : allItems.filter((m) => m.category === c.id).length;
 
       return `<button type="button" class="cat-tab ${state.category === c.id ? "active" : ""}" data-cat="${c.id}" role="tab" aria-selected="${state.category === c.id}">
         <span>${c.label}</span>
@@ -900,7 +1157,7 @@
         state.category = btn.dataset.cat;
         SoundFX.categorySwipe();
         const pt = VFX.elementCenter(btn);
-        VFX.burst(pt.x, pt.y, ["#487555", "#fde047"], 10);
+        VFX.burst(pt.x, pt.y, ["#f97316", "#fde047", "#10b981"], 14);
         renderCategories();
         renderMenuGrid();
       });
@@ -913,41 +1170,10 @@
 
   function renderMenuGrid() {
     const grid = $("menuGrid");
-    let items = [];
-    if (state.category === "all") {
-      items = [...MENU_ITEMS].sort((a, b) => {
-        const ma = state.madeDrinks[a.id]?.count ? 1 : 0;
-        const mb = state.madeDrinks[b.id]?.count ? 1 : 0;
-        return mb - ma;
-      });
-    } else if (state.category === "crafted") {
-      items = MENU_ITEMS
-        .filter((m) => state.madeDrinks[m.id]?.count > 0)
-        .sort((a, b) => String(state.madeDrinks[b.id]?.lastMadeAt || "").localeCompare(String(state.madeDrinks[a.id]?.lastMadeAt || "")));
-    } else {
-      items = MENU_ITEMS.filter((m) => m.category === state.category);
-    }
-
-    if (state.category === "crafted" && !items.length) {
-      grid.innerHTML = `<div class="crafted-empty-state">
-        <div class="ces-icon">☕</div>
-        <h3>아직 3D 카페실습에서 만든 음료가 없어요!</h3>
-        <p>3D 바리스타 연습실에서 음료를 1잔 완성하면<br>여기에 내가 직접 만든 음료가 바로 나타납니다.</p>
-        <div class="ces-actions">
-          <a class="primary-big-btn" href="../cafe/index.html">☕ 3D 카페에서 음료 만들기</a>
-          <button type="button" id="btnShowAllFromEmpty" class="secondary-big-btn">✨ 전체 메뉴 먼저 보기</button>
-        </div>
-      </div>`;
-      const showAllBtn = $("btnShowAllFromEmpty");
-      if (showAllBtn) {
-        showAllBtn.addEventListener("click", () => {
-          state.category = "all";
-          renderCategories();
-          renderMenuGrid();
-        });
-      }
-      return;
-    }
+    const allItems = getActiveMenuItems();
+    const items = state.category === "all"
+      ? allItems
+      : allItems.filter((m) => m.category === state.category);
 
     const missionIds = new Set(
       state.playMode === "mission" && state.mission
@@ -963,9 +1189,10 @@
           : `<span class="item-badge dessert">빵·디저트</span>`;
       const madeInfo = state.madeDrinks[item.id];
       const madeBadge = madeInfo && madeInfo.count > 0
-        ? `<span class="item-badge crafted" title="카페실습에서 완성한 음료">🏅 실습 ${madeInfo.count}잔</span>`
+        ? `<span class="item-badge crafted" title="3D 카페실습에서도 만든 음료">🏅 3D완성</span>`
         : "";
-      const bestBadge = item.best && !madeBadge ? `<span class="item-badge best">인기</span>` : "";
+      const customBadge = item.isCustom ? `<span class="item-badge crafted">🆕 추가</span>` : "";
+      const bestBadge = item.best ? `<span class="item-badge best">★ 인기</span>` : "";
       const isMission = missionIds.has(item.id);
       const cartQty = getItemCartQty(item.id);
       const cartCupsHtml = cartQty > 0
@@ -974,9 +1201,9 @@
           </div>`
         : "";
 
-      return `<article class="menu-card ${isMission ? "mission-target" : ""} ${madeBadge ? "is-crafted" : ""}" data-item-id="${item.id}" style="animation-delay:${Math.min(idx * 24, 240)}ms">
-        <div class="menu-badges">${tempBadge}${madeBadge}${bestBadge}</div>
-        <div class="menu-illust">${renderItemSvg(item, 86)}</div>
+      return `<article class="menu-card ${isMission ? "mission-target" : ""} ${cartQty > 0 ? "in-cart" : ""}" data-item-id="${item.id}" style="--card-tint:${item.color}28; animation-delay:${Math.min(idx * 22, 240)}ms">
+        <div class="menu-badges">${tempBadge}${bestBadge}${customBadge}${madeBadge}</div>
+        <div class="menu-illust">${renderItemSvg(item, 88)}</div>
         <div class="menu-name">${item.name}</div>
         <div class="menu-price">${formatWon(item.price)}</div>
         ${cartCupsHtml}
@@ -989,8 +1216,9 @@
 
     grid.querySelectorAll(".menu-card").forEach((card) => {
       const id = card.dataset.itemId;
-      const item = MENU_ITEMS.find((m) => m.id === id);
+      const item = allItems.find((m) => m.id === id);
       card.addEventListener("click", (e) => {
+        if (!item) return;
         if (e.target.closest("[data-quick]")) {
           e.stopPropagation();
           addItemToCart(item, 1, [], 0, card);
@@ -1057,9 +1285,11 @@
     }
 
     SoundFX.flyToCart();
+    triggerCombo(sourceEl, "ORDER");
     if (sourceEl) {
       const pt = VFX.elementCenter(sourceEl);
-      VFX.floatText(pt.x, pt.y - 24, `+ ${item.name}!`, "#487555");
+      VFX.burst(pt.x, pt.y, ["#fbbf24", "#10b981", "#38bdf8", "#ec4899"], 18);
+      VFX.floatText(pt.x, pt.y - 24, `+ ${item.name}!`, "#059669", true);
       animateFlyToCart(sourceEl, item);
     }
     speakKorean(`${item.name} ${qty}개를 장바구니에 담았어요.`);
@@ -1076,7 +1306,7 @@
     const { totalQty, totalPrice } = getCartTotals();
     $("cartCountBadge").textContent = String(totalQty);
     $("cartTotalQty").textContent = `${totalQty}개`;
-    $("cartTotalPrice").textContent = formatWon(totalPrice);
+    animatePriceRoll(totalPrice);
     $("toggleDiningBtn").textContent = state.diningType === "dine_in" ? "🍽️ 매장" : "🛍️ 포장";
 
     const disabled = state.cart.length === 0;
@@ -1091,8 +1321,9 @@
       return;
     }
 
+    const allItems = getActiveMenuItems();
     list.innerHTML = state.cart.map((line) => {
-      const item = MENU_ITEMS.find((m) => m.id === line.itemId);
+      const item = allItems.find((m) => m.id === line.itemId) || MENU_ITEMS.find((m) => m.id === line.itemId);
       return `<div class="cart-item" data-uid="${line.uid}">
         <div class="ci-top-row">
           <div class="ci-info">
@@ -1372,10 +1603,10 @@
     }
 
     state.card.inserted = true;
-    SoundFX.optionSelect();
+    SoundFX.cardInsert();
     const pt = VFX.elementCenter($("terminalSlotDrop"));
-    VFX.burst(pt.x, pt.y, ["#22c55e", "#38bdf8", "#fde047"], 18);
-    VFX.floatText(pt.x, pt.y - 20, "카드 인식 완료! 💳", "#15803d");
+    VFX.burst(pt.x, pt.y, ["#22c55e", "#38bdf8", "#fde047", "#ec4899"], 24);
+    VFX.floatText(pt.x, pt.y - 20, "카드 인식 완료! 💳", "#15803d", true);
     updateCardPayUI();
     speakKorean("카드가 올바르게 들어갔어요. 아래 결제하기 버튼을 눌러 주세요.");
   }
@@ -1475,11 +1706,14 @@
     const { totalPrice } = getCartTotals();
     const sum = state.directCashPlaced.reduce((a, b) => a + b, 0);
     const pt = VFX.elementCenter(sourceEl || $("directTrayBox"));
-    VFX.burst(pt.x, pt.y, denom >= 1000 ? ["#10b981", "#fde047"] : ["#f59e0b", "#38bdf8"], 10);
+    VFX.burst(pt.x, pt.y, denom >= 1000 ? ["#10b981", "#fde047", "#38bdf8"] : ["#fbbf24", "#f97316", "#38bdf8"], 14);
     VFX.floatText(pt.x, pt.y - 16, `+${formatWon(denom)}`, "#047857");
+    triggerCombo(sourceEl, "CASH");
 
     if (sum === totalPrice) {
-      SoundFX.comboDing(4);
+      SoundFX.comboDing(5);
+      VFX.burst(pt.x, pt.y, ["#22c55e", "#fde047", "#ec4899"], 26);
+      VFX.floatText(pt.x, pt.y - 36, "✨ 딱 맞았어요!", "#15803d", true);
       speakKorean("금액을 딱 맞게 입력했어요! 현금 결제하기 버튼을 눌러 주세요.");
     }
     $("directChangePanel").classList.add("hidden");
@@ -1662,8 +1896,9 @@
     if (sum === slot.targetAmount) {
       state.matchCombo++;
       SoundFX.comboDing(state.matchCombo);
-      VFX.burst(pt.x, pt.y, ["#22c55e", "#fde047", "#10b981"], 24);
-      VFX.floatText(pt.x, pt.y - 20, "✨ 딱 맞아요!", "#15803d");
+      triggerCombo(slotEl || sourceEl, "MATCH");
+      VFX.burst(pt.x, pt.y, ["#22c55e", "#fde047", "#10b981", "#38bdf8"], 28);
+      VFX.floatText(pt.x, pt.y - 20, "✨ 딱 맞아요!", "#15803d", true);
       speakKorean(`${slot.name} 금액을 정확히 맞추었어요!`);
       // 다음 미완료 상품으로 자동 이동
       const next = state.matchSlots.find((s) => getSlotSum(s) !== s.targetAmount);
@@ -1672,7 +1907,7 @@
       SoundFX.gentleBoing();
       VFX.floatText(pt.x, pt.y - 20, `${formatWon(sum - slot.targetAmount)} 넘었어요!`, "#e11d48");
     } else {
-      VFX.burst(pt.x, pt.y, ["#fde047", "#38bdf8"], 10);
+      VFX.burst(pt.x, pt.y, ["#fde047", "#38bdf8", "#fb923c"], 12);
       VFX.floatText(pt.x, pt.y - 16, `+${formatWon(denom)}`, "#0369a1");
     }
 
@@ -1692,8 +1927,9 @@
     const grid = $("matchSlotsGrid");
     let matchedCount = 0;
 
+    const allItems = getActiveMenuItems();
     grid.innerHTML = state.matchSlots.map((slot) => {
-      const item = MENU_ITEMS.find((m) => m.id === slot.itemId);
+      const item = allItems.find((m) => m.id === slot.itemId) || MENU_ITEMS.find((m) => m.id === slot.itemId);
       const sum = getSlotSum(slot);
       const isMatched = sum === slot.targetAmount;
       const isOver = sum > slot.targetAmount;
@@ -2121,8 +2357,9 @@
     const nowStr = new Date().toLocaleString("ko-KR", { hour12: false });
     $("receiptMeta").textContent = `${state.diningType === "dine_in" ? "매장 식사" : "포장 주문"} · ${nowStr}`;
 
+    const allItems = getActiveMenuItems();
     $("receiptItems").innerHTML = state.cart.map((line) => {
-      const item = MENU_ITEMS.find((m) => m.id === line.itemId);
+      const item = allItems.find((m) => m.id === line.itemId) || MENU_ITEMS.find((m) => m.id === line.itemId);
       return `<div class="rc-item-block">
         <div class="rc-row">
           <span>${line.name} (${line.qty}개) <small style="color:#64748b">(${line.optionsLabel})</small></span>
@@ -2177,9 +2414,12 @@
     SoundFX.receiptPrint();
     setTimeout(() => {
       SoundFX.fanfare();
-      VFX.launchConfetti(90);
+      VFX.launchConfetti(120);
       VFX.shakeScreen();
-    }, 320);
+    }, 300);
+    setTimeout(() => {
+      VFX.launchConfetti(60);
+    }, 950);
 
     speakKorean(`주문이 완료되었습니다. 대기번호는 ${state.orderNumber}번입니다. 감사합니다!`);
 
@@ -2276,14 +2516,32 @@
       renderMissionBanner();
     });
 
-    // 카페실습 만든 음료만 보기 토글
-    const filterCraftedBtn = $("btnFilterCrafted");
-    if (filterCraftedBtn) {
-      filterCraftedBtn.addEventListener("click", () => {
-        state.category = state.category === "crafted" ? "all" : "crafted";
-        SoundFX.categorySwipe();
-        renderCategories();
-        renderMenuGrid();
+    // 오늘의 랜덤 추천 담기 버튼
+    const surpriseBtn = $("btnSurprisePick");
+    if (surpriseBtn) {
+      surpriseBtn.addEventListener("click", () => {
+        const allItems = getActiveMenuItems();
+        const pool = state.category === "all"
+          ? allItems
+          : allItems.filter((m) => m.category === state.category);
+        const pick = pool[Math.floor(Math.random() * pool.length)] || allItems[0];
+        SoundFX.surpriseRoll();
+        const pt = VFX.elementCenter(surpriseBtn);
+        VFX.burst(pt.x, pt.y, ["#fbbf24", "#f97316", "#ec4899", "#38bdf8"], 24);
+        VFX.floatText(pt.x, pt.y - 22, `🎲 ${pick.name} 당첨!`, "#ea580c", true);
+        const cardEl = document.querySelector(`.menu-card[data-item-id="${pick.id}"]`);
+        addItemToCart(pick, 1, [], 0, cardEl || surpriseBtn);
+      });
+    }
+
+    // 교사 메뉴 · 가격 관리 버튼
+    const manageMenuBtn = $("btnManageMenu");
+    if (manageMenuBtn) {
+      manageMenuBtn.addEventListener("click", () => {
+        SoundFX.touchPop();
+        if (window.D1Bridge && typeof window.D1Bridge.openTeacherModal === "function") {
+          window.D1Bridge.openTeacherModal("kiosk");
+        }
       });
     }
 
@@ -2331,13 +2589,17 @@
     $("btnRotateCard").addEventListener("click", () => {
       if (state.card.inserted || state.card.paying) return;
       state.card.rotation = (state.card.rotation + 90) % 360;
-      SoundFX.touchPop();
+      SoundFX.cardRotate();
+      const pt = VFX.elementCenter($("interactiveCardScene"));
+      VFX.burst(pt.x, pt.y, ["#38bdf8", "#818cf8"], 10);
       updateCardPayUI();
     });
     $("btnFlipCard").addEventListener("click", () => {
       if (state.card.inserted || state.card.paying) return;
       state.card.face = state.card.face === "front" ? "back" : "front";
-      SoundFX.optionSelect();
+      SoundFX.cardFlip();
+      const pt = VFX.elementCenter($("interactiveCardScene"));
+      VFX.burst(pt.x, pt.y, ["#fbbf24", "#6366f1"], 12);
       updateCardPayUI();
     });
     $("btnInsertCard").addEventListener("click", tryInsertCard);
@@ -2544,12 +2806,28 @@
     bindEvents();
     renderCafeSyncStatus();
 
-    // 다른 탭에서 카페실습을 완료했을 때 실시간 반영
+    // 다른 탭에서 카페실습이나 교사 메뉴 관리 변경 시 실시간 반영
     window.addEventListener("storage", (e) => {
       if (e.key === CAFE_MADE_DRINKS_KEY) syncCafeDrinksFromAllSources();
+      if (e.key === "safe_mover.kiosk.custom_menu.v1") {
+        renderCafeSyncStatus();
+        if (state.screen === "menu") {
+          renderCategories();
+          renderMenuGrid();
+        }
+      }
     });
 
     if (window.D1Bridge) {
+      if (window.D1Bridge.onKioskMenuChange) {
+        window.D1Bridge.onKioskMenuChange(() => {
+          renderCafeSyncStatus();
+          if (state.screen === "menu") {
+            renderCategories();
+            renderMenuGrid();
+          }
+        });
+      }
       if (window.D1Bridge.bindFullscreenButton) {
         window.D1Bridge.bindFullscreenButton($("fullscreenBtn"), { enterText: "⛶", exitText: "⛶ 창" });
       }
@@ -2576,19 +2854,20 @@
       }
     }
 
-    // 카페실습에서 넘어온 경우 (?from=cafe&drink=...) 바로 메뉴 화면으로 연결
+    // 카페실습에서 넘어온 경우 (?from=cafe&drink=...)에도 전체 메뉴가 모두 보이도록 설정
     try {
       const params = new URLSearchParams(window.location.search);
       const from = params.get("from");
       const drinkId = params.get("drink");
-      if (from === "cafe" || (drinkId && MENU_ITEMS.some((m) => m.id === drinkId))) {
-        state.category = getMadeStats().kinds > 0 ? "crafted" : "all";
+      const allItems = getActiveMenuItems();
+      if (from === "cafe" || (drinkId && allItems.some((m) => m.id === drinkId))) {
+        state.category = "all";
         renderCategories();
         renderMenuGrid();
         renderCart();
         showScreen("menu");
         if (drinkId) {
-          const item = MENU_ITEMS.find((m) => m.id === drinkId);
+          const item = allItems.find((m) => m.id === drinkId);
           if (item) setTimeout(() => openOptionModal(item), 220);
         }
         return;

@@ -446,13 +446,27 @@ function saveKioskOrders(list) {
   if (window.D1Bridge && typeof window.D1Bridge.setKV === 'function') {
     window.D1Bridge.setKV(KIOSK_ORDERS_KEY, trimmed);
   }
+  try {
+    const base = (window.D1Bridge && window.D1Bridge.getApiBase)
+      ? window.D1Bridge.getApiBase()
+      : 'https://safe-mover-d1-api.school-guardian.workers.dev';
+    fetch(base + '/api/kv', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'safe_mover.kiosk.orders.public.v1', value: trimmed })
+    }).catch(() => {});
+  } catch {}
+}
+
+function isDrinkOrderItem(it) {
+  return Boolean(it && (RECIPES[it.itemId] || (it.category && it.category !== 'bakery')));
 }
 
 function getPendingDrinkCount(orders) {
   let pending = 0;
   for (const ord of orders || []) {
     for (const it of ord.items || []) {
-      if (RECIPES[it.itemId]) {
+      if (isDrinkOrderItem(it)) {
         const rem = Math.max(0, (Number(it.qty) || 0) - (Number(it.madeQty) || 0));
         pending += rem;
       }
@@ -3883,29 +3897,55 @@ function startKioskOrderDrink(orderId, itemId) {
 
 async function syncKioskOrdersFromAllSources() {
   let local = loadKioskOrders();
-  if (window.D1Bridge && typeof window.D1Bridge.getKV === 'function') {
-    try {
-      const remote = await window.D1Bridge.getKV(KIOSK_ORDERS_KEY);
-      if (Array.isArray(remote) && remote.length) {
-        const byId = new Map();
-        for (const o of [...local, ...remote]) {
-          if (!o || !o.id) continue;
-          const prev = byId.get(o.id);
-          if (!prev) {
-            byId.set(o.id, o);
-          } else {
-            // 더 많이 제조 완료된 상태를 보존
-            const prevMade = (prev.items || []).reduce((a, it) => a + (Number(it.madeQty) || 0), 0);
-            const curMade = (o.items || []).reduce((a, it) => a + (Number(it.madeQty) || 0), 0);
-            if (curMade > prevMade) byId.set(o.id, o);
-          }
-        }
-        local = [...byId.values()]
-          .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
-          .slice(0, 30);
-        try { localStorage.setItem(KIOSK_ORDERS_KEY, JSON.stringify(local)); } catch {}
+  let remote = null;
+  try {
+    const base = (window.D1Bridge && window.D1Bridge.getApiBase)
+      ? window.D1Bridge.getApiBase()
+      : 'https://safe-mover-d1-api.school-guardian.workers.dev';
+    const resp = await fetch(base + '/api/kv?key=' + encodeURIComponent('safe_mover.kiosk.orders.public.v1'));
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json && json.found && json.item && json.item.v) {
+        const parsed = typeof json.item.v === 'string' ? JSON.parse(json.item.v) : json.item.v;
+        if (Array.isArray(parsed)) remote = parsed;
       }
+    }
+  } catch {}
+  if (remote === null && window.D1Bridge && typeof window.D1Bridge.getKV === 'function') {
+    try {
+      const scoped = await window.D1Bridge.getKV(KIOSK_ORDERS_KEY);
+      if (Array.isArray(scoped)) remote = scoped;
     } catch {}
+  }
+  if (Array.isArray(remote)) {
+    const byId = new Map();
+    for (const o of remote) {
+      if (o && o.id) byId.set(o.id, o);
+    }
+    for (const o of local) {
+      if (!o || !o.id) continue;
+      if (!byId.has(o.id)) continue;
+      const prev = byId.get(o.id);
+      const prevMade = (prev.items || []).reduce((a, it) => a + (Number(it.madeQty) || 0), 0);
+      const curMade = (o.items || []).reduce((a, it) => a + (Number(it.madeQty) || 0), 0);
+      if (curMade > prevMade) byId.set(o.id, o);
+    }
+    local = [...byId.values()]
+      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+      .slice(0, 30);
+    try { localStorage.setItem(KIOSK_ORDERS_KEY, JSON.stringify(local)); } catch {}
+  }
+  if (!state.activeKioskOrder) {
+    const recovered = getInitialKioskOrder();
+    if (recovered) {
+      state.activeKioskOrder = recovered;
+      if (RECIPES[recovered.itemId] && state.recipeKey !== recovered.itemId) {
+        state.recipeKey = recovered.itemId;
+        renderRecipeDrawer();
+        resetDrink();
+      }
+      renderActiveOrderBanner();
+    }
   }
   updateKioskOrderBadge(local);
   renderKioskOrderDrawer(local);
@@ -3938,26 +3978,37 @@ function renderKioskOrderDrawer(ordersArg = null) {
 
   listEl.innerHTML = orders.map((ord) => {
     const items = ord.items || [];
-    const drinkItems = items.filter((it) => RECIPES[it.itemId]);
+    const drinkItems = items.filter((it) => isDrinkOrderItem(it));
     const allDone = drinkItems.length > 0 && drinkItems.every((it) => (Number(it.madeQty) || 0) >= (Number(it.qty) || 1));
     const diningTxt = ord.diningType === 'take_out' ? '🛍️ 포장' : '🍽️ 매장';
     const timeStr = ord.createdAt
       ? new Date(ord.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
       : '';
 
-    const itemsHtml = items.map((it) => {
+    const itemsHtml = items.map((it, itemIdx) => {
       const recipe = RECIPES[it.itemId];
       const qty = Number(it.qty) || 1;
       const madeQty = Number(it.madeQty) || 0;
       const done = madeQty >= qty;
       const opts = it.optionsLabel && it.optionsLabel !== '기본' ? ` · ${it.optionsLabel}` : '';
-      if (!recipe) {
+      if (!recipe && it.category === 'bakery') {
         return `<div class="kod-item-row">
           <div class="kod-item-info">
             <span class="kod-item-name">🥐 ${it.name} (${qty}개${opts})</span>
             <span class="kod-item-sub">진열대에서 바로 꺼내 드리는 베이커리 메뉴예요</span>
           </div>
           <span class="kod-bakery-pill">🥐 베이커리</span>
+        </div>`;
+      }
+      if (!recipe) {
+        return `<div class="kod-item-row">
+          <div class="kod-item-info">
+            <span class="kod-item-name">🥤 ${it.name} (${qty}잔${opts})</span>
+            <span class="kod-item-sub">${done ? `✅ ${qty}잔 준비 완료!` : `키오스크 추가 음료 · 준비: ${madeQty} / ${qty}잔`}</span>
+          </div>
+          <button type="button" class="kod-make-btn ${done ? 'done' : ''}" data-custom-done="${ord.id}" data-item-idx="${itemIdx}">
+            ${done ? '✅ 준비 완료' : '🥤 1잔 완료 체크'}
+          </button>
         </div>`;
       }
       const isCurrent = state.activeKioskOrder && state.activeKioskOrder.orderId === ord.id && state.activeKioskOrder.itemId === it.itemId;
@@ -3986,9 +4037,28 @@ function renderKioskOrderDrawer(ordersArg = null) {
     </article>`;
   }).join('');
 
-  listEl.querySelectorAll('.kod-make-btn').forEach((btn) => {
+  listEl.querySelectorAll('.kod-make-btn[data-order-id]').forEach((btn) => {
     btn.addEventListener('click', () => {
       startKioskOrderDrink(btn.dataset.orderId, btn.dataset.itemId);
+    });
+  });
+
+  listEl.querySelectorAll('[data-custom-done]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ordId = btn.dataset.customDone;
+      const idx = Number(btn.dataset.itemIdx);
+      const list = loadKioskOrders();
+      const ord = list.find((o) => o.id === ordId);
+      const target = ord && ord.items && ord.items[idx];
+      if (!target) return;
+      const qty = Number(target.qty) || 1;
+      const prev = Number(target.madeQty) || 0;
+      if (prev < qty) {
+        target.madeQty = prev + 1;
+        saveKioskOrders(list);
+        playSoftTone(880, 0.14, 'triangle', 0.05);
+        renderKioskOrderDrawer(list);
+      }
     });
   });
 }
@@ -4364,7 +4434,7 @@ if (clearDoneOrdersBtn) {
   clearDoneOrdersBtn.addEventListener('click', () => {
     const orders = loadKioskOrders();
     const filtered = orders.filter((ord) => {
-      const drinkItems = (ord.items || []).filter((it) => RECIPES[it.itemId]);
+      const drinkItems = (ord.items || []).filter((it) => isDrinkOrderItem(it));
       if (!drinkItems.length) return false;
       return drinkItems.some((it) => (Number(it.madeQty) || 0) < (Number(it.qty) || 1));
     });
@@ -4666,6 +4736,10 @@ function animate() {
 
 initCafeScene();
 syncKioskOrdersFromAllSources();
+window.addEventListener('focus', () => syncKioskOrdersFromAllSources());
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) syncKioskOrdersFromAllSources();
+});
 window.addEventListener('storage', (e) => {
   if (e.key === KIOSK_ORDERS_KEY) {
     updateKioskOrderBadge();

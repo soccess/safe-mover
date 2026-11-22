@@ -22,6 +22,13 @@ const SCHEMA_STATEMENTS = [
     v TEXT NOT NULL,
     updated_at TEXT NOT NULL DEFAULT (datetime('now', '+9 hours'))
   )`,
+  `CREATE TABLE IF NOT EXISTS menu_images (
+    id TEXT PRIMARY KEY,
+    mime TEXT NOT NULL DEFAULT 'image/webp',
+    data_url TEXT NOT NULL,
+    bytes INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', '+9 hours'))
+  )`,
 ];
 
 const MIGRATION_STATEMENTS = [
@@ -345,6 +352,140 @@ export default {
           .run();
 
         return jsonResponse(request, { ok: true, mode: "cloudflare-d1" });
+      }
+
+      // 키오스크 메뉴 이미지 조회 (raw=1 이면 바이너리 이미지 반환)
+      if (request.method === "GET" && path === "/api/menu-images") {
+        await ensureSchema(db);
+        const id = (url.searchParams.get("id") || "").trim();
+        if (!id) {
+          return jsonResponse(request, { ok: false, error: "id is required" }, 400);
+        }
+        const row = await db
+          .prepare("SELECT id, mime, data_url, bytes, created_at FROM menu_images WHERE id = ?")
+          .bind(id)
+          .first();
+        if (!row) {
+          return jsonResponse(request, { ok: false, error: "not found" }, 404);
+        }
+        if (url.searchParams.get("raw") === "1") {
+          const commaIdx = String(row.data_url || "").indexOf(",");
+          if (commaIdx > 0) {
+            const b64 = row.data_url.slice(commaIdx + 1);
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new Response(bytes, {
+              status: 200,
+              headers: {
+                "Content-Type": row.mime || "image/webp",
+                "Cache-Control": "public, max-age=86400",
+                ...corsHeaders(),
+              },
+            });
+          }
+        }
+        return jsonResponse(request, { ok: true, image: row });
+      }
+
+      // 키오스크 메뉴 초저용량 압축 이미지 D1 저장
+      if (request.method === "POST" && path === "/api/menu-images") {
+        await ensureSchema(db);
+        const body = await request.json().catch(() => ({}));
+        const rawId = String(body.id || "").trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+        const id = rawId || ("img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8));
+        const dataUrl = String(body.data_url || "");
+        if (!dataUrl.startsWith("data:image/")) {
+          return jsonResponse(request, { ok: false, error: "valid data:image/* URL is required" }, 400);
+        }
+        if (dataUrl.length > 52000) {
+          return jsonResponse(request, { ok: false, error: "image too large; compress below 40KB" }, 413);
+        }
+        const mimeMatch = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
+        const mime = mimeMatch ? mimeMatch[1] : "image/webp";
+        const bytes = Math.round((dataUrl.length * 3) / 4);
+
+        await db
+          .prepare(
+            "INSERT INTO menu_images (id, mime, data_url, bytes, created_at) VALUES (?, ?, ?, ?, datetime('now', '+9 hours')) " +
+            "ON CONFLICT(id) DO UPDATE SET mime = excluded.mime, data_url = excluded.data_url, bytes = excluded.bytes, created_at = datetime('now', '+9 hours')"
+          )
+          .bind(id, mime, dataUrl, bytes)
+          .run();
+
+        return jsonResponse(request, { ok: true, id, mime, bytes, mode: "cloudflare-d1" }, 201);
+      }
+
+      if (request.method === "DELETE" && path === "/api/menu-images") {
+        await ensureSchema(db);
+        const id = (url.searchParams.get("id") || "").trim();
+        if (!id) return jsonResponse(request, { ok: false, error: "id is required" }, 400);
+        await db.prepare("DELETE FROM menu_images WHERE id = ?").bind(id).run();
+        return jsonResponse(request, { ok: true, deletedId: id });
+      }
+
+      // Google Custom Search Image API 프록시
+      if (request.method === "GET" && path === "/api/image-search") {
+        const q = (url.searchParams.get("q") || "").trim();
+        if (!q) return jsonResponse(request, { ok: false, error: "q parameter is required" }, 400);
+        const apiKey = (url.searchParams.get("key") || env.GOOGLE_API_KEY || "").trim();
+        const cx = (url.searchParams.get("cx") || env.GOOGLE_CX || "").trim();
+        if (!apiKey || !cx) {
+          return jsonResponse(request, { ok: false, needs_config: true, error: "Google API Key / CX is not configured" }, 400);
+        }
+        const gUrl = new URL("https://www.googleapis.com/customsearch/v1");
+        gUrl.searchParams.set("key", apiKey);
+        gUrl.searchParams.set("cx", cx);
+        gUrl.searchParams.set("q", q);
+        gUrl.searchParams.set("searchType", "image");
+        gUrl.searchParams.set("num", "8");
+        gUrl.searchParams.set("safe", "active");
+        const gRes = await fetch(gUrl.toString());
+        const gJson = await gRes.json().catch(() => ({}));
+        if (!gRes.ok) {
+          return jsonResponse(request, {
+            ok: false,
+            error: (gJson && gJson.error && gJson.error.message) || `Google Search HTTP ${gRes.status}`,
+          }, gRes.status);
+        }
+        const items = (gJson.items || []).map((it) => ({
+          title: it.title || "",
+          link: it.link || "",
+          thumbnail: (it.image && it.image.thumbnailLink) || it.link || "",
+          width: it.image ? it.image.width : 0,
+          height: it.image ? it.image.height : 0,
+        }));
+        return jsonResponse(request, { ok: true, items });
+      }
+
+      // 외부 검색 이미지 CORS 우회 프록시 (클라이언트 Canvas 리사이징·WebP 압축용)
+      if (request.method === "GET" && path === "/api/image-proxy") {
+        const targetUrl = (url.searchParams.get("url") || "").trim();
+        if (!/^https?:\/\//i.test(targetUrl)) {
+          return jsonResponse(request, { ok: false, error: "valid http(s) url required" }, 400);
+        }
+        const imgRes = await fetch(targetUrl, {
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; SafeMoverKiosk/1.0)" },
+        });
+        if (!imgRes.ok) {
+          return jsonResponse(request, { ok: false, error: `Upstream HTTP ${imgRes.status}` }, 502);
+        }
+        const cType = imgRes.headers.get("content-type") || "image/jpeg";
+        if (!cType.startsWith("image/")) {
+          return jsonResponse(request, { ok: false, error: "Target is not an image" }, 415);
+        }
+        const buf = await imgRes.arrayBuffer();
+        if (buf.byteLength > 3 * 1024 * 1024) {
+          return jsonResponse(request, { ok: false, error: "Source image exceeds 3MB limit" }, 413);
+        }
+        return new Response(buf, {
+          status: 200,
+          headers: {
+            "Content-Type": cType,
+            "Cache-Control": "public, max-age=3600",
+            ...corsHeaders(),
+          },
+        });
       }
 
       return jsonResponse(request, { ok: false, error: "Not found" }, 404);

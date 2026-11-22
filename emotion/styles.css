@@ -318,3 +318,20 @@ body{
 .gallery-card h4{margin:0;font:17px 'Jua',sans-serif;color:#4b4460}
 .gallery-body{font-size:13.5px;line-height:1.5;color:#5b5344;word-break:break-word}
 .gallery-empty{grid-column:1/-1;text-align:center;padding:34px 16px;background:#fff;border:1.5px dashed #dcd2ea;border-radius:18px;color:#7a7489;font-size:14px}
+
+/* ============================================================
+   frontend-design + ui-ux-pro-max: Warm Claymorphic Studio Polish
+   ============================================================ */
+body{background:radial-gradient(circle at 12% 10%,#fff4d6 0%,transparent 42%),radial-gradient(circle at 88% 18%,#efeaff 0%,transparent 40%),#fff9ed}
+.hero{border:2.5px solid #f2dec0;box-shadow:0 7px 0 #ead4b4,0 18px 42px rgba(118,101,197,.12)}
+.mood-card,.method-card,.free-mixer-card,.gallery-card{border:2px solid #ece2d0;box-shadow:0 5px 0 #e6dac4,0 10px 24px rgba(83,68,42,.08)}
+.mood-card:hover,.method-card:hover{border-color:#b8a7ea;box-shadow:0 7px 0 #c9bee9,0 18px 36px rgba(118,101,197,.18)}
+.mood-card:active,.method-card:active{transform:translateY(2px)}
+.em-tool-btn,.home-link,.ta-chip{border-width:2px;box-shadow:0 3px 0 #dcd1ef}
+.em-tool-btn:active,.ta-chip:active{transform:translateY(2px);box-shadow:0 1px 0 #dcd1ef}
+.em-tool-btn.on,.ta-chip.on{box-shadow:0 3px 0 #4d3e94}
+.ta-btn,.action.primary{box-shadow:0 4px 0 #5342a6}
+.ta-btn:active,.action.primary:active{transform:translateY(2px);box-shadow:0 1px 0 #5342a6}
+.ta-btn.gold{box-shadow:0 4px 0 #d99b1e}
+.detail{border:2.5px solid #e6dcf5;box-shadow:0 8px 0 #ddd2f0,0 20px 44px rgba(93,77,169,.14)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
