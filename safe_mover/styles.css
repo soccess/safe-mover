@@ -137,8 +137,8 @@ html, body {
 }
 #btnSound { background: #E3F2FD; color: #0D47A1; }
 #btnVoice { background: #E8F5E9; color: #1B5E20; }
-#btnPracticeMode, #btnPause { background: #F1F5F9; color: #1E293B; }
-#btnPracticeMode.on { background: #DCFCE7; color: #166534; box-shadow: inset 0 0 0 2px #16A34A; }
+#btnPracticeMode, #btnPause, #btnFullscreen { background: #F1F5F9; color: #1E293B; }
+#btnPracticeMode.on, #btnFullscreen.on { background: #DCFCE7; color: #166534; box-shadow: inset 0 0 0 2px #16A34A; }
 #btnVoice.off, #btnSound.off { background: #F1F5F9; color: #64748B; }
 #btnRestart { background: #FFF3E0; color: #E65100; }
 

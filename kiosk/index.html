@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>마음카페 키오스크 - 주문 &amp; 화폐 계산 실습</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 전체 화면 파티클 · 컨페티 · 팝업 텍스트 VFX 캔버스 -->
+  <canvas id="vfxCanvas" aria-hidden="true"></canvas>
+
+  <div id="app" class="kiosk-shell">
+    <!-- 상단 키오스크 HUD 바 -->
+    <header class="kiosk-topbar">
+      <div class="brand-group">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="32" height="32">
+            <rect x="6" y="4" width="36" height="40" rx="8" fill="#487555" stroke="#2e5239" stroke-width="2.4"/>
+            <rect x="10" y="9" width="28" height="20" rx="4" fill="#fffbeb"/>
+            <circle cx="24" cy="19" r="6" fill="#d9822b"/>
+            <path d="M21 19l2 2 4-4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="13" y="33" width="22" height="6" rx="2.5" fill="#fde68a"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <strong>마음카페 키오스크</strong>
+          <span id="modeBadge" class="mode-badge">🛒 자유 주문</span>
+        </div>
+        <span id="scoreBadge" class="score-badge" title="완료한 주문 수">★ 0</span>
+      </div>
+
+      <!-- 진행 단계 표시기 -->
+      <nav class="step-tracker" aria-label="주문 진행 단계">
+        <div class="step-pill active" data-step="welcome"><span class="num">1</span><span class="txt">시작</span></div>
+        <span class="step-arrow">›</span>
+        <div class="step-pill" data-step="menu"><span class="num">2</span><span class="txt">메뉴 담기</span></div>
+        <span class="step-arrow">›</span>
+        <div class="step-pill" data-step="pay"><span class="num">3</span><span class="txt">결제·화폐</span></div>
+        <span class="step-arrow">›</span>
+        <div class="step-pill" data-step="receipt"><span class="num">4</span><span class="txt">완료</span></div>
+      </nav>
+
+      <div class="topbar-actions">
+        <button type="button" id="bgmBtn" class="pill-btn" title="신나는 카페 배경음악 켜기/끄기">🎵 배경음: 꺼짐</button>
+        <button type="button" id="soundBtn" class="pill-btn active" title="효과음 켜기/끄기">🔔 효과음: 켜짐</button>
+        <button type="button" id="voiceBtn" class="pill-btn" title="음성 안내 켜기/끄기">🔊 음성: 꺼짐</button>
+        <button type="button" id="easyBtn" class="pill-btn" title="쉬운 말 안내">📖 쉬운말</button>
+        <button type="button" id="fullscreenBtn" class="pill-btn" title="전체화면">⛶</button>
+        <a class="pill-btn cafe-link" href="../cafe/index.html" title="3D 바리스타 카페실습으로 이동">☕ 카페실습</a>
+        <a class="pill-btn home-link" href="../index.html" title="학습 게임 모음으로 돌아가기">🏠</a>
+      </div>
+    </header>
+
+    <!-- 화면 1: 대기 및 매장/포장 선택 화면 -->
+    <section id="welcomeScreen" class="screen welcome-screen active" aria-label="주문 시작 화면">
+      <div class="welcome-bg-deco" aria-hidden="true">
+        <div class="deco-blob blob-1"></div>
+        <div class="deco-blob blob-2"></div>
+        <div class="deco-blob blob-3"></div>
+      </div>
+
+      <div class="welcome-card">
+        <div class="welcome-hero">
+          <div class="hero-cup-wrap" aria-hidden="true">
+            <svg class="hero-cup-svg" viewBox="0 0 140 130" width="124" height="116">
+              <circle cx="70" cy="72" r="50" fill="#fef3c7" class="anim-pulse-soft"/>
+              <path d="M52 38c-5-8 5-14 0-22" fill="none" stroke="#b45309" stroke-width="4" stroke-linecap="round" class="anim-steam-1"/>
+              <path d="M70 34c-5-9 5-15 0-24" fill="none" stroke="#92400e" stroke-width="4" stroke-linecap="round" class="anim-steam-2"/>
+              <path d="M88 38c-5-8 5-14 0-22" fill="none" stroke="#b45309" stroke-width="4" stroke-linecap="round" class="anim-steam-1"/>
+              <g class="anim-bob">
+                <ellipse cx="70" cy="108" rx="42" ry="9" fill="#d6c5b3" stroke="#78350f" stroke-width="2.2"/>
+                <path d="M98 60h11c8 0 13 5 13 13s-5 14-13 14H98" fill="none" stroke="#487555" stroke-width="6.5" stroke-linecap="round"/>
+                <path d="M36 52h68v30c0 15-12 24-34 24s-34-9-34-24z" fill="#fff" stroke="#487555" stroke-width="4" stroke-linejoin="round"/>
+                <ellipse cx="70" cy="52" rx="34" ry="9" fill="#6f4228" stroke="#487555" stroke-width="3"/>
+                <path d="M70 49c-2.6-3.2-7-1.2-7 2.2 0 3.3 7 7 7 7s7-3.7 7-7c0-3.4-4.4-5.4-7-2.2z" fill="#fff7ed"/>
+                <circle cx="70" cy="79" r="10" fill="#487555"/>
+                <path d="M65.5 79l3.2 3.2 6.2-6.2" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <path d="M22 42l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#f59e0b" class="anim-twinkle"/>
+              <path d="M116 32l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" fill="#10b981" class="anim-twinkle-2"/>
+            </svg>
+          </div>
+          <div class="hero-copy">
+            <span class="hero-chip">✨ TOUCH KIOSK SIMULATION</span>
+            <h1>어서 오세요, 마음카페입니다!</h1>
+            <p id="welcomeSubText">카페실습에서 만든 음료를 키오스크에서 골라 보고, <strong>카드 방향 맞추기 결제</strong>와 <strong>동전·지폐 현금 결제</strong>를 직접 체험해 보세요.</p>
+            <div id="welcomeCafeSyncBadge" class="welcome-sync-pill">☕ 카페실습 음료 연동 준비 중...</div>
+          </div>
+        </div>
+
+        <!-- 연습 방식 선택 (자유 주문 vs 손님 미션) -->
+        <div class="play-mode-selector" role="group" aria-label="주문 방식 선택">
+          <button type="button" class="play-mode-btn active" data-playmode="free">
+            <span class="pm-emoji">🛒</span>
+            <span class="pm-info">
+              <strong>자유 주문 모드</strong>
+              <small>일반 키오스크처럼 원하는 음료를 자유롭게 주문해요</small>
+            </span>
+          </button>
+          <button type="button" class="play-mode-btn" data-playmode="mission">
+            <span class="pm-emoji">🎯</span>
+            <span class="pm-info">
+              <strong>손님 주문 미션</strong>
+              <small>손님이 요청한 메뉴를 담고 현금 계산까지 해결해요</small>
+            </span>
+          </button>
+        </div>
+
+        <!-- 매장 / 포장 선택 버튼 -->
+        <div class="dining-prompt">어디에서 드시겠어요? 아래 버튼을 눌러 주문을 시작하세요!</div>
+        <div class="dining-cards">
+          <button type="button" id="btnDineIn" class="dining-card dine-in">
+            <span class="dc-glow"></span>
+            <span class="dc-icon">🍽️</span>
+            <span class="dc-title">매장 식사</span>
+            <span class="dc-sub">머그컵 · 유리컵에 담아<br>카페 안에서 마셔요</span>
+            <span class="dc-cta">터치해서 시작 ▶</span>
+          </button>
+          <button type="button" id="btnTakeOut" class="dining-card take-out">
+            <span class="dc-glow"></span>
+            <span class="dc-icon">🛍️</span>
+            <span class="dc-title">포장 주문</span>
+            <span class="dc-sub">테이크아웃 컵에 담아<br>가지고 나가요</span>
+            <span class="dc-cta">터치해서 시작 ▶</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 화면 2: 메인 키오스크 주문 화면 -->
+    <section id="kioskScreen" class="screen kiosk-screen" aria-label="메뉴 선택 및 장바구니">
+      <!-- 미션 모드 배너 -->
+      <div id="missionBanner" class="mission-banner hidden" role="status" aria-live="polite">
+        <div class="mission-avatar" id="missionAvatar">🐰</div>
+        <div class="mission-body">
+          <div class="mission-title">
+            <span class="mission-tag">🎯 손님 주문 미션</span>
+            <strong id="missionCustomerName">토끼 손님의 주문</strong>
+          </div>
+          <p id="missionText" class="mission-text"></p>
+          <div id="missionChecklist" class="mission-checklist"></div>
+        </div>
+        <div class="mission-actions">
+          <button type="button" id="speakMissionBtn" class="mini-btn" title="손님 주문 다시 듣기">🔊 다시 듣기</button>
+          <button type="button" id="newMissionBtn" class="mini-btn" title="다른 손님 주문 받기">🎲 새 미션</button>
+        </div>
+      </div>
+
+      <div class="kiosk-workspace">
+        <!-- 좌측: 카페실습 연동 바 + 카테고리 + 메뉴 그리드 -->
+        <div class="menu-area">
+          <div id="cafeSyncBar" class="cafe-sync-bar" role="status" aria-live="polite">
+            <div class="csb-info">
+              <span class="csb-icon">☕</span>
+              <span id="cafeSyncText">3D 카페실습에서 만든 음료를 불러오고 있어요...</span>
+            </div>
+            <div class="csb-actions">
+              <button type="button" id="btnFilterCrafted" class="csb-btn">🏅 만든 음료만 보기</button>
+              <a class="csb-link" href="../cafe/index.html">3D 카페에서 만들기 →</a>
+            </div>
+          </div>
+          <div class="category-bar" id="categoryBar" role="tablist" aria-label="메뉴 카테고리"></div>
+          <div class="menu-grid" id="menuGrid" role="region" aria-label="메뉴 목록"></div>
+        </div>
+
+        <!-- 우측(모바일 하단): 실시간 장바구니 & 결제 버튼 -->
+        <aside class="cart-panel" aria-label="장바구니">
+          <div class="cart-header">
+            <div class="cart-title-row">
+              <span class="cart-title-icon">🛒</span>
+              <h2>주문 내역</h2>
+              <span id="cartCountBadge" class="cart-count-badge">0</span>
+            </div>
+            <div class="cart-header-tools">
+              <button type="button" id="toggleDiningBtn" class="dining-pill" title="매장/포장 변경">🍽️ 매장</button>
+              <button type="button" id="clearCartBtn" class="clear-cart-btn" title="장바구니 비우기">🗑️ 비우기</button>
+            </div>
+          </div>
+
+          <div id="cartList" class="cart-list">
+            <div class="cart-empty">
+              <div class="cart-empty-icon">☕</div>
+              <p>메뉴를 터치하면<br>여기에 쏙! 담겨요</p>
+            </div>
+          </div>
+
+          <div class="cart-footer">
+            <div class="cart-summary">
+              <div class="summary-row">
+                <span>선택 수량</span>
+                <strong id="cartTotalQty">0개</strong>
+              </div>
+              <div class="summary-row total-row">
+                <span>총 결제 금액</span>
+                <strong id="cartTotalPrice" class="rolling-price">0원</strong>
+              </div>
+            </div>
+            <div class="pay-buttons">
+              <button type="button" id="btnPayCard" class="pay-btn card-pay" disabled>
+                <span class="pb-icon">💳</span>
+                <span class="pb-text">
+                  <strong>카드로 계산</strong>
+                  <small>IC카드 터치 결제</small>
+                </span>
+              </button>
+              <button type="button" id="btnPayCash" class="pay-btn cash-pay" disabled>
+                <span class="pb-icon">💵</span>
+                <span class="pb-text">
+                  <strong>현금으로 계산</strong>
+                  <small>화폐 짝짓기 · 거스름돈</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 화면 3: 주문 완료 & 감열지 영수증 출력 화면 -->
+    <section id="receiptScreen" class="screen receipt-screen" aria-label="결제 완료 및 영수증">
+      <div class="receipt-stage">
+        <div class="order-number-board">
+          <span class="onb-label">주문이 주방에 전송되었어요!</span>
+          <div class="onb-number">대기번호 <span id="orderNumberText">101</span>번</div>
+          <div id="orderStatusChip" class="onb-chip">✨ 결제 완료</div>
+        </div>
+
+        <div class="printer-slot-wrap">
+          <div class="printer-slot" aria-hidden="true">
+            <div class="printer-led"></div>
+            <span>영수증 출력구</span>
+          </div>
+          <div id="receiptPaper" class="receipt-paper">
+            <div class="receipt-head">
+              <h3>마음카페 KIOSK</h3>
+              <p id="receiptMeta"></p>
+            </div>
+            <div class="receipt-divider"></div>
+            <div id="receiptItems" class="receipt-items"></div>
+            <div class="receipt-divider"></div>
+            <div id="receiptTotals" class="receipt-totals"></div>
+            <div class="receipt-barcode" aria-hidden="true">||| |||| || ||| |||| |||</div>
+            <p class="receipt-thanks">맛있게 준비해 드릴게요! 감사합니다 😊✨</p>
+            <div class="receipt-zigzag" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="receipt-actions">
+          <button type="button" id="btnNewOrder" class="primary-big-btn">🔄 새 주문 시작하기</button>
+          <a id="btnGoBarista" class="secondary-big-btn" href="../cafe/index.html">☕ 3D 카페에서 직접 만들어보기</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 모달 1: 상품 옵션 선택 팝업 -->
+  <div id="optionModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="optModalTitle">
+    <div class="modal-card option-modal-card">
+      <button type="button" id="closeOptionModal" class="modal-close-btn" aria-label="닫기">✕</button>
+      <div class="opt-header">
+        <div id="optPreviewSvg" class="opt-preview-svg"></div>
+        <div class="opt-info">
+          <span id="optBadge" class="item-badge">ICE</span>
+          <h3 id="optModalTitle">메뉴 이름</h3>
+          <p id="optModalDesc" class="opt-desc">메뉴 설명</p>
+          <div id="optBasePrice" class="opt-base-price">3,500원</div>
+        </div>
+      </div>
+
+      <!-- 선택한 수량만큼 1:1 음료 그림이 늘어나는 미리보기 트레이 -->
+      <div class="opt-visual-tray">
+        <div class="opt-visual-head">
+          <span>🥤 선택한 수량 그림</span>
+          <strong id="optVisualCountBadge">1개</strong>
+        </div>
+        <div id="optPreviewGallery" class="opt-preview-gallery" aria-live="polite"></div>
+      </div>
+
+      <div id="optGroups" class="opt-groups"></div>
+
+      <div class="opt-qty-row">
+        <span>수량 선택</span>
+        <div class="qty-stepper">
+          <button type="button" id="optQtyMinus5" class="qty-btn qty-step-big" title="5개 빼기">−5</button>
+          <button type="button" id="optQtyMinus" class="qty-btn" title="1개 빼기">−</button>
+          <span id="optQtyValue" class="qty-val">1</span>
+          <button type="button" id="optQtyPlus" class="qty-btn" title="1개 더하기">＋</button>
+          <button type="button" id="optQtyPlus5" class="qty-btn qty-step-big" title="5개 더하기">+5</button>
+          <button type="button" id="optQtyPlus10" class="qty-btn qty-step-big" title="10개 더하기">+10</button>
+        </div>
+      </div>
+
+      <button type="button" id="btnAddToCartConfirm" class="confirm-add-btn">
+        <span>🛒 장바구니 담기</span>
+        <strong id="optFinalPrice">3,500원</strong>
+      </button>
+    </div>
+  </div>
+
+  <!-- 모달 2: 카드 결제 단말기 팝업 (카드 방향 맞추기 + 삽입 + 결제 버튼) -->
+  <div id="cardPayModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="cardModalTitle">
+    <div class="modal-card card-pay-modal">
+      <button type="button" id="closeCardModal" class="modal-close-btn" aria-label="닫기">✕</button>
+      <h3 id="cardModalTitle">💳 신용·체크카드 결제</h3>
+      <p id="cardPayPrompt" class="modal-sub">1단계: 카드의 <strong>금색 IC칩이 앞면 위쪽(▲)</strong>을 향하게 맞춘 뒤 단말기에 넣으세요!<br>2단계: 인식이 완료되면 아래 <strong>[결제하기]</strong> 버튼을 눌러 주세요.</p>
+      <div class="pay-amount-banner">
+        <span>결제 금액</span>
+        <strong id="cardPayAmount">0원</strong>
+      </div>
+
+      <div class="card-terminal-stage">
+        <div class="terminal-unit" id="terminalUnit">
+          <div class="terminal-screen">
+            <div id="terminalScreenText">카드를 올바로 넣어주세요<br><small>금색 IC칩이 앞면 위쪽(▲)</small></div>
+            <div class="nfc-waves" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <button type="button" id="terminalSlotDrop" class="terminal-slot" title="여기를 눌러 카드 넣기">
+            <div class="slot-led" id="terminalLed"></div>
+            <div class="slot-guide-text">
+              <span>IC 카드 투입구 (누르거나 끌어놓기)</span>
+              <small>▲ 금색 IC칩이 앞·위로 들어가게</small>
+            </div>
+            <div id="insertedCardInSlot" class="inserted-card-in-slot hidden" aria-hidden="true">
+              <div class="mini-card-stripe"></div>
+              <div class="mini-card-label">마음카드 인식됨 ✓</div>
+            </div>
+          </button>
+        </div>
+
+        <div id="cardOrientationStatus" class="card-status-banner warn">
+          🧭 카드 방향을 확인해 주세요! (앞면 + 금색 IC칩이 위쪽 ▲)
+        </div>
+
+        <div id="cardManipulateArea" class="card-manipulate-area">
+          <div id="interactiveCardScene" class="card-3d-scene">
+            <div id="interactiveCard" class="physical-card" draggable="true" tabindex="0" role="button" aria-label="결제할 신용카드">
+              <!-- 카드 앞면 -->
+              <div class="card-face card-face-front">
+                <div class="card-top-row">
+                  <div class="card-chip-wrap">
+                    <div class="card-chip"></div>
+                    <span class="chip-arrow-badge">▲ IC칩 위</span>
+                  </div>
+                  <span class="card-nfc-icon">📶</span>
+                </div>
+                <div class="card-brand">마음카드 (IC)</div>
+                <div class="card-number">1234 •••• •••• 5678</div>
+              </div>
+              <!-- 카드 뒷면 -->
+              <div class="card-face card-face-back">
+                <div class="card-mag-stripe"></div>
+                <div class="card-sign-row">
+                  <div class="card-sign-box">마음학생</div>
+                  <div class="card-cvc-box">777</div>
+                </div>
+                <div class="card-back-notice">⚠️ 여기는 카드 뒷면이에요! 앞면으로 뒤집어 주세요</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-control-buttons">
+            <button type="button" id="btnRotateCard" class="card-ctrl-btn">↻ 90° 돌리기</button>
+            <button type="button" id="btnFlipCard" class="card-ctrl-btn">🔄 앞/뒤 뒤집기</button>
+            <button type="button" id="btnInsertCard" class="card-ctrl-btn insert">📥 단말기에 카드 넣기</button>
+            <button type="button" id="btnEjectCard" class="card-ctrl-btn eject hidden">↩ 카드 다시 빼기</button>
+          </div>
+        </div>
+
+        <button type="button" id="btnConfirmCardPay" class="confirm-card-pay-btn" disabled>
+          💳 카드를 먼저 올바로 넣어주세요
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달 3: 현금 결제 & 동전·화폐 선택 / 화폐 짝짓기 / 거스름돈 계산 활동 팝업 -->
+  <div id="cashPayModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="cashModalTitle">
+    <div class="modal-card cash-pay-modal">
+      <div class="cash-modal-top">
+        <div class="cash-title-wrap">
+          <h3 id="cashModalTitle">💵 현금 계산 · 화폐 실습</h3>
+          <span id="cashTotalPill" class="cash-total-pill">총 0원</span>
+        </div>
+        <div class="cash-activity-tabs" role="tablist" aria-label="현금 활동 선택">
+          <button type="button" class="cash-tab-btn active" data-cashmode="direct">
+            💵 동전·지폐로 금액 내기
+          </button>
+          <button type="button" class="cash-tab-btn" data-cashmode="match">
+            🪙 상품별 화폐 짝짓기
+          </button>
+          <button type="button" class="cash-tab-btn" data-cashmode="change">
+            💰 거스름돈 계산하기
+          </button>
+        </div>
+        <button type="button" id="closeCashModal" class="modal-close-btn" aria-label="닫기">✕</button>
+      </div>
+
+      <!-- 활동 1: 학생이 동전과 지폐를 직접 선택해서 금액 입력 결제 -->
+      <div id="cashDirectView" class="cash-view active">
+        <div class="activity-guide-bar">
+          <span id="directGuideText">지갑에서 <strong>지폐와 동전</strong>을 직접 골라 주문 금액만큼 입력한 뒤 <strong>[현금 결제하기]</strong>를 눌러 주세요!</span>
+          <div class="guide-tools">
+            <button type="button" id="btnDirectHint" class="hint-btn">💡 화폐 힌트</button>
+            <button type="button" id="btnDirectReset" class="reset-mini-btn">↺ 돈 다 빼기</button>
+          </div>
+        </div>
+
+        <div class="direct-cash-board">
+          <div class="dcb-box due">
+            <small>결제할 주문 금액</small>
+            <strong id="directDueAmount">0원</strong>
+          </div>
+          <div class="dcb-box paid">
+            <small>내가 넣은 금액</small>
+            <strong id="directPaidAmount">0원</strong>
+          </div>
+          <div class="dcb-box diff" id="directDiffBox">
+            <small id="directDiffLabel">남은 금액</small>
+            <strong id="directDiffAmount">0원</strong>
+          </div>
+        </div>
+
+        <div class="direct-progress-wrap">
+          <div id="directProgressFill" class="direct-progress-fill" style="width:0%"></div>
+        </div>
+
+        <div class="direct-tray-box" id="directTrayBox">
+          <div class="tray-top">
+            <span>📥 내가 투입한 현금 (누르면 다시 뺄 수 있어요)</span>
+            <span id="directCountSummary" class="tray-sum">지폐 0장 · 동전 0개</span>
+          </div>
+          <div id="directPlacedTray" class="placed-money-wrap">
+            <span class="tray-placeholder">아래 지폐와 동전을 눌러 금액을 입력해 주세요!</span>
+          </div>
+        </div>
+
+        <!-- 거스름돈 확인 패널 (초과 투입 후 결제 시 표시) -->
+        <div id="directChangePanel" class="direct-change-panel hidden">
+          <div class="dcp-head">
+            <strong>💰 거스름돈이 나왔어요!</strong>
+            <span id="directChangeBadge" class="dcp-badge">0원</span>
+          </div>
+          <p class="dcp-desc">넣은 돈이 주문 금액보다 많아서 아래 거스름돈을 돌려받아요.</p>
+          <div id="directChangeMoneyList" class="placed-money-wrap"></div>
+          <div class="dcp-actions">
+            <button type="button" id="btnFinishDirectChange" class="confirm-cash-btn">🎉 거스름돈 받고 영수증 출력하기</button>
+            <button type="button" id="btnPracticeChangeWithPaid" class="hint-btn">🧮 이 금액으로 거스름돈 퀴즈 풀기</button>
+          </div>
+        </div>
+
+        <div class="wallet-dock wallet-split">
+          <div class="wallet-group">
+            <div class="wallet-header">
+              <span>💵 지폐 선택 (눌러서 금액 넣기)</span>
+            </div>
+            <div id="directWalletBills" class="currency-tray"></div>
+          </div>
+          <div class="wallet-group">
+            <div class="wallet-header">
+              <span>🪙 동전 선택 (눌러서 금액 넣기)</span>
+            </div>
+            <div id="directWalletCoins" class="currency-tray"></div>
+          </div>
+        </div>
+
+        <div class="cash-action-footer">
+          <button type="button" id="btnConfirmDirectCash" class="confirm-cash-btn" disabled>
+            💵 금액을 먼저 입력해 주세요
+          </button>
+        </div>
+      </div>
+
+      <!-- 활동 2: 장바구니 상품과 화폐 짝지어 제시하기 -->
+      <div id="cashMatchView" class="cash-view">
+        <div class="activity-guide-bar">
+          <span id="matchGuideText">아래 <strong>상품 카드</strong>를 고른 뒤, 지갑에서 알맞은 <strong>지폐·동전</strong>을 눌러 짝지어 올려 주세요! (드래그도 가능해요)</span>
+          <div class="guide-tools">
+            <button type="button" id="btnMatchHint" class="hint-btn">💡 화폐 힌트</button>
+            <button type="button" id="btnMatchReset" class="reset-mini-btn">↺ 초기화</button>
+          </div>
+        </div>
+
+        <!-- 상품별 화폐 트레이 그리드 -->
+        <div id="matchSlotsGrid" class="match-slots-grid"></div>
+
+        <!-- 내 지갑 (한국 화폐 트레이) -->
+        <div class="wallet-dock">
+          <div class="wallet-header">
+            <span>👛 내 지갑 (지폐·동전을 눌러 올리거나 상품 카드 위로 끌어놓으세요)</span>
+            <span id="matchProgressBadge" class="progress-badge">0 / 0 상품 완료</span>
+          </div>
+          <div id="matchWalletTray" class="currency-tray"></div>
+        </div>
+
+        <div class="cash-action-footer">
+          <button type="button" id="btnConfirmMatchPay" class="confirm-cash-btn" disabled>
+            ✨ 모든 상품 화폐 짝짓기 완료! 결제하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 활동 3: 현금 투입 & 거스름돈 계산하기 -->
+      <div id="cashChangeView" class="cash-view">
+        <!-- 단계 B-1: 손님이 낼 돈 선택 & 투입구 넣기 -->
+        <div id="changeInsertPhase" class="change-phase active">
+          <div class="activity-guide-bar">
+            <span id="changeInsertGuide">주문 금액보다 <strong>더 큰 현금</strong>을 동전·지폐로 직접 넣거나, 아래 큰 지폐를 골라 투입구에 넣어 보세요!</span>
+          </div>
+          <div class="cash-acceptor-stage">
+            <div class="acceptor-machine" id="acceptorMachine">
+              <div class="acceptor-display">
+                <small>결제할 금액</small>
+                <strong id="acceptorDueAmount">0원</strong>
+              </div>
+              <div class="acceptor-slot">
+                <div class="acceptor-led" id="acceptorLed"></div>
+                <span>현금 투입구</span>
+              </div>
+              <div id="insertedBillAnim" class="inserted-bill-anim hidden"></div>
+            </div>
+            <div class="tender-options-wrap">
+              <p class="tender-label">방법 1) 바로 낼 금액 고르기 (거스름돈 연습용)</p>
+              <div id="tenderChoices" class="tender-choices"></div>
+              <div class="tender-custom-box">
+                <p class="tender-label" style="margin-top:10px">방법 2) 동전·지폐로 직접 낼 금액 조합하기: <strong id="changeCustomSum">0원</strong></p>
+                <div id="changeCustomWallet" class="currency-tray compact"></div>
+                <div class="tender-custom-actions">
+                  <button type="button" id="btnChangeCustomReset" class="reset-mini-btn">↺ 비우기</button>
+                  <button type="button" id="btnChangeCustomSubmit" class="hint-btn" disabled>💵 이 금액으로 계산하기</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 단계 B-2: 거스름돈 계산 & 금고에서 거슬러 주기 -->
+        <div id="changeCalcPhase" class="change-phase">
+          <div class="activity-guide-bar">
+            <span id="changeCalcGuide"><strong>받은 돈 − 주문 금액</strong>을 계산해 거스름돈을 맞춘 뒤, 금고에서 화폐를 꺼내 주세요!</span>
+            <div class="guide-tools">
+              <button type="button" id="btnChangeHint" class="hint-btn">💡 계산 힌트</button>
+              <button type="button" id="btnChangeReset" class="reset-mini-btn">↺ 다시 내기</button>
+            </div>
+          </div>
+
+          <div class="change-equation-board">
+            <div class="eq-box paid">
+              <small>낸 돈</small>
+              <strong id="eqPaidText">10,000원</strong>
+            </div>
+            <span class="eq-op">−</span>
+            <div class="eq-box cost">
+              <small>주문 금액</small>
+              <strong id="eqCostText">6,500원</strong>
+            </div>
+            <span class="eq-op">=</span>
+            <div class="eq-box change-ans" id="eqChangeBox">
+              <small>거스름돈</small>
+              <strong id="eqChangeText">? 원</strong>
+            </div>
+          </div>
+
+          <!-- B-2a: 거스름돈 금액 맞히기 (4지선다) -->
+          <div id="changeQuizStep" class="change-quiz-step">
+            <p class="quiz-prompt">거스름돈은 얼마일까요? 알맞은 금액을 고르세요!</p>
+            <div id="changeQuizChoices" class="change-quiz-choices"></div>
+          </div>
+
+          <!-- B-2b: 금고에서 거스름돈 화폐 꺼내 담기 -->
+          <div id="changeTrayStep" class="change-tray-step hidden">
+            <div class="change-tray-box" id="changeTrayBox">
+              <div class="tray-top">
+                <span>🪙 거스름돈 받침대 (목표: <strong id="targetChangeBadge">0원</strong>)</span>
+                <span id="currentTraySum" class="tray-sum">현재: 0원</span>
+              </div>
+              <div id="changePlacedMoney" class="placed-money-wrap">
+                <span class="tray-placeholder">아래 금고에서 지폐와 동전을 눌러 거스름돈을 올려 주세요!</span>
+              </div>
+            </div>
+
+            <div class="wallet-dock register-drawer">
+              <div class="wallet-header">
+                <span>🗄️ 계산대 금고 서랍 (눌러서 거스름돈 올리기)</span>
+                <label class="blind-toggle">
+                  <input type="checkbox" id="blindSumToggle" />
+                  <span>합계 숨기고 도전</span>
+                </label>
+              </div>
+              <div id="changeRegisterTray" class="currency-tray"></div>
+            </div>
+
+            <div class="cash-action-footer">
+              <button type="button" id="btnConfirmChangePay" class="confirm-cash-btn" disabled>
+                🎉 거스름돈 확인 완료! 영수증 받기
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/d1_client.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

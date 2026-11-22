@@ -37,6 +37,7 @@
   const btnMusic = document.getElementById("btnMusic");
   const btnSfx = document.getElementById("btnSfx");
   const btnVoice = document.getElementById("btnVoice");
+  const btnFullscreen = document.getElementById("btnFullscreen");
 
   let viewScale = 1;
   let viewOffX = 0;
@@ -440,6 +441,14 @@
     btnVoice.classList.toggle("on", next);
     btnVoice.textContent = next ? "🗣️ 음성 ON" : "🤫 음성 OFF";
   });
+
+  if (btnFullscreen && window.D1Bridge && window.D1Bridge.bindFullscreenButton) {
+    window.D1Bridge.bindFullscreenButton(btnFullscreen, {
+      enterText: "⛶ 전체화면",
+      exitText: "⛶ 창모드",
+      activeClass: "on"
+    });
+  }
 
   /* ---------- 메인 60fps 게임 루프 ---------- */
   function loop(ts) {

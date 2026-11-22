@@ -31,7 +31,9 @@
     safe_mover: "읽걷이의 맞춤법 모험",
     stepmath: "수학 공책",
     emotion: "마음 날씨 연구소",
-    cafe: "마음카페 3D"
+    cafe: "마음카페 3D",
+    outlet: "콘센트 조립 실습실",
+    kiosk: "마음카페 키오스크"
   };
 
   const SAFE_MOVER_CUSTOM_KEY = "safe_mover.custom_words.v1";
@@ -248,6 +250,8 @@
     if (p.includes("stepmath")) return "stepmath";
     if (p.includes("emotion")) return "emotion";
     if (p.includes("/cafe")) return "cafe";
+    if (p.includes("/outlet")) return "outlet";
+    if (p.includes("/kiosk")) return "kiosk";
     return "";
   }
 
@@ -695,6 +699,8 @@
                   <option value="stepmath">수학 공책</option>
                   <option value="emotion">마음 날씨 연구소</option>
                   <option value="cafe">마음카페 3D</option>
+                  <option value="outlet">콘센트 조립 실습실</option>
+                  <option value="kiosk">마음카페 키오스크</option>
                 </select>
                 <select id="d1FilterClass" class="d1-input"><option value="">전체 반</option></select>
                 <select id="d1FilterChar" class="d1-input"><option value="">전체 캐릭터</option></select>
@@ -1221,7 +1227,7 @@
           </div>
           <div class="d1-aac-grid" id="d1AacGrid"></div>
           <div class="d1-class-row" style="justify-content:space-between;margin-top:8px">
-            <span style="font-size:12.5px;color:#64748b">특수교육 보완대체의사소통(AAC) 공용 말판</span>
+            <span style="font-size:12.5px;color:#64748b">보완대체의사소통(AAC) 공용 말판</span>
           </div>
         </div>
       `;
@@ -1266,7 +1272,7 @@
       modal.innerHTML = `
         <div class="d1-modal-card" role="dialog" aria-modal="true" aria-label="맞춤 학습 지원 설정">
           <div class="d1-modal-head">
-            <h2>🛡️ 맞춤 학습 지원 설정 (지적·자폐성장애 지원)</h2>
+            <h2>🛡️ 맞춤 학습 지원 설정</h2>
             <button type="button" class="d1-close-btn" data-close-modal="d1SpedModal">닫기</button>
           </div>
           <div style="font-size:13px;color:#475569;margin-bottom:8px">여기서 설정한 내용은 4개 학습 활동 전체에 바로 적용됩니다.</div>
@@ -1510,6 +1516,112 @@
     return env;
   }
 
+  function ensureFullscreenStyles() {
+    if (document.getElementById("d1FullscreenStyle")) return;
+    const style = document.createElement("style");
+    style.id = "d1FullscreenStyle";
+    style.textContent = `
+      html:fullscreen, html:-webkit-full-screen, html:-moz-full-screen {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      html:fullscreen::backdrop, html:-webkit-full-screen::backdrop {
+        background: #0f172a;
+      }
+      html.d1-pseudo-fullscreen,
+      html.d1-pseudo-fullscreen body {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+      }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function isNativeFullscreen() {
+    return Boolean(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+  }
+
+  function isFullscreen() {
+    return isNativeFullscreen() || document.documentElement.classList.contains("d1-pseudo-fullscreen");
+  }
+
+  function dispatchResizeSoon() {
+    try { window.dispatchEvent(new Event("resize")); } catch (_) {}
+    setTimeout(() => { try { window.dispatchEvent(new Event("resize")); } catch (_) {} }, 120);
+  }
+
+  async function toggleFullscreen(targetEl) {
+    ensureFullscreenStyles();
+    const el = targetEl || document.documentElement;
+    if (document.documentElement.classList.contains("d1-pseudo-fullscreen")) {
+      document.documentElement.classList.remove("d1-pseudo-fullscreen");
+      dispatchResizeSoon();
+      return false;
+    }
+    try {
+      if (isNativeFullscreen()) {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
+        dispatchResizeSoon();
+        return false;
+      }
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
+      else throw new Error("Fullscreen API unavailable");
+
+      if (!isNativeFullscreen()) {
+        document.documentElement.classList.add("d1-pseudo-fullscreen");
+      }
+      dispatchResizeSoon();
+      return isFullscreen();
+    } catch (_) {
+      document.documentElement.classList.toggle("d1-pseudo-fullscreen");
+      dispatchResizeSoon();
+      return isFullscreen();
+    }
+  }
+
+  function bindFullscreenButton(btn, opts = {}) {
+    if (!btn) return () => {};
+    ensureFullscreenStyles();
+    const enterText = opts.enterText || "⛶ 전체화면";
+    const exitText = opts.exitText || "⛶ 창모드";
+    const activeClass = opts.activeClass || "active";
+    const sync = () => {
+      const fs = isFullscreen();
+      btn.textContent = fs ? exitText : enterText;
+      btn.classList.toggle(activeClass, fs);
+      btn.setAttribute("aria-pressed", String(fs));
+    };
+    btn.addEventListener("click", () => {
+      toggleFullscreen(opts.target).then(sync);
+    });
+    const onChange = () => {
+      sync();
+      dispatchResizeSoon();
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    document.addEventListener("mozfullscreenchange", onChange);
+    document.addEventListener("MSFullscreenChange", onChange);
+    sync();
+    return sync;
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       mountFloatingBar();
@@ -1549,6 +1661,9 @@
     inspectTtsEnvironment,
     openTtsGuideModal,
     isTtsGuideDismissedToday,
+    isFullscreen,
+    toggleFullscreen,
+    bindFullscreenButton,
     checkHealth,
     saveRecord,
     getRecords,

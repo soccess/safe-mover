@@ -50,14 +50,36 @@
             </div>
             <button id="focusStepBtn" class="pill-btn active" title="현재 단계 크게 보기">🔍 확대</button>
             <button id="resetCamBtn" class="pill-btn" title="카페 전체 보기">🎥 전체</button>
+            <button id="fullscreenBtn" class="pill-btn" title="전체화면 켜기/끄기">⛶ 전체화면</button>
             <button id="quickBreakBtn" class="pill-btn" title="잠깐 쉬기">🌿 쉼</button>
             <button id="settingsToggleBtn" class="pill-btn" aria-expanded="false" aria-controls="settingsPopover" title="설정 열기">⚙️</button>
+            <button id="kioskOrdersBtn" class="pill-btn kiosk-orders-btn" aria-expanded="false" aria-controls="kioskOrderDrawer" title="키오스크에서 들어온 주문 목록 보기">🧾 주문서 <span id="kioskOrderCountBadge" class="ko-count-badge">0</span></button>
+            <a class="pill-btn kiosk-pill-link" href="../kiosk/index.html" title="마음카페 키오스크로 이동">🖥️ 키오스크</a>
             <a class="pill-btn home-pill-link" href="../index.html" title="학습 게임 목록으로 이동">🏠</a>
           </div>
         </header>
 
         <!-- 음료 선택 드로어 (필요할 때만 열림, JS에서 카테고리별 동적 생성) -->
         <nav id="recipeDrawer" class="recipe-drawer hidden" aria-label="만들 음료 선택"></nav>
+
+        <!-- 키오스크 주문 목록 드로어 (키오스크에서 저장된 주문 불러오기) -->
+        <section id="kioskOrderDrawer" class="kiosk-order-drawer hidden" aria-label="키오스크 주문 목록">
+          <div class="kod-header">
+            <div class="kod-title">
+              <strong>🧾 키오스크 주문서 목록</strong>
+              <small id="kodSummaryText">키오스크에서 주문·결제한 음료를 불러와 바로 제조해요</small>
+            </div>
+            <div class="kod-actions">
+              <button type="button" id="refreshKioskOrdersBtn" class="kod-btn">🔄 새로고침</button>
+              <button type="button" id="clearDoneOrdersBtn" class="kod-btn">🧹 완료 정리</button>
+              <button type="button" id="closeKioskOrdersBtn" class="kod-btn close">✕</button>
+            </div>
+          </div>
+          <div id="kioskOrderList" class="kod-list"></div>
+        </section>
+
+        <!-- 현재 제조 중인 키오스크 주문 안내 바 -->
+        <div id="activeOrderBanner" class="active-order-banner hidden" aria-live="polite"></div>
 
         <!-- 슬림 시각적 과제 분석표 -->
         <section class="schedule-strip" id="scheduleStrip" aria-label="만드는 순서"></section>
@@ -122,9 +144,12 @@
           <div class="complete-emoji" id="completeEmoji">🎉</div>
           <h2 id="completeTitle">음료가 완성되었어요!</h2>
           <p id="completeDesc">차분하게 순서대로 정말 잘 만들었어요.</p>
+          <div id="completeOrderStatus" class="complete-order-status hidden"></div>
           <div id="practicumReport" class="practicum-report hidden"></div>
           <div class="complete-actions">
             <button id="nextDrinkBtn" class="primary-action-btn">✨ 한 잔 더 만들기</button>
+            <button id="nextOrderDrinkBtn" class="secondary-action-btn hidden">🧾 다음 주문 확인하기</button>
+            <a id="goKioskBtn" class="secondary-action-btn" href="../kiosk/index.html">🛒 키오스크에서 주문·결제하기</a>
           </div>
         </div>
       </div>

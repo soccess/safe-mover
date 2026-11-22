@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>콘센트 조립 실습실 - 3D 직업실습</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <main class="stage-wrap">
+      <div id="canvasContainer" class="canvas-container"></div>
+
+      <!-- 상단 최소 HUD (3D 화면 가림 최소화) -->
+      <div class="hud-top">
+        <header class="top-bar">
+          <div class="brand">
+            <span class="brand-icon" aria-hidden="true">
+              <svg class="outlet-brand-svg" viewBox="0 0 48 48" width="28" height="28">
+                <rect x="6" y="6" width="36" height="36" rx="9" fill="#f8fafc" stroke="#0f766e" stroke-width="2.6"/>
+                <circle cx="24" cy="24" r="11.5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.8"/>
+                <circle cx="19.5" cy="24" r="2.6" fill="#1e293b"/>
+                <circle cx="28.5" cy="24" r="2.6" fill="#1e293b"/>
+                <rect x="22.8" y="13.5" width="2.4" height="4" rx="1" fill="#d97706"/>
+                <rect x="22.8" y="30.5" width="2.4" height="4" rx="1" fill="#d97706"/>
+                <circle cx="37" cy="11" r="2.6" fill="#22c55e" class="ol-blink"/>
+              </svg>
+            </span>
+            <button id="recipePickerBtn" class="recipe-picker-btn" aria-expanded="false" aria-controls="recipeDrawer">
+              <span id="currentRecipeLabel">🔌 1구 접지 벽 콘센트</span>
+              <span class="picker-caret">▾</span>
+            </button>
+            <span class="score-badge" id="scoreBadge">★ 0</span>
+          </div>
+
+          <div class="controls-group">
+            <div class="pmode-switch" id="practiceModeSwitch" role="group" aria-label="연습 모드 선택">
+              <button type="button" class="pmode-btn active" data-pmode="auto" title="단계별로 자동으로 안내하고 강조해요">🤖 자동연습</button>
+              <button type="button" class="pmode-btn" data-pmode="manual" title="단계 완료 후 다음 행동을 직접 골라요">🧭 수동연습</button>
+              <button type="button" class="pmode-btn" data-pmode="practicum" title="실수까지 직접 경험하며 자유롭게 조립해요">🧪 실습모드</button>
+            </div>
+            <button id="focusStepBtn" class="pill-btn active" title="현재 단계 크게 보기">🔍 확대</button>
+            <button id="resetCamBtn" class="pill-btn" title="작업대 전체 보기">🎥 전체</button>
+            <button id="fullscreenBtn" class="pill-btn" title="전체화면 켜기/끄기">⛶ 전체화면</button>
+            <button id="quickBreakBtn" class="pill-btn" title="잠깐 쉬기">🌿 쉼</button>
+            <button id="settingsToggleBtn" class="pill-btn" aria-expanded="false" aria-controls="settingsPopover" title="설정 열기">⚙️</button>
+            <a class="pill-btn home-pill-link" href="../index.html" title="학습 게임 목록으로 이동">🏠</a>
+          </div>
+        </header>
+
+        <!-- 조립 품목 선택 드로어 (필요할 때만 열림, JS에서 카테고리별 동적 생성) -->
+        <nav id="recipeDrawer" class="recipe-drawer hidden" aria-label="조립할 제품 선택"></nav>
+
+        <!-- 슬림 시각적 과제 분석표 -->
+        <section class="schedule-strip" id="scheduleStrip" aria-label="조립 순서"></section>
+        <!-- 지금 → 다음 시각 안내 -->
+        <div class="first-then-bar" id="firstThenBar" aria-live="polite"></div>
+      </div>
+
+      <!-- 3D 호버 툴팁 -->
+      <div id="hoverLabel" class="hover-label hidden"></div>
+
+      <!-- 설정 팝오버 -->
+      <div id="settingsPopover" class="settings-popover hidden" role="dialog" aria-label="실습실 설정">
+        <button id="autoCamBtn" class="pill-btn active" title="단계별 자동 카메라 이동">🎬 자동 카메라: 켜짐</button>
+        <button id="modeBtn" class="pill-btn active" title="안내 모드 전환">🧭 안내 모드: 켜짐</button>
+        <button id="voiceBtn" class="pill-btn" title="음성 안내 켜기/끄기">🔊 음성 안내: 꺼짐</button>
+        <button id="soundBtn" class="pill-btn active" title="부드러운 효과음 켜기/끄기">🔔 효과음: 켜짐</button>
+        <button id="easyOutletBtn" class="pill-btn" title="쉬운 말 안내 전환">📖 쉬운 말: 꺼짐</button>
+      </div>
+
+      <!-- 하단 플로팅 안내 + 동작 버튼 도크 (중앙 3D 화면 가림 없음) -->
+      <footer class="action-dock">
+        <div class="guidance-banner" id="guidanceBanner" role="status" aria-live="polite">
+          <span class="guidance-emoji" id="guidanceEmoji">🔌</span>
+          <span class="guidance-text" id="guidanceText">3D 조립 작업대를 불러오고 있어요...</span>
+          <div class="guidance-actions">
+            <button type="button" id="speakStepBtn" class="guidance-ctrl-btn speak" title="지시문 읽어주기" aria-label="지시문 읽어주기">🔊</button>
+            <button type="button" id="closeGuidanceBtn" class="guidance-ctrl-btn close" title="지시문 닫기" aria-label="지시문 닫기">✕</button>
+          </div>
+        </div>
+        <button type="button" id="reopenGuidanceBtn" class="guidance-reopen-btn hidden" title="지시문 다시 보기" aria-label="지시문 다시 보기">💬 지시문 보기</button>
+        <div id="manualChoiceBar" class="manual-choice-bar hidden" aria-live="polite"></div>
+        <div id="practicumStatusBar" class="practicum-status-bar hidden" aria-live="polite"></div>
+        <div class="action-bar" id="actionBar" aria-label="부품 및 공구 버튼"></div>
+      </footer>
+
+      <!-- 잠깐 쉬기 오버레이 -->
+      <div id="breakModal" class="complete-modal hidden" role="dialog" aria-modal="true" aria-label="잠깐 쉬기">
+        <div class="complete-card">
+          <div style="font-size:44px;margin-bottom:6px">🌿</div>
+          <h2>잠깐 숨을 고르고 있어요</h2>
+          <p>어깨와 손목의 힘을 빼고 천천히 숨을 들이마셨다가 내쉬어 보세요.<br>준비가 되면 다시 조립을 이어가요.</p>
+          <button id="resumeBreakBtn" class="primary-action-btn">▶ 이어서 조립하기</button>
+        </div>
+      </div>
+
+      <!-- 완성 축하 오버레이 -->
+      <div id="completeModal" class="complete-modal hidden" role="dialog" aria-modal="true">
+        <div class="complete-card">
+          <div class="complete-svg-wrap" aria-hidden="true">
+            <svg class="complete-svg" viewBox="0 0 96 96" width="80" height="80">
+              <circle cx="48" cy="48" r="40" fill="#e6f4f1" class="ol-pulse"/>
+              <g>
+                <rect x="24" y="24" width="48" height="48" rx="12" fill="#ffffff" stroke="#0f766e" stroke-width="3"/>
+                <circle cx="48" cy="48" r="15" fill="#e2e8f0" stroke="#475569" stroke-width="2.2"/>
+                <circle cx="42" cy="48" r="3.4" fill="#0f172a"/>
+                <circle cx="54" cy="48" r="3.4" fill="#0f172a"/>
+                <rect x="46.4" y="34" width="3.2" height="5" rx="1.2" fill="#d97706"/>
+                <rect x="46.4" y="57" width="3.2" height="5" rx="1.2" fill="#d97706"/>
+                <circle cx="64" cy="32" r="5.5" fill="#10b981"/>
+                <path d="M61.5 32l1.8 1.8 3.2-3.5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+              <path d="M18 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#fbbf24" class="ol-twinkle"/>
+              <path d="M78 20l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#fbbf24" class="ol-twinkle-2"/>
+            </svg>
+          </div>
+          <div class="complete-emoji" id="completeEmoji">🎉</div>
+          <h2 id="completeTitle">조립이 완성되었어요!</h2>
+          <p id="completeDesc">안전 순서에 맞춰 정확하고 꼼꼼하게 완성했어요.</p>
+          <div id="practicumReport" class="practicum-report hidden"></div>
+          <div class="complete-actions">
+            <button id="nextProductBtn" class="primary-action-btn">✨ 하나 더 조립하기</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/d1_client.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

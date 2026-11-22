@@ -371,6 +371,8 @@ const EASY_STEP_MAP = {
 // 2. 상태 관리
 // ============================================================================
 const CAFE_COUNT_KEY = 'safe_mover.cafe.count.v1';
+const CAFE_MADE_DRINKS_KEY = 'safe_mover.cafe.made_drinks.v1';
+
 function loadCafeCount() {
   try {
     const n = Number(localStorage.getItem(CAFE_COUNT_KEY) || 0);
@@ -381,6 +383,115 @@ function loadCafeCount() {
 }
 function saveCafeCount(n) {
   try { localStorage.setItem(CAFE_COUNT_KEY, String(n)); } catch {}
+}
+
+function loadMadeDrinks() {
+  try {
+    const raw = localStorage.getItem(CAFE_MADE_DRINKS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function recordMadeDrink(recipeKey, recipe, stars = 3) {
+  if (!recipeKey || !recipe) return;
+  const map = loadMadeDrinks();
+  const prev = map[recipeKey] || {
+    id: recipeKey,
+    name: recipe.name,
+    emoji: recipe.emoji,
+    category: recipe.category,
+    cupType: recipe.cupType,
+    isHot: Boolean(recipe.isHot),
+    count: 0,
+    bestStars: 0
+  };
+  map[recipeKey] = {
+    ...prev,
+    name: recipe.name,
+    emoji: recipe.emoji,
+    category: recipe.category,
+    cupType: recipe.cupType,
+    isHot: Boolean(recipe.isHot),
+    count: (Number(prev.count) || 0) + 1,
+    bestStars: Math.max(Number(prev.bestStars) || 0, Number(stars) || 0),
+    lastMode: state.practiceMode,
+    lastMadeAt: new Date().toISOString()
+  };
+  try { localStorage.setItem(CAFE_MADE_DRINKS_KEY, JSON.stringify(map)); } catch {}
+  if (window.D1Bridge && typeof window.D1Bridge.setKV === 'function') {
+    window.D1Bridge.setKV(CAFE_MADE_DRINKS_KEY, map);
+  }
+}
+
+const KIOSK_ORDERS_KEY = 'safe_mover.kiosk.orders.v1';
+
+function loadKioskOrders() {
+  try {
+    const raw = localStorage.getItem(KIOSK_ORDERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveKioskOrders(list) {
+  const trimmed = Array.isArray(list) ? list.slice(0, 30) : [];
+  try { localStorage.setItem(KIOSK_ORDERS_KEY, JSON.stringify(trimmed)); } catch {}
+  if (window.D1Bridge && typeof window.D1Bridge.setKV === 'function') {
+    window.D1Bridge.setKV(KIOSK_ORDERS_KEY, trimmed);
+  }
+}
+
+function getPendingDrinkCount(orders) {
+  let pending = 0;
+  for (const ord of orders || []) {
+    for (const it of ord.items || []) {
+      if (RECIPES[it.itemId]) {
+        const rem = Math.max(0, (Number(it.qty) || 0) - (Number(it.madeQty) || 0));
+        pending += rem;
+      }
+    }
+  }
+  return pending;
+}
+
+function getInitialRecipeKey() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const req = params.get('drink');
+    if (req && RECIPES[req]) return req;
+  } catch {}
+  return 'hot_americano';
+}
+
+function getInitialKioskOrder() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('order');
+    const drinkId = params.get('drink');
+    if (!orderId) return null;
+    const orders = loadKioskOrders();
+    const ord = orders.find((o) => o.id === orderId);
+    if (!ord) return null;
+    const targetItem = (ord.items || []).find((it) => it.itemId === drinkId && RECIPES[it.itemId])
+      || (ord.items || []).find((it) => RECIPES[it.itemId]);
+    if (!targetItem) return null;
+    return {
+      orderId: ord.id,
+      orderNumber: ord.orderNumber,
+      diningType: ord.diningType,
+      itemId: targetItem.itemId,
+      optionsLabel: targetItem.optionsLabel || '기본'
+    };
+  } catch {
+    return null;
+  }
 }
 
 function createInitialCraft() {
@@ -418,7 +529,8 @@ function createInitialCraft() {
 }
 
 const state = {
-  recipeKey: 'hot_americano',
+  recipeKey: getInitialRecipeKey(),
+  activeKioskOrder: getInitialKioskOrder(), // null | { orderId, orderNumber, diningType, itemId, optionsLabel }
   practiceMode: 'auto', // 'auto' | 'manual' | 'practicum'
   practicumTarget: 'cup', // 'cup' | 'blender'
   stepIndex: 0,
@@ -1920,6 +2032,7 @@ async function initCafeScene() {
     drinkGroup.add(cupGlass);
     drinkGroup.add(cupTea);
 
+    state.practicumTarget = getCurrentRecipe().usesBlender ? 'blender' : 'cup';
     renderUI();
   } catch (err) {
     console.error('3D 모델 로딩 오류:', err);
@@ -3059,6 +3172,8 @@ function executeStep(actionId, opts = {}) {
         const evalRes = evaluatePracticumDrink(recipe);
         state.completedCount++;
         saveCafeCount(state.completedCount);
+        recordMadeDrink(state.recipeKey, recipe, evalRes.stars);
+        const orderMsg = completeActiveKioskOrderItem(state.recipeKey);
         if (window.D1Bridge) {
           window.D1Bridge.saveRecord({
             game: 'cafe',
@@ -3079,7 +3194,7 @@ function executeStep(actionId, opts = {}) {
         spawn3DSparkles(new THREE.Vector3(0, COUNTER_Y + 0.18, 0.28), evalRes.stars === 3 ? 26 : 12, 0xfbbf24);
         playSuccessChime();
         speakKorean(evalRes.stars === 3 ? `${recipe.name} 완벽하게 제조했어요!` : `${recipe.name} 제조를 마쳤어요. 결과를 살펴봐요.`);
-        showCompletionModal(recipe, evalRes);
+        showCompletionModal(recipe, evalRes, orderMsg);
       } else {
         playSoftTone(659.25, 0.11, 'sine', 0.04);
       }
@@ -3093,6 +3208,8 @@ function executeStep(actionId, opts = {}) {
       state.manualChoices = [];
       state.completedCount++;
       saveCafeCount(state.completedCount);
+      recordMadeDrink(state.recipeKey, recipe, 3);
+      const orderMsg = completeActiveKioskOrderItem(state.recipeKey);
       if (window.D1Bridge) {
         window.D1Bridge.saveRecord({
           game: 'cafe',
@@ -3112,7 +3229,7 @@ function executeStep(actionId, opts = {}) {
       spawn3DSparkles(new THREE.Vector3(0, COUNTER_Y + 0.18, 0.28), 26, 0xfbbf24);
       playSuccessChime();
       speakKorean(`${recipe.name}가 완성되었어요! 정말 잘했어요.`);
-      showCompletionModal(recipe);
+      showCompletionModal(recipe, null, orderMsg);
     } else {
       playSoftTone(659.25, 0.11, 'sine', 0.04);
       if (state.practiceMode === 'manual') {
@@ -3662,6 +3779,220 @@ function renderManualChoiceBar() {
   bar.classList.add('hidden');
 }
 
+function renderActiveOrderBanner() {
+  const banner = document.getElementById('activeOrderBanner');
+  if (!banner) return;
+  const ao = state.activeKioskOrder;
+  if (!ao) {
+    banner.classList.add('hidden');
+    return;
+  }
+  const recipe = RECIPES[ao.itemId];
+  const diningLabel = ao.diningType === 'take_out' ? '🛍️ 포장' : '🍽️ 매장';
+  const optsText = ao.optionsLabel && ao.optionsLabel !== '기본' ? ` · ${ao.optionsLabel}` : '';
+  banner.classList.remove('hidden');
+  banner.innerHTML =
+    `<span>🧾 대기번호 <strong>${ao.orderNumber}번</strong> (${diningLabel}) · ${recipe ? recipe.emoji : '☕'} ${recipe ? recipe.name : ao.itemId}${optsText} 제조 중</span>` +
+    `<button type="button" id="clearActiveOrderBtn" class="aob-clear-btn" title="주문 연동 해제">✕ 해제</button>`;
+  const clearBtn = document.getElementById('clearActiveOrderBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      state.activeKioskOrder = null;
+      renderActiveOrderBanner();
+    });
+  }
+}
+
+function updateKioskOrderBadge(orders = null) {
+  const list = orders || loadKioskOrders();
+  const pending = getPendingDrinkCount(list);
+  const badge = document.getElementById('kioskOrderCountBadge');
+  const btn = document.getElementById('kioskOrdersBtn');
+  if (badge) badge.textContent = String(pending);
+  if (btn) btn.classList.toggle('has-pending', pending > 0);
+}
+
+function completeActiveKioskOrderItem(recipeKey) {
+  const orders = loadKioskOrders();
+  let updated = false;
+  let msg = '';
+  let orderRef = null;
+
+  if (state.activeKioskOrder && state.activeKioskOrder.itemId === recipeKey) {
+    orderRef = orders.find((o) => o.id === state.activeKioskOrder.orderId);
+  }
+  if (!orderRef) {
+    // 선택된 주문이 없어도 대기 중인 동일 음료 주문이 있으면 순서대로 완료 처리 가능하게 하되, 명시적 주문 연동 시 우선 갱신
+    return '';
+  }
+
+  const targetItem = (orderRef.items || []).find((it) => it.itemId === recipeKey && (Number(it.madeQty) || 0) < (Number(it.qty) || 1))
+    || (orderRef.items || []).find((it) => it.itemId === recipeKey);
+
+  if (targetItem) {
+    const qty = Number(targetItem.qty) || 1;
+    const prevMade = Number(targetItem.madeQty) || 0;
+    if (prevMade < qty) {
+      targetItem.madeQty = prevMade + 1;
+      updated = true;
+    }
+    const remaining = Math.max(0, qty - (Number(targetItem.madeQty) || 0));
+    msg = remaining > 0
+      ? `🧾 대기번호 ${orderRef.orderNumber}번 손님 · ${targetItem.name} (${targetItem.madeQty}/${qty}잔 완성, ${remaining}잔 남음)`
+      : `🧾 대기번호 ${orderRef.orderNumber}번 손님 · ${targetItem.name} 제조 완료!`;
+    if (remaining === 0) {
+      // 같은 주문 내 다음 미완성 음료를 자동으로 찾거나 활성 주문 해제
+      const nextUnfinished = (orderRef.items || []).find((it) => RECIPES[it.itemId] && (Number(it.madeQty) || 0) < (Number(it.qty) || 1));
+      if (!nextUnfinished) {
+        state.activeKioskOrder = null;
+      }
+    }
+  }
+
+  if (updated) {
+    saveKioskOrders(orders);
+    updateKioskOrderBadge(orders);
+    renderKioskOrderDrawer(orders);
+  }
+  renderActiveOrderBanner();
+  return msg;
+}
+
+function startKioskOrderDrink(orderId, itemId) {
+  const orders = loadKioskOrders();
+  const ord = orders.find((o) => o.id === orderId);
+  if (!ord || !RECIPES[itemId]) return;
+  const targetItem = (ord.items || []).find((it) => it.itemId === itemId);
+  state.activeKioskOrder = {
+    orderId: ord.id,
+    orderNumber: ord.orderNumber,
+    diningType: ord.diningType,
+    itemId,
+    optionsLabel: targetItem ? (targetItem.optionsLabel || '기본') : '기본'
+  };
+  state.recipeKey = itemId;
+  const orderDrawer = document.getElementById('kioskOrderDrawer');
+  const orderBtn = document.getElementById('kioskOrdersBtn');
+  if (orderDrawer) orderDrawer.classList.add('hidden');
+  if (orderBtn) orderBtn.setAttribute('aria-expanded', 'false');
+  renderRecipeDrawer();
+  resetDrink();
+  playSoftTone(659.25, 0.14, 'triangle', 0.05);
+  speakKorean(`대기번호 ${ord.orderNumber}번 손님의 ${RECIPES[itemId].name} 주문을 불러왔어요. 순서대로 만들어 보세요.`);
+}
+
+async function syncKioskOrdersFromAllSources() {
+  let local = loadKioskOrders();
+  if (window.D1Bridge && typeof window.D1Bridge.getKV === 'function') {
+    try {
+      const remote = await window.D1Bridge.getKV(KIOSK_ORDERS_KEY);
+      if (Array.isArray(remote) && remote.length) {
+        const byId = new Map();
+        for (const o of [...local, ...remote]) {
+          if (!o || !o.id) continue;
+          const prev = byId.get(o.id);
+          if (!prev) {
+            byId.set(o.id, o);
+          } else {
+            // 더 많이 제조 완료된 상태를 보존
+            const prevMade = (prev.items || []).reduce((a, it) => a + (Number(it.madeQty) || 0), 0);
+            const curMade = (o.items || []).reduce((a, it) => a + (Number(it.madeQty) || 0), 0);
+            if (curMade > prevMade) byId.set(o.id, o);
+          }
+        }
+        local = [...byId.values()]
+          .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+          .slice(0, 30);
+        try { localStorage.setItem(KIOSK_ORDERS_KEY, JSON.stringify(local)); } catch {}
+      }
+    } catch {}
+  }
+  updateKioskOrderBadge(local);
+  renderKioskOrderDrawer(local);
+  return local;
+}
+
+function renderKioskOrderDrawer(ordersArg = null) {
+  const listEl = document.getElementById('kioskOrderList');
+  const summaryEl = document.getElementById('kodSummaryText');
+  if (!listEl) return;
+
+  const orders = ordersArg || loadKioskOrders();
+  updateKioskOrderBadge(orders);
+  const pendingDrinks = getPendingDrinkCount(orders);
+
+  if (summaryEl) {
+    summaryEl.textContent = orders.length
+      ? `총 ${orders.length}건의 키오스크 주문 · 제조 대기 음료 ${pendingDrinks}잔`
+      : '키오스크에서 주문·결제한 음료를 불러와 바로 제조해요';
+  }
+
+  if (!orders.length) {
+    listEl.innerHTML = `<div class="kod-empty">
+      <div>아직 키오스크에서 들어온 주문이 없어요!</div>
+      <div>키오스크에서 음료를 주문하고 결제하면 여기에 주문서가 나타납니다.</div>
+      <a href="../kiosk/index.html">🖥️ 마음카페 키오스크에서 주문하기</a>
+    </div>`;
+    return;
+  }
+
+  listEl.innerHTML = orders.map((ord) => {
+    const items = ord.items || [];
+    const drinkItems = items.filter((it) => RECIPES[it.itemId]);
+    const allDone = drinkItems.length > 0 && drinkItems.every((it) => (Number(it.madeQty) || 0) >= (Number(it.qty) || 1));
+    const diningTxt = ord.diningType === 'take_out' ? '🛍️ 포장' : '🍽️ 매장';
+    const timeStr = ord.createdAt
+      ? new Date(ord.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+
+    const itemsHtml = items.map((it) => {
+      const recipe = RECIPES[it.itemId];
+      const qty = Number(it.qty) || 1;
+      const madeQty = Number(it.madeQty) || 0;
+      const done = madeQty >= qty;
+      const opts = it.optionsLabel && it.optionsLabel !== '기본' ? ` · ${it.optionsLabel}` : '';
+      if (!recipe) {
+        return `<div class="kod-item-row">
+          <div class="kod-item-info">
+            <span class="kod-item-name">🥐 ${it.name} (${qty}개${opts})</span>
+            <span class="kod-item-sub">진열대에서 바로 꺼내 드리는 베이커리 메뉴예요</span>
+          </div>
+          <span class="kod-bakery-pill">🥐 베이커리</span>
+        </div>`;
+      }
+      const isCurrent = state.activeKioskOrder && state.activeKioskOrder.orderId === ord.id && state.activeKioskOrder.itemId === it.itemId;
+      return `<div class="kod-item-row">
+        <div class="kod-item-info">
+          <span class="kod-item-name">${recipe.emoji} ${recipe.name} (${qty}잔${opts})</span>
+          <span class="kod-item-sub">${done ? `✅ ${qty}잔 제조 완료!` : `제조 진행: ${madeQty} / ${qty}잔 완료`}</span>
+        </div>
+        <button type="button" class="kod-make-btn ${done ? 'done' : ''}" data-order-id="${ord.id}" data-item-id="${it.itemId}">
+          ${done ? '✅ 다시 만들기' : isCurrent ? '🔄 제조 계속하기' : '☕ 이 음료 제조하기'}
+        </button>
+      </div>`;
+    }).join('');
+
+    return `<article class="kod-order-card ${allDone ? 'all-done' : ''}">
+      <div class="kod-order-top">
+        <div class="kod-order-meta">
+          <span class="kod-order-num">대기번호 #${ord.orderNumber}</span>
+          <span>${diningTxt}</span>
+          <span>${ord.methodLabel || '결제 완료'}</span>
+          ${timeStr ? `<span>${timeStr}</span>` : ''}
+        </div>
+        <span class="kod-order-status ${allDone ? 'done' : ''}">${allDone ? '✅ 제조 완료' : '⏳ 제조 대기'}</span>
+      </div>
+      <div class="kod-items">${itemsHtml}</div>
+    </article>`;
+  }).join('');
+
+  listEl.querySelectorAll('.kod-make-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      startKioskOrderDrink(btn.dataset.orderId, btn.dataset.itemId);
+    });
+  });
+}
+
 function renderRecipeDrawer() {
   const drawer = document.getElementById('recipeDrawer');
   if (!drawer) return;
@@ -3703,6 +4034,8 @@ function renderUI() {
   document.getElementById('scoreBadge').textContent = `★ ${state.completedCount}`;
   const recipeLabelEl = document.getElementById('currentRecipeLabel');
   if (recipeLabelEl) recipeLabelEl.textContent = `${recipe.emoji} ${recipe.name}`;
+  renderActiveOrderBanner();
+  updateKioskOrderBadge();
 
   // 모드 버튼 active 동기화
   document.querySelectorAll('.pmode-btn').forEach((b) => {
@@ -3847,8 +4180,22 @@ function showGuidance(text, emoji, isGentleHint, isMistake = false) {
   banner.classList.toggle('mistake-hint', Boolean(isMistake));
 }
 
-function showCompletionModal(recipe, evalRes = null) {
+function showCompletionModal(recipe, evalRes = null, orderMsg = '') {
   document.getElementById('completeEmoji').textContent = recipe.emoji;
+  const orderStatusEl = document.getElementById('completeOrderStatus');
+  const nextOrderBtn = document.getElementById('nextOrderDrinkBtn');
+  if (orderStatusEl) {
+    if (orderMsg) {
+      orderStatusEl.textContent = orderMsg;
+      orderStatusEl.classList.remove('hidden');
+    } else {
+      orderStatusEl.classList.add('hidden');
+    }
+  }
+  if (nextOrderBtn) {
+    const hasPending = getPendingDrinkCount(loadKioskOrders()) > 0;
+    nextOrderBtn.classList.toggle('hidden', !hasPending);
+  }
   const reportEl = document.getElementById('practicumReport');
   if (evalRes) {
     const starStr = '⭐'.repeat(evalRes.stars) + '☆'.repeat(3 - evalRes.stars);
@@ -3870,6 +4217,10 @@ function showCompletionModal(recipe, evalRes = null) {
     document.getElementById('completeTitle').textContent = `${recipe.name} 완성!`;
     document.getElementById('completeDesc').textContent = '차분하게 순서대로 정말 잘 만들었어요.';
     if (reportEl) reportEl.classList.add('hidden');
+  }
+  const goKioskBtn = document.getElementById('goKioskBtn');
+  if (goKioskBtn) {
+    goKioskBtn.href = `../kiosk/index.html?from=cafe&drink=${encodeURIComponent(state.recipeKey)}`;
   }
   document.getElementById('completeModal').classList.remove('hidden');
 }
@@ -3959,10 +4310,20 @@ renderer.domElement.addEventListener('pointermove', (e) => {
   }
 });
 
-// 상단 음료 선택 드로어 & 버튼 이벤트 연결
+// 상단 음료 선택 드로어 & 키오스크 주문서 드로어 & 버튼 이벤트 연결
 const recipePickerBtn = document.getElementById('recipePickerBtn');
 const recipeDrawer = document.getElementById('recipeDrawer');
+const kioskOrdersBtn = document.getElementById('kioskOrdersBtn');
+const kioskOrderDrawer = document.getElementById('kioskOrderDrawer');
+const initRecipe = getCurrentRecipe();
+const initRecipeLabelEl = document.getElementById('currentRecipeLabel');
+if (initRecipeLabelEl && initRecipe) {
+  initRecipeLabelEl.textContent = `${initRecipe.emoji} ${initRecipe.name}`;
+}
 renderRecipeDrawer();
+renderKioskOrderDrawer();
+renderActiveOrderBanner();
+
 recipePickerBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   const isHidden = recipeDrawer.classList.toggle('hidden');
@@ -3970,8 +4331,67 @@ recipePickerBtn.addEventListener('click', (e) => {
   if (!isHidden) {
     settingsPopover.classList.add('hidden');
     settingsToggleBtn.setAttribute('aria-expanded', 'false');
+    if (kioskOrderDrawer) kioskOrderDrawer.classList.add('hidden');
+    if (kioskOrdersBtn) kioskOrdersBtn.setAttribute('aria-expanded', 'false');
   }
 });
+
+if (kioskOrdersBtn && kioskOrderDrawer) {
+  kioskOrdersBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isHidden = kioskOrderDrawer.classList.toggle('hidden');
+    kioskOrdersBtn.setAttribute('aria-expanded', String(!isHidden));
+    if (!isHidden) {
+      syncKioskOrdersFromAllSources();
+      recipeDrawer.classList.add('hidden');
+      recipePickerBtn.setAttribute('aria-expanded', 'false');
+      settingsPopover.classList.add('hidden');
+      settingsToggleBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+const refreshKioskOrdersBtn = document.getElementById('refreshKioskOrdersBtn');
+if (refreshKioskOrdersBtn) {
+  refreshKioskOrdersBtn.addEventListener('click', () => {
+    playSoftTone(660, 0.1, 'sine', 0.045);
+    syncKioskOrdersFromAllSources();
+  });
+}
+
+const clearDoneOrdersBtn = document.getElementById('clearDoneOrdersBtn');
+if (clearDoneOrdersBtn) {
+  clearDoneOrdersBtn.addEventListener('click', () => {
+    const orders = loadKioskOrders();
+    const filtered = orders.filter((ord) => {
+      const drinkItems = (ord.items || []).filter((it) => RECIPES[it.itemId]);
+      if (!drinkItems.length) return false;
+      return drinkItems.some((it) => (Number(it.madeQty) || 0) < (Number(it.qty) || 1));
+    });
+    saveKioskOrders(filtered);
+    renderKioskOrderDrawer(filtered);
+    playSoftTone(520, 0.1, 'sine', 0.04);
+  });
+}
+
+const closeKioskOrdersBtn = document.getElementById('closeKioskOrdersBtn');
+if (closeKioskOrdersBtn && kioskOrderDrawer) {
+  closeKioskOrdersBtn.addEventListener('click', () => {
+    kioskOrderDrawer.classList.add('hidden');
+    if (kioskOrdersBtn) kioskOrdersBtn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+const nextOrderDrinkBtn = document.getElementById('nextOrderDrinkBtn');
+if (nextOrderDrinkBtn && kioskOrderDrawer) {
+  nextOrderDrinkBtn.addEventListener('click', () => {
+    document.getElementById('completeModal').classList.add('hidden');
+    resetDrink();
+    kioskOrderDrawer.classList.remove('hidden');
+    if (kioskOrdersBtn) kioskOrdersBtn.setAttribute('aria-expanded', 'true');
+    syncKioskOrdersFromAllSources();
+  });
+}
 
 // 설정 팝오버 토글
 const settingsToggleBtn = document.getElementById('settingsToggleBtn');
@@ -3983,6 +4403,8 @@ settingsToggleBtn.addEventListener('click', (e) => {
   if (!isHidden) {
     recipeDrawer.classList.add('hidden');
     recipePickerBtn.setAttribute('aria-expanded', 'false');
+    if (kioskOrderDrawer) kioskOrderDrawer.classList.add('hidden');
+    if (kioskOrdersBtn) kioskOrdersBtn.setAttribute('aria-expanded', 'false');
   }
 });
 document.addEventListener('pointerdown', (e) => {
@@ -3993,6 +4415,10 @@ document.addEventListener('pointerdown', (e) => {
   if (!recipeDrawer.classList.contains('hidden') && !recipeDrawer.contains(e.target) && !recipePickerBtn.contains(e.target)) {
     recipeDrawer.classList.add('hidden');
     recipePickerBtn.setAttribute('aria-expanded', 'false');
+  }
+  if (kioskOrderDrawer && !kioskOrderDrawer.classList.contains('hidden') && !kioskOrderDrawer.contains(e.target) && !kioskOrdersBtn.contains(e.target)) {
+    kioskOrderDrawer.classList.add('hidden');
+    kioskOrdersBtn.setAttribute('aria-expanded', 'false');
   }
 });
 
@@ -4148,6 +4574,14 @@ document.getElementById('resetCamBtn').addEventListener('click', () => {
   focusOverviewCamera(480);
 });
 
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+if (fullscreenBtn && window.D1Bridge && window.D1Bridge.bindFullscreenButton) {
+  window.D1Bridge.bindFullscreenButton(fullscreenBtn, {
+    enterText: '⛶ 전체화면',
+    exitText: '⛶ 창모드'
+  });
+}
+
 document.getElementById('nextDrinkBtn').addEventListener('click', resetDrink);
 
 window.addEventListener('resize', () => {
@@ -4231,6 +4665,13 @@ function animate() {
 }
 
 initCafeScene();
+syncKioskOrdersFromAllSources();
+window.addEventListener('storage', (e) => {
+  if (e.key === KIOSK_ORDERS_KEY) {
+    updateKioskOrderBadge();
+    renderKioskOrderDrawer();
+  }
+});
 if (window.D1Bridge && window.D1Bridge.getSpedPrefs) {
   applyCafeSpedPrefs(window.D1Bridge.getSpedPrefs());
 }

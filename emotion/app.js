@@ -493,6 +493,7 @@ function applyEmotionPrefs(prefs) {
   const btnSpeak = document.getElementById("btnEmotionSpeak");
   const btnEasy = document.getElementById("btnEmotionEasy");
   const btnBreathe = document.getElementById("btnQuickBreathe");
+  const btnFullscreen = document.getElementById("btnEmotionFullscreen");
   const btnStudio = document.getElementById("btnFreeStudio");
   const btnStudioHome = document.getElementById("btnOpenStudioFromHome");
   const btnGallery = document.getElementById("btnMindGallery");
@@ -547,6 +548,13 @@ function applyEmotionPrefs(prefs) {
       showDetail(["breathe", "천천히 숨 쉬기", "코로 천천히 들이쉬고 입으로 길게 내쉬어요.", "숨이 길어지면 마음이 한결 편안해져요."], 0);
       speakEmotion("천천히 숨을 쉬어요. 코로 들이쉬고 입으로 길게 내쉬어요.");
     };
+  }
+  if (btnFullscreen && window.D1Bridge && window.D1Bridge.bindFullscreenButton) {
+    window.D1Bridge.bindFullscreenButton(btnFullscreen, {
+      enterText: "⛶ 전체화면",
+      exitText: "⛶ 창모드",
+      activeClass: "on"
+    });
   }
 
   if (window.D1Bridge && window.D1Bridge.getSpedPrefs) {

@@ -1617,6 +1617,14 @@
   if (btnPause) {
     btnPause.onclick = () => togglePause();
   }
+  const btnFullscreen = document.getElementById("btnFullscreen");
+  if (btnFullscreen && window.D1Bridge && window.D1Bridge.bindFullscreenButton) {
+    window.D1Bridge.bindFullscreenButton(btnFullscreen, {
+      enterText: "⛶ 전체화면",
+      exitText: "⛶ 창모드",
+      activeClass: "on"
+    });
+  }
 
   // 시작
   resize();
