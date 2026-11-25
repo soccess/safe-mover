@@ -1,0 +1,3127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>우리 도서관 - 3D 사서 직무 실습</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Jua&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5eee2;
+      --surface: rgba(255, 255, 255, 0.9);
+      --surface-solid: #ffffff;
+      --surface-soft: rgba(244, 236, 224, 0.94);
+      --text: #2a2118;
+      --text-muted: #695a4c;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --green: #15803d;
+      --accent: #d97706;
+      --border: rgba(196, 174, 146, 0.85);
+      --shadow: 0 8px 24px rgba(58, 40, 20, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .stage-wrap {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .canvas-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+    .canvas-container:active { cursor: grabbing; }
+
+    /* 상단 최소 HUD */
+    .hud-top {
+      position: absolute;
+      top: max(6px, env(safe-area-inset-top));
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 0 8px;
+      pointer-events: none;
+      z-index: 15;
+    }
+    .hud-top > * { pointer-events: auto; }
+
+    .top-bar {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(255, 253, 249, 0.94), rgba(250, 242, 229, 0.92));
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 2px solid rgba(206, 186, 158, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 4px 0 rgba(176, 148, 114, 0.35), 0 12px 26px rgba(68, 46, 26, 0.14);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+    .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .task-picker-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      border: 2px solid var(--border);
+      background: var(--surface-solid);
+      color: var(--text);
+      font-family: "Jua", "Fredoka", "Pretendard", "Malgun Gothic", sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 3px 0 rgba(180, 155, 128, 0.5);
+    }
+    .task-picker-btn:hover { background: #f6efe4; }
+    .task-picker-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(180, 155, 128, 0.5); }
+    .picker-caret { font-size: 11px; color: var(--text-muted); }
+
+    .score-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 800;
+      color: #1e40af;
+      background: #dbeafe;
+      padding: 3px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill-btn {
+      border: 2px solid var(--border);
+      background: var(--surface-solid);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 3px 0 rgba(180, 155, 128, 0.5);
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+    .pill-btn:active { transform: translateY(2px) scale(0.97); box-shadow: 0 1px 0 rgba(180, 155, 128, 0.5); }
+    .pill-btn.active {
+      background: #dbeafe;
+      border-color: var(--primary);
+      color: var(--primary-hover);
+      box-shadow: 0 3px 0 #1e40af;
+    }
+    .home-pill-link {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 3가지 연습 모드 전환 바 */
+    .pmode-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      border-radius: 999px;
+      background: #ebe1d0;
+      border: 1.5px solid var(--border);
+    }
+    .pmode-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+    .pmode-btn:hover { color: var(--text); }
+    .pmode-btn.active {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 2px 0 #14532d;
+    }
+    .pmode-btn[data-pmode="manual"].active {
+      background: #0284c7;
+      box-shadow: 0 2px 0 #075985;
+    }
+    .pmode-btn[data-pmode="practicum"].active {
+      background: #d97706;
+      box-shadow: 0 2px 0 #92400e;
+    }
+
+    /* 작업 선택 드로어 */
+    .task-drawer {
+      width: 100%;
+      max-width: 760px;
+      max-height: 62vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(14px);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      z-index: 26;
+    }
+    .task-drawer-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+      padding: 0 2px;
+    }
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 8px;
+    }
+    .task-card-btn {
+      border: 2px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 13px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .task-card-btn:hover { background: #ebe0cf; transform: translateY(-1px); }
+    .task-card-btn.active {
+      background: #1d4ed8;
+      border-color: #1e40af;
+      color: #ffffff;
+    }
+    .task-card-btn strong { font-size: 13.5px; }
+    .task-card-btn small { font-size: 11.5px; opacity: 0.86; line-height: 1.35; }
+
+    /* 설정 팝오버 */
+    .settings-popover {
+      position: absolute;
+      top: calc(max(6px, env(safe-area-inset-top)) + 52px);
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(14px);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      z-index: 26;
+    }
+
+    /* 과제 분석표 */
+    .schedule-strip {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 7px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .schedule-strip::-webkit-scrollbar { display: none; }
+
+    .step-card {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11.5px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .step-card .step-num {
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 900;
+    }
+    .step-card.current { border-color: var(--accent); background: #fff7ed; color: var(--text); }
+    .step-card.current .step-num { background: var(--accent); color: #fff; }
+    .step-card.done { border-color: var(--green); background: #ecfdf5; color: var(--green); }
+    .step-card.done .step-num { background: var(--green); color: #fff; }
+    .step-arrow { flex: 0 0 auto; color: var(--text-muted); font-weight: 800; font-size: 11px; }
+
+    /* 지금 -> 다음 + 현재 도서 청구기호 요약 바 */
+    .sub-hud-row {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .first-then-bar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .ft-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .ft-pill.now { background: #fff3e0; color: #9c4f0a; border: 1px solid #f5b971; }
+    .ft-pill.next { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+
+    .book-info-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 11px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #2563eb;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .book-kdc-band {
+      display: inline-block;
+      width: 10px;
+      height: 18px;
+      border-radius: 4px;
+      background: #2563eb;
+    }
+    .book-call-badge {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      color: #1d4ed8;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+    }
+
+    /* 하단 플로팅 도크 */
+    .action-dock {
+      position: absolute;
+      bottom: max(14px, calc(env(safe-area-inset-bottom) + 10px));
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .guidance-banner {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 10px 16px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid var(--primary);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(44, 36, 30, 0.16);
+      font-size: clamp(15px, 2vw, 18.5px);
+      line-height: 1.4;
+      font-weight: 800;
+      color: var(--text);
+      max-width: min(840px, 96%);
+      text-align: left;
+    }
+    .guidance-banner.gentle-hint {
+      border-color: var(--accent);
+      background: rgba(255, 248, 238, 0.97);
+    }
+    .guidance-banner.mistake-hint {
+      border-color: #dc2626;
+      background: rgba(254, 242, 242, 0.97);
+      color: #991b1b;
+    }
+    .guidance-emoji { font-size: 22px; flex-shrink: 0; line-height: 1; }
+    .guidance-text { flex: 1 1 auto; min-width: 0; word-break: keep-all; }
+    .guidance-actions { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+    .guidance-ctrl-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      min-height: 38px;
+      padding: 0 9px;
+      border-radius: 11px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .guidance-ctrl-btn.speak { border: 1.5px solid var(--primary); background: #eff6ff; color: var(--primary); }
+    .guidance-ctrl-btn.close { border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; }
+
+    .guidance-reopen-btn {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--primary);
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--primary);
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(44, 36, 30, 0.14);
+    }
+
+    /* 수동실습 / 라벨 고르기 바 */
+    .manual-choice-bar {
+      pointer-events: auto;
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border: 2px solid #0284c7;
+      border-radius: 16px;
+      padding: 8px 12px;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.22);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+    }
+    .manual-choice-title { font-size: 12.5px; font-weight: 800; color: #0369a1; text-align: center; }
+    .manual-choice-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; }
+    .manual-choice-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 2px solid #bae6fd;
+      background: #f0f9ff;
+      color: #0c4a6e;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 8px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      min-height: 42px;
+      transition: transform 0.12s, background 0.15s, border-color 0.15s;
+    }
+    .manual-choice-btn:hover { background: #e0f2fe; border-color: #0284c7; transform: translateY(-1px); }
+    .manual-choice-btn.wrong-shake {
+      background: #fef2f2;
+      border-color: #f87171;
+      color: #991b1b;
+      animation: lbShake 0.32s ease;
+    }
+
+    /* 실습모드 상태 바 */
+    .practicum-status-bar {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(255, 251, 235, 0.95);
+      border: 1.5px solid #f59e0b;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #78350f;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.16);
+    }
+    .prac-pill { background: #fff; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 999px; }
+    .prac-pill.warn { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+    .prac-reset-btn {
+      border: 1.5px solid #d97706;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    /* 하단 동작 버튼 도크 */
+    .action-bar {
+      pointer-events: auto;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 9px;
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .action-bar::-webkit-scrollbar { display: none; }
+
+    .tool-btn {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 46px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 0 rgba(168, 139, 115, 0.5), 0 6px 14px rgba(44, 36, 30, 0.08);
+      transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+    .tool-btn:hover:not(:disabled) { transform: translateY(-2px); background: #eae0d0; }
+    .tool-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 rgba(168, 139, 115, 0.5); }
+    .tool-btn.highlighted {
+      border-color: #ea8c2a;
+      background: linear-gradient(135deg, #fff7ea, #ffebd2);
+      box-shadow: 0 0 0 3px rgba(217, 130, 43, 0.28), 0 6px 16px rgba(217, 130, 43, 0.22);
+      animation: lbHighlightPulse 1.7s ease-in-out infinite;
+    }
+    .tool-btn.done-btn {
+      background: #ecfdf5;
+      border-color: #86efac;
+      color: #166534;
+    }
+    .tool-btn:disabled { opacity: 0.48; cursor: not-allowed; }
+
+    /* 3D 호버 툴팁 */
+    .hover-label {
+      position: absolute;
+      padding: 5px 10px;
+      background: rgba(30, 41, 59, 0.92);
+      color: #ffffff;
+      font-size: 12.5px;
+      font-weight: 700;
+      border-radius: 8px;
+      pointer-events: none;
+      transform: translate(-50%, -130%);
+      white-space: nowrap;
+      z-index: 20;
+    }
+
+    .hidden { display: none !important; }
+
+    /* 모달 */
+    .complete-modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(30, 24, 18, 0.38);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+    .complete-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 3.5px solid var(--primary);
+      border-radius: 26px;
+      padding: 26px 30px;
+      text-align: center;
+      box-shadow: 0 8px 0 #1e40af, 0 24px 56px rgba(0, 0, 0, 0.28);
+      max-width: 430px;
+      width: 90%;
+      animation: lbModalPop 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+    }
+    .complete-emoji { font-size: 40px; margin-bottom: 6px; }
+    .complete-card h2 {
+      margin: 0 0 8px;
+      font-family: "Jua", "Fredoka", "Pretendard", sans-serif;
+      font-size: 22px;
+    }
+    .complete-card p { margin: 0 0 18px; font-size: 15px; color: var(--text-muted); line-height: 1.5; font-weight: 700; }
+    .complete-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+    .primary-action-btn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      font-family: "Jua", "Pretendard", sans-serif;
+      font-size: 16.5px;
+      font-weight: 800;
+      padding: 12px 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #1e3a8a, 0 8px 18px rgba(29, 78, 216, 0.28);
+    }
+    .primary-action-btn:hover { background: var(--primary-hover); }
+    .primary-action-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #1e3a8a; }
+
+    .secondary-action-btn {
+      background: #fffbeb;
+      color: #b45309;
+      border: 2px solid #f59e0b;
+      border-radius: 14px;
+      padding: 11px 18px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .secondary-action-btn:hover { background: #fef3c7; }
+
+    .practicum-report {
+      text-align: left;
+      background: #fffbeb;
+      border: 1.5px solid #fde68a;
+      border-radius: 14px;
+      padding: 11px 13px;
+      margin-bottom: 16px;
+      max-height: 210px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .prac-stars { text-align: center; font-size: 24px; margin-bottom: 6px; }
+    .prac-item { padding: 4px 0; border-bottom: 1px dashed #fde68a; }
+    .prac-item:last-child { border-bottom: none; }
+    .prac-item.ok { color: #166534; }
+    .prac-item.warn { color: #b91c1c; font-weight: 700; }
+
+    @keyframes lbModalPop {
+      from { opacity: 0; transform: scale(0.9) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes lbHighlightPulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(217, 130, 43, 0.24); }
+      50% { box-shadow: 0 0 0 7px rgba(217, 130, 43, 0.42); }
+    }
+    @keyframes lbShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @media (max-width: 780px) {
+      .top-bar { flex-wrap: wrap; padding: 6px 9px; }
+      .brand-icon { display: none; }
+      .pmode-btn { font-size: 11px; padding: 4px 7px; }
+      .pill-btn { font-size: 11.5px; padding: 4px 8px; }
+      .guidance-banner { font-size: 15px; padding: 9px 11px 9px 13px; }
+      .tool-btn { min-height: 44px; padding: 7px 11px; font-size: 13px; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <main class="stage-wrap">
+      <div id="canvasContainer" class="canvas-container"></div>
+
+      <!-- 상단 최소 HUD -->
+      <div class="hud-top">
+        <header class="top-bar">
+          <div class="brand">
+            <span class="brand-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="28" height="28">
+                <rect x="7" y="8" width="26" height="34" rx="5" fill="#2563eb" stroke="#1e3a8a" stroke-width="2.4"/>
+                <rect x="13" y="8" width="20" height="34" rx="4" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2.2"/>
+                <rect x="15" y="25" width="16" height="12" rx="2" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
+                <rect x="15" y="25" width="16" height="3.5" fill="#f59e0b"/>
+                <circle cx="37" cy="14" r="6" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+                <path d="M34.5 14l1.8 1.8 3.2-3.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <button id="taskPickerBtn" class="task-picker-btn" aria-expanded="false" aria-controls="taskDrawer">
+              <span id="currentTaskLabel">🏷️ 1. 라벨·청구기호 붙이기</span>
+              <span class="picker-caret">▾</span>
+            </button>
+            <span class="score-badge" id="scoreBadge">★ 0</span>
+          </div>
+
+          <div class="controls-group">
+            <div class="pmode-switch" id="practiceModeSwitch" role="group" aria-label="실습 모드 선택">
+              <button type="button" class="pmode-btn active" data-pmode="auto" title="단계별로 안내하고 강조해요">🤖 자동실습</button>
+              <button type="button" class="pmode-btn" data-pmode="manual" title="다음 단계를 직접 골라요">🧭 수동실습</button>
+              <button type="button" class="pmode-btn" data-pmode="practicum" title="안내 없이 직접 해보고 결과 확인!">🧪 실습모드</button>
+            </div>
+            <button id="focusStepBtn" class="pill-btn active" title="현재 작업 크게 보기">🔍 확대</button>
+            <button id="resetCamBtn" class="pill-btn" title="작업대 전체 보기">🎥 전체</button>
+            <button id="fullscreenBtn" class="pill-btn" title="전체화면">⛶ 전체화면</button>
+            <button id="quickBreakBtn" class="pill-btn" title="잠깐 쉬기">🌿 쉼</button>
+            <button id="settingsToggleBtn" class="pill-btn" aria-expanded="false" aria-controls="settingsPopover" title="설정">⚙️</button>
+            <a class="pill-btn home-pill-link" href="../index.html" title="학습 게임 목록으로 이동">🏠</a>
+          </div>
+        </header>
+
+        <!-- 도서관 직무 작업 선택 드로어 -->
+        <nav id="taskDrawer" class="task-drawer hidden" aria-label="도서관 실습 작업 선택"></nav>
+
+        <!-- 시각적 과제 분석표 -->
+        <section class="schedule-strip" id="scheduleStrip" aria-label="실습 순서"></section>
+
+        <!-- 지금->다음 + 도서 정보 배지 -->
+        <div class="sub-hud-row">
+          <div class="first-then-bar" id="firstThenBar" aria-live="polite"></div>
+          <div class="book-info-chip hidden" id="bookInfoChip">
+            <span class="book-kdc-band" id="chipKdcBand"></span>
+            <span id="chipBookTitle">『소나기』 · 황순원</span>
+            <span class="book-call-badge" id="chipCallNum">813.6 황56ㅅ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D 호버 툴팁 -->
+      <div id="hoverLabel" class="hover-label hidden"></div>
+
+      <!-- 설정 팝오버 -->
+      <div id="settingsPopover" class="settings-popover hidden" role="dialog" aria-label="도서관 실습 설정">
+        <button id="autoCamBtn" class="pill-btn active">🎬 자동 카메라: 켜짐</button>
+        <button id="modeBtn" class="pill-btn active">🧭 안내 강조: 켜짐</button>
+        <button id="voiceBtn" class="pill-btn">🔊 음성 안내: 꺼짐</button>
+        <button id="soundBtn" class="pill-btn active">🔔 효과음: 켜짐</button>
+        <button id="easyLibBtn" class="pill-btn">📖 쉬운 말: 꺼짐</button>
+        <button id="diffBtn" class="pill-btn">📊 난이도: 표준(소수+저자)</button>
+      </div>
+
+      <!-- 하단 플로팅 안내 + 동작 버튼 도크 -->
+      <footer class="action-dock">
+        <div class="guidance-banner" id="guidanceBanner" role="status" aria-live="polite">
+          <span class="guidance-emoji" id="guidanceEmoji">📖</span>
+          <span class="guidance-text" id="guidanceText">3D 도서관 실습실을 불러오고 있어요...</span>
+          <div class="guidance-actions">
+            <button type="button" id="speakStepBtn" class="guidance-ctrl-btn speak" title="지시문 읽어주기" aria-label="지시문 읽어주기">🔊</button>
+            <button type="button" id="closeGuidanceBtn" class="guidance-ctrl-btn close" title="지시문 닫기" aria-label="지시문 닫기">✕</button>
+          </div>
+        </div>
+        <button type="button" id="reopenGuidanceBtn" class="guidance-reopen-btn hidden">💬 지시문 보기</button>
+        <div id="manualChoiceBar" class="manual-choice-bar hidden" aria-live="polite"></div>
+        <div id="practicumStatusBar" class="practicum-status-bar hidden" aria-live="polite"></div>
+        <div class="action-bar" id="actionBar" aria-label="실습 동작 버튼"></div>
+      </footer>
+
+      <!-- 잠깐 쉬기 모달 -->
+      <div id="breakModal" class="complete-modal hidden" role="dialog" aria-modal="true" aria-label="잠깐 쉬기">
+        <div class="complete-card">
+          <div style="font-size:44px;margin-bottom:6px">🌿</div>
+          <h2>잠깐 숨을 고르고 있어요</h2>
+          <p>어깨와 손목의 힘을 빼고 천천히 숨을 들이마셨다가 내쉬어 보세요.<br>준비가 되면 다시 도서관 실습을 이어가요.</p>
+          <button id="resumeBreakBtn" class="primary-action-btn">▶ 이어서 실습하기</button>
+        </div>
+      </div>
+
+      <!-- 완료 축하 모달 -->
+      <div id="completeModal" class="complete-modal hidden" role="dialog" aria-modal="true">
+        <div class="complete-card">
+          <div class="complete-emoji" id="completeEmoji">🎉</div>
+          <h2 id="completeTitle">실습을 완료했어요!</h2>
+          <p id="completeDesc">차분하게 순서대로 정말 잘 해냈어요.</p>
+          <div id="practicumReport" class="practicum-report hidden"></div>
+          <div class="complete-actions">
+            <button id="retryTaskBtn" class="primary-action-btn">✨ 새 책으로 한 번 더</button>
+            <button id="nextTaskBtn" class="secondary-action-btn">➡️ 다음 작업 해보기</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/d1_client.js"></script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // =========================================================================
+    // 1. 한국 도서 서지 데이터 & KDC 청구기호 생성기
+    // =========================================================================
+    const CHOSUNG_SIMPLE = ['ㄱ','ㄱ','ㄴ','ㄷ','ㄷ','ㄹ','ㅁ','ㅂ','ㅂ','ㅅ','ㅅ','ㅇ','ㅈ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const BOOK_COLORS = [
+      '#c2413b','#2563eb','#15803d','#d97706','#7c3aed','#ea580c',
+      '#0891b2','#be185d','#4d7c0f','#1d4ed8','#b45309','#6d4c41'
+    ];
+
+    const SEED_BOOKS = [
+      { title: '소나기', author: '황순원', kdc: 813.6, isbn: '9788932001012', category: '한국소설' },
+      { title: '동백꽃', author: '김유정', kdc: 813.6, isbn: '9788932001029', category: '한국소설' },
+      { title: '메밀꽃 필 무렵', author: '이효석', kdc: 813.6, isbn: '9788932001036', category: '한국소설' },
+      { title: '운수 좋은 날', author: '현진건', kdc: 813.6, isbn: '9788932001043', category: '한국소설' },
+      { title: '상록수', author: '심훈', kdc: 813.6, isbn: '9788932001067', category: '한국소설' },
+      { title: '토지', author: '박경리', kdc: 813.6, isbn: '9788932001081', category: '한국소설' },
+      { title: '아몬드', author: '손원평', kdc: 813.7, isbn: '9788936434267', category: '한국소설' },
+      { title: '완득이', author: '김려령', kdc: 813.7, isbn: '9788936456085', category: '한국소설' },
+      { title: '불편한 편의점', author: '김호연', kdc: 813.7, isbn: '9791161571188', category: '한국소설' },
+      { title: '달러구트 꿈 백화점', author: '이미예', kdc: 813.7, isbn: '9791165341909', category: '한국소설' },
+      { title: '채식주의자', author: '한강', kdc: 813.7, isbn: '9788936433598', category: '한국소설' },
+      { title: '진달래꽃', author: '김소월', kdc: 811.6, isbn: '9788937405013', category: '한국시' },
+      { title: '하늘과 바람과 별과 시', author: '윤동주', kdc: 811.6, isbn: '9788932005119', category: '한국시' },
+      { title: '님의 침묵', author: '한용운', kdc: 811.6, isbn: '9788932005126', category: '한국시' },
+      { title: '무소유', author: '법정', kdc: 814.6, isbn: '9788995497302', category: '한국수필' },
+      { title: '인연', author: '피천득', kdc: 814.6, isbn: '9788932008011', category: '한국수필' },
+      { title: '정의란 무엇인가', author: '마이클 샌델', kdc: 330.1, isbn: '9788934939603', category: '사회과학' },
+      { title: '코스모스', author: '칼 세이건', kdc: 440.0, isbn: '9788983711892', category: '자연과학' },
+      { title: '이기적 유전자', author: '리처드 도킨스', kdc: 476.0, isbn: '9788932473901', category: '생물학' },
+      { title: '방구석 미술관', author: '조원재', kdc: 650.9, isbn: '9788968331862', category: '예술' },
+      { title: '삼국유사', author: '일연', kdc: 911.0, isbn: '9788937461019', category: '한국역사' },
+      { title: '나의 문화유산답사기', author: '유홍준', kdc: 981.1, isbn: '9788936472016', category: '역사/지리' },
+      { title: '백범일지', author: '김구', kdc: 991.1, isbn: '9788971990834', category: '한국역사' },
+      { title: '미움받을 용기', author: '기시미 이치로', kdc: 189.2, isbn: '9788996991342', category: '철학/심리' }
+    ];
+
+    function strHash(s) {
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return Math.abs(h);
+    }
+
+    function getChosung(ch) {
+      if (!ch) return 'ㅇ';
+      const code = ch.charCodeAt(0);
+      if (code >= 0xAC00 && code <= 0xD7A3) return CHOSUNG_SIMPLE[Math.floor((code - 0xAC00) / 588)] || 'ㅇ';
+      return 'ㅇ';
+    }
+
+    function generateAuthorCode(author, title) {
+      const a = String(author || '김작가').trim();
+      const t = String(title || '도서').trim();
+      const surname = a.charAt(0) || '김';
+      let num = 54;
+      if (a.length >= 2) {
+        const u = a.charCodeAt(1);
+        if (u >= 0xAC00 && u <= 0xD7A3) num = 11 + Math.floor(((u - 0xAC00) % 588) / 7);
+        else num = 11 + (u % 88);
+      } else {
+        num = 15 + (strHash(a) % 75);
+      }
+      num = Math.max(11, Math.min(99, num));
+      return surname + num + getChosung(t.charAt(0));
+    }
+
+    function formatKdc(val, diff) {
+      if (diff === 1) return String(Math.round(val)).padStart(3, '0');
+      const r = Math.round(val * 10) / 10;
+      const ip = Math.floor(r);
+      const fp = Math.round((r - ip) * 10);
+      return fp === 0 ? String(ip).padStart(3, '0') : String(ip).padStart(3, '0') + '.' + fp;
+    }
+
+    function kdcBandColor(group) {
+      const g = Math.floor((group || 800) / 100) * 100;
+      const map = {
+        0: '#64748b', 100: '#8b5cf6', 200: '#db2777', 300: '#ea580c', 400: '#16a34a',
+        500: '#0891b2', 600: '#ca8a04', 700: '#65a30d', 800: '#2563eb', 900: '#9a3412'
+      };
+      return map[g] || '#2563eb';
+    }
+
+    function enrichBook(raw, diff = 2, colorIndex = -1) {
+      const title = String(raw.title || '도서관 책').trim();
+      const authorName = String(raw.author || '홍길동').trim();
+      const h = strHash(title + authorName);
+      let kdcVal = Number(raw.kdc || 813.6);
+      kdcVal = Math.round(kdcVal * 10) / 10;
+      const authorFull = generateAuthorCode(authorName, title);
+      const author = diff === 1 ? authorFull.slice(0, 1) : authorFull;
+      const value = diff === 1 ? Math.round(kdcVal) : kdcVal;
+      const text = formatKdc(value, diff);
+      const kdcGroup = Math.floor(kdcVal / 100) * 100;
+      const color = colorIndex >= 0
+        ? BOOK_COLORS[colorIndex % BOOK_COLORS.length]
+        : BOOK_COLORS[h % BOOK_COLORS.length];
+      return {
+        title,
+        authorName,
+        author,
+        value,
+        text,
+        callNo: `${text} ${author}`,
+        barcode: raw.isbn || ('97889' + String(h % 100000000).padStart(8, '0')),
+        category: raw.category || '한국문학',
+        kdcGroup,
+        color
+      };
+    }
+
+    function cmpCall(a, b) {
+      if (Math.abs(a.value - b.value) > 0.001) return a.value - b.value;
+      return String(a.author || '').localeCompare(String(b.author || ''), 'ko');
+    }
+
+    function pickDistinctBooks(count, diff) {
+      const pool = SEED_BOOKS.slice().sort(() => Math.random() - 0.5);
+      const picked = [];
+      const seenKeys = new Set();
+      for (const raw of pool) {
+        const eb = enrichBook(raw, diff, picked.length);
+        const key = `${eb.text}_${eb.author}`;
+        if (seenKeys.has(key)) continue;
+        seenKeys.add(key);
+        picked.push(eb);
+        if (picked.length >= count) break;
+      }
+      return picked;
+    }
+
+    // =========================================================================
+    // 2. 작업 정의 (도서관 4대 핵심 직무)
+    // =========================================================================
+    const TASKS = {
+      label: {
+        id: 'label',
+        name: '1. 라벨·청구기호 붙이기',
+        emoji: '🏷️',
+        desc: '새 책에 바코드, 청구기호 라벨, 보호필름을 순서대로 붙여 북트럭에 올려요.',
+        steps: [
+          { target: 'place_book', emoji: '📖', label: '책 올려놓기', easyLabel: '책 놓기', prompt: '작업대 매트 위에 정리할 새 책을 올려놓아요.' },
+          { target: 'barcode', emoji: '🔍', label: '바코드 붙이기', easyLabel: '바코드 붙이기', prompt: '책 표지 안쪽에 도서관 바코드(등록번호)를 붙여요.' },
+          { target: 'call_label', emoji: '🏷️', label: '청구기호 라벨', easyLabel: '번호 라벨 붙이기', prompt: '책등 아래쪽에 분야 색띠와 청구기호 라벨을 붙여요.' },
+          { target: 'keeper', emoji: '✨', label: '보호필름 덮기', easyLabel: '투명 테이프 덮기', prompt: '청구기호 라벨이 떨어지지 않게 보호필름(키퍼)을 붙여요.' },
+          { target: 'to_cart', emoji: '🛒', label: '북트럭에 옮기기', easyLabel: '카트에 올리기', prompt: '라벨 작업이 끝난 책을 북트럭에 옮겨 완료해요!' }
+        ]
+      },
+      sort: {
+        id: 'sort',
+        name: '2. 청구기호 순서대로 나열하기',
+        emoji: '🔢',
+        desc: '섞여 있는 책들의 청구기호를 작은 번호부터 큰 번호 순서대로 나란히 배열해요.',
+        steps: [] // 라운드 책 수에 따라 동적 생성
+      },
+      shelve: {
+        id: 'shelve',
+        name: '3. 청구기호에 따라 서가에 꽂기',
+        emoji: '📚',
+        desc: '북트럭의 책을 집어 서가에 꽂힌 책들의 청구기호 사이 알맞은 자리에 꽂아요.',
+        steps: [
+          { target: 'pick_cart', emoji: '🛒', label: '북트럭 책 집기', easyLabel: '카트 책 집기', prompt: '북트럭에 놓인 배가할 책을 집어 들어요.' },
+          { target: 'shelve_gap', emoji: '📚', label: '알맞은 칸에 꽂기', easyLabel: '맞는 자리 꽂기', prompt: '서가 책등의 청구기호(작은 번호→큰 번호)를 보고 알맞은 자리에 꽂아요!' }
+        ]
+      },
+      circulation: {
+        id: 'circulation',
+        name: '4. 도서 대출·반납 처리하기',
+        emoji: '💳',
+        desc: '사서 데스크에서 회원증과 대출·반납 도서를 바코드 스캐너에 찍고 정리해요.',
+        steps: [
+          { target: 'scan_card', emoji: '💳', label: '회원증 스캔', easyLabel: '회원증 찍기', prompt: '먼저 이용자의 파란 회원증을 바코드 스캐너에 찍어 확인해요.' },
+          { target: 'scan_checkout', emoji: '📘', label: '대출 도서 스캔', easyLabel: '빌릴 책 찍기', prompt: '대출 요청 도서(파란 책)를 스캐너에 찍어 대출 처리해요.' },
+          { target: 'scan_return', emoji: '📕', label: '반납 도서 스캔', easyLabel: '반납 책 찍기', prompt: '반납 도서(빨간 책)를 스캐너에 찍어 반납 처리해요.' },
+          { target: 'put_tray', emoji: '📥', label: '반납 트레이 정리', easyLabel: '반납함에 놓기', prompt: '반납 처리된 책을 초록색 반납 트레이에 가지런히 놓아요!' }
+        ]
+      }
+    };
+    const TASK_ORDER = ['label', 'sort', 'shelve', 'circulation'];
+
+    // =========================================================================
+    // 3. 상태 및 저장
+    // =========================================================================
+    const LIB_COUNT_KEY = 'safe_mover.library.count.v1';
+    function loadScoreCount() {
+      try { return Number(localStorage.getItem(LIB_COUNT_KEY) || 0) || 0; } catch { return 0; }
+    }
+    function saveScoreCount(n) {
+      try { localStorage.setItem(LIB_COUNT_KEY, String(n)); } catch {}
+      if (window.D1Bridge && typeof window.D1Bridge.setKV === 'function') {
+        window.D1Bridge.setKV(LIB_COUNT_KEY, n);
+      }
+    }
+
+    const state = {
+      taskId: 'label',
+      practiceMode: 'auto', // 'auto' | 'manual' | 'practicum'
+      difficulty: 2, // 1: 기초, 2: 표준, 3: 심화
+      stepIndex: 0,
+      awaitingNextChoice: false,
+      manualChoices: [],
+      awaitingLabelPick: false,
+      labelChoices: [],
+      autoCamera: true,
+      cameraViewMode: 'step', // 'step' | 'overview'
+      guidedMode: true,
+      voiceEnabled: false,
+      soundEnabled: true,
+      easyMode: false,
+      guidanceHidden: false,
+      paused: false,
+      busy: false,
+      completedCount: loadScoreCount(),
+      // 현재 작업 데이터
+      activeBook: null,
+      roundData: {},
+      craft: {
+        mistakes: [],
+        log: []
+      }
+    };
+
+    // =========================================================================
+    // 4. 감각 친화적 오디오 & 한국어 음성
+    // =========================================================================
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!state.soundEnabled) return null;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      } catch { return null; }
+    }
+    function playTone(freq = 523.25, dur = 0.14, type = 'sine', vol = 0.06, delay = 0) {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      try {
+        const t = ctx.currentTime + delay;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(vol, t + 0.014);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + dur + 0.03);
+      } catch {}
+    }
+    const sndClick = () => playTone(660, 0.07, 'sine', 0.045);
+    const sndBeep = () => playTone(1560, 0.09, 'sine', 0.055);
+    const sndStick = () => { playTone(480, 0.06, 'triangle', 0.05); playTone(720, 0.09, 'sine', 0.045, 0.05); };
+    const sndHint = () => { playTone(440, 0.12, 'sine', 0.045); playTone(523.25, 0.14, 'sine', 0.045, 0.09); };
+    const sndSuccess = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => playTone(f, 0.24, 'sine', 0.055, i * 0.09));
+
+    let lastSpoken = '';
+    function speakKorean(text, force = false) {
+      if (!text) return;
+      if (!force && !state.voiceEnabled) return;
+      if (!force && text === lastSpoken) return;
+      lastSpoken = text;
+      const rate = 0.96;
+      if (window.D1Bridge && typeof window.D1Bridge.speakText === 'function') {
+        window.D1Bridge.speakText(text, rate, 1.02);
+        return;
+      }
+      if ('speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'ko-KR';
+          u.rate = rate;
+          window.speechSynthesis.speak(u);
+        } catch {}
+      }
+    }
+
+    // =========================================================================
+    // 5. Three.js 3D 씬, OrbitControls, 텍스처 & 공용 도서관 가구
+    // =========================================================================
+    const container = document.getElementById('canvasContainer');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf4ece0);
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / Math.max(container.clientHeight, 1), 0.1, 40);
+    camera.position.set(0, 1.85, 2.35);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0.96, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = 0.7;
+    controls.maxDistance = 4.6;
+    controls.maxPolarAngle = Math.PI / 2 - 0.08;
+    controls.minPolarAngle = 0.22;
+
+    let camAnimRaf = null;
+    function cancelCamAnim() {
+      if (camAnimRaf !== null) { cancelAnimationFrame(camAnimRaf); camAnimRaf = null; }
+    }
+    controls.addEventListener('start', cancelCamAnim);
+
+    function animateCameraTo(toPos, toTarget, duration = 480) {
+      cancelCamAnim();
+      const fromPos = camera.position.clone();
+      const fromTarget = controls.target.clone();
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const k = 1 - Math.pow(1 - t, 3);
+        camera.position.lerpVectors(fromPos, toPos, k);
+        controls.target.lerpVectors(fromTarget, toTarget, k);
+        if (t < 1) camAnimRaf = requestAnimationFrame(tick);
+        else camAnimRaf = null;
+      };
+      camAnimRaf = requestAnimationFrame(tick);
+    }
+
+    function getAspectMult() {
+      const a = container.clientWidth / Math.max(container.clientHeight, 1);
+      if (a < 0.7) return 1.24;
+      if (a < 1.0) return 1.1;
+      return 1.0;
+    }
+
+    // 조명 & 배경 공간
+    scene.add(new THREE.HemisphereLight(0xfffaf2, 0xd8c3a5, 1.5));
+    const dirLight = new THREE.DirectionalLight(0xfff5e4, 1.35);
+    dirLight.position.set(2.8, 5.5, 4.0);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    scene.add(dirLight);
+    const fillLight = new THREE.DirectionalLight(0xe0ecff, 0.45);
+    fillLight.position.set(-3.2, 3.0, 2.2);
+    scene.add(fillLight);
+
+    const floorMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(16, 12),
+      new THREE.MeshStandardMaterial({ color: 0xe6d4bc, roughness: 0.88 })
+    );
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.receiveShadow = true;
+    scene.add(floorMesh);
+
+    const backWall = new THREE.Mesh(
+      new THREE.PlaneGeometry(16, 5.5),
+      new THREE.MeshStandardMaterial({ color: 0xfbf7ef, roughness: 0.92 })
+    );
+    backWall.position.set(0, 2.75, -1.75);
+    scene.add(backWall);
+
+    const DESK_Y = 0.82;
+    const deskGroup = new THREE.Group();
+    const deskTop = new THREE.Mesh(
+      new THREE.BoxGeometry(2.8, 0.07, 1.35),
+      new THREE.MeshStandardMaterial({ color: 0xd19f68, roughness: 0.62 })
+    );
+    deskTop.position.set(0, DESK_Y - 0.035, 0);
+    deskTop.castShadow = true;
+    deskTop.receiveShadow = true;
+    deskGroup.add(deskTop);
+    [[-1.25, -0.55], [1.25, -0.55], [-1.25, 0.55], [1.25, 0.55]].forEach(([lx, lz]) => {
+      const leg = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, DESK_Y - 0.07, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 })
+      );
+      leg.position.set(lx, (DESK_Y - 0.07) / 2, lz);
+      deskGroup.add(leg);
+    });
+    scene.add(deskGroup);
+
+    // 벽면 사인보드
+    let wallSignMesh = null;
+    function setWallSign(titleText, bgColor = '#1e3a8a') {
+      if (wallSignMesh) scene.remove(wallSignMesh);
+      const cv = document.createElement('canvas');
+      cv.width = 960; cv.height = 140;
+      const g = cv.getContext('2d');
+      g.fillStyle = bgColor; g.fillRect(0, 0, cv.width, cv.height);
+      g.strokeStyle = '#fde68a'; g.lineWidth = 8; g.strokeRect(8, 8, cv.width - 16, cv.height - 16);
+      g.fillStyle = '#ffffff'; g.textAlign = 'center';
+      g.font = 'bold 46px "Malgun Gothic", sans-serif';
+      g.fillText(titleText, cv.width / 2, 86);
+      const tex = new THREE.CanvasTexture(cv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      wallSignMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(2.35, 0.36, 0.04),
+        new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 })
+      );
+      wallSignMesh.position.set(0, 2.05, -1.7);
+      scene.add(wallSignMesh);
+    }
+
+    // 텍스처 빌더
+    function makeSignPlate(text, bg = '#1d4ed8', w = 0.52, h = 0.13, fg = '#ffffff') {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 128;
+      const g = c.getContext('2d');
+      g.fillStyle = bg; g.fillRect(0, 0, 512, 128);
+      g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = 7; g.strokeRect(6, 6, 500, 116);
+      g.fillStyle = fg; g.textAlign = 'center';
+      g.font = 'bold 44px "Malgun Gothic", sans-serif';
+      g.fillText(text, 256, 80);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
+      );
+    }
+
+    function makeSpineTexture(bdata, showLabel = true) {
+      const c = document.createElement('canvas');
+      c.width = 192; c.height = 640;
+      const g = c.getContext('2d');
+      g.fillStyle = bdata.color || '#2563eb';
+      g.fillRect(0, 0, 192, 640);
+      g.fillStyle = 'rgba(255,255,255,0.22)';
+      g.fillRect(0, 24, 192, 7);
+
+      const clean = String(bdata.title || '도서').replace(/\s+/g, '').slice(0, 8);
+      g.fillStyle = '#ffffff';
+      g.textAlign = 'center';
+      g.font = 'bold 34px "Malgun Gothic", sans-serif';
+      for (let i = 0; i < clean.length; i++) {
+        g.fillText(clean.charAt(i), 96, 82 + i * 39);
+      }
+
+      if (showLabel) {
+        const sy = 420, sh = 196;
+        g.fillStyle = '#ffffff';
+        g.fillRect(12, sy, 168, sh);
+        g.fillStyle = kdcBandColor(bdata.kdcGroup);
+        g.fillRect(12, sy, 168, 38);
+        g.strokeStyle = '#0f172a';
+        g.lineWidth = 6;
+        g.strokeRect(12, sy, 168, sh);
+        g.fillStyle = '#0f172a';
+        g.font = 'bold 46px "Malgun Gothic", sans-serif';
+        g.fillText(String(bdata.text), 96, sy + 102);
+        g.font = 'bold 36px "Malgun Gothic", sans-serif';
+        g.fillText(String(bdata.author), 96, sy + 162);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function makeCoverTexture(bdata, showBarcode = true) {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 384;
+      const g = c.getContext('2d');
+      g.fillStyle = bdata.color || '#2563eb';
+      g.fillRect(0, 0, 256, 384);
+      g.fillStyle = 'rgba(255,255,255,0.2)';
+      g.fillRect(18, 20, 220, 344);
+      g.fillStyle = '#ffffff'; g.textAlign = 'center';
+      g.font = 'bold 28px "Malgun Gothic", sans-serif';
+      g.fillText(String(bdata.title || '도서').slice(0, 8), 128, 108);
+      g.font = 'bold 19px "Malgun Gothic", sans-serif';
+      g.fillText((bdata.authorName || '') + ' 지음', 128, 152);
+      if (showBarcode) {
+        g.fillStyle = '#ffffff';
+        g.fillRect(36, 244, 184, 92);
+        g.strokeStyle = '#111827'; g.lineWidth = 3;
+        g.strokeRect(36, 244, 184, 92);
+        g.fillStyle = '#0f172a';
+        for (let x = 48; x < 208; x += 6) {
+          const w = 2 + ((x * 7) % 3);
+          g.fillRect(x, 256, w, 48);
+        }
+        g.font = 'bold 15px monospace';
+        g.fillText(String(bdata.barcode || '978890001'), 128, 326);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    // 책 메쉬 생성 (W: 폭(앞뒤 깊이), H: 높이, T: 두께(책등 폭))
+    const BOOK_DIM = { w: 0.22, h: 0.31, t: 0.068 };
+    function createBookMesh(bdata, { showLabel = true, showBarcode = true, scale = 1 } = {}) {
+      const g = new THREE.Group();
+      const spineTex = makeSpineTexture(bdata, showLabel);
+      const coverTex = makeCoverTexture(bdata, showBarcode);
+      const pageMat = new THREE.MeshStandardMaterial({ color: 0xfbf8ef, roughness: 0.85 });
+      const sideMat = new THREE.MeshStandardMaterial({ color: bdata.color || '#2563eb', roughness: 0.7 });
+      // BoxGeometry faces: +x(책등), -x(책배), +y(위), -y(아래), +z(앞표지), -z(뒤표지)
+      const mats = [
+        new THREE.MeshStandardMaterial({ map: spineTex, roughness: 0.6 }),
+        pageMat,
+        pageMat,
+        pageMat,
+        new THREE.MeshStandardMaterial({ map: coverTex, roughness: 0.65 }),
+        sideMat
+      ];
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(BOOK_DIM.w, BOOK_DIM.h, BOOK_DIM.t),
+        mats
+      );
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      g.add(mesh);
+      g.scale.setScalar(scale);
+      g.userData.bookData = bdata;
+      return g;
+    }
+
+    function makeMemberCardMesh(name, no) {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 160;
+      const g = c.getContext('2d');
+      g.fillStyle = '#1d4ed8'; g.fillRect(0, 0, 256, 160);
+      g.fillStyle = '#facc15'; g.fillRect(0, 0, 256, 38);
+      g.fillStyle = '#1e293b'; g.font = 'bold 20px "Malgun Gothic", sans-serif'; g.textAlign = 'center';
+      g.fillText('도서관 회원증 · ' + name, 128, 26);
+      g.fillStyle = '#fff'; g.fillRect(28, 56, 200, 82);
+      g.fillStyle = '#000';
+      for (let x = 40; x < 216; x += 6) g.fillRect(x, 66, 3, 46);
+      g.font = 'bold 18px monospace'; g.fillText(no, 128, 130);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const m = new THREE.Mesh(
+        new THREE.BoxGeometry(0.26, 0.016, 0.17),
+        new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4 })
+      );
+      m.castShadow = true;
+      return m;
+    }
+
+    // 3D 강조 링 & 부유 비콘
+    const highlightRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.11, 0.15, 32),
+      new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+    );
+    highlightRing.rotation.x = -Math.PI / 2;
+    highlightRing.visible = false;
+    scene.add(highlightRing);
+
+    const highlightBeacon = new THREE.Group();
+    const beaconCone = new THREE.Mesh(
+      new THREE.ConeGeometry(0.055, 0.12, 16),
+      new THREE.MeshBasicMaterial({ color: 0x16a34a })
+    );
+    beaconCone.rotation.x = Math.PI;
+    const beaconShaft = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.018, 0.018, 0.11, 12),
+      new THREE.MeshBasicMaterial({ color: 0x16a34a })
+    );
+    beaconShaft.position.y = 0.09;
+    highlightBeacon.add(beaconCone, beaconShaft);
+    highlightBeacon.visible = false;
+    highlightBeacon.userData.baseY = DESK_Y + 0.35;
+    scene.add(highlightBeacon);
+
+    // =========================================================================
+    // 6. 동적 씬 빌더 (작업별 전용 3D 공간 구성)
+    // =========================================================================
+    let taskGroup = new THREE.Group();
+    scene.add(taskGroup);
+    let interactables = [];
+    let targetAnchors = {};
+    let cameraPresets = {
+      overview: { pos: new THREE.Vector3(0, 1.9, 2.35), target: new THREE.Vector3(0, 0.95, 0) }
+    };
+    let sceneObjects = {};
+    const animators = [];
+
+    function clearTaskScene() {
+      scene.remove(taskGroup);
+      taskGroup = new THREE.Group();
+      scene.add(taskGroup);
+      interactables = [];
+      targetAnchors = {};
+      sceneObjects = {};
+      animators.length = 0;
+      highlightRing.visible = false;
+      highlightBeacon.visible = false;
+    }
+
+    function registerHit(obj, targetId, label, anchorPos, camFocus = null) {
+      obj.userData.targetId = targetId;
+      obj.userData.label = label;
+      obj.traverse((ch) => {
+        if (ch.isMesh) {
+          ch.userData.targetId = targetId;
+          ch.userData.label = label;
+        }
+      });
+      interactables.push(obj);
+      if (anchorPos) targetAnchors[targetId] = anchorPos.clone();
+      if (camFocus) cameraPresets[targetId] = camFocus;
+    }
+
+    function tweenTransform(obj, toPos, toRot, duration = 380, onDone = null) {
+      const fromPos = obj.position.clone();
+      const fromRot = new THREE.Euler(obj.rotation.x, obj.rotation.y, obj.rotation.z);
+      const start = performance.now();
+      animators.push({
+        update(now) {
+          const t = Math.min((now - start) / duration, 1);
+          const k = 1 - Math.pow(1 - t, 3);
+          if (toPos) {
+            obj.position.lerpVectors(fromPos, toPos, k);
+            obj.position.y += Math.sin(t * Math.PI) * 0.08;
+          }
+          if (toRot) {
+            obj.rotation.x = THREE.MathUtils.lerp(fromRot.x, toRot.x, k);
+            obj.rotation.y = THREE.MathUtils.lerp(fromRot.y, toRot.y, k);
+            obj.rotation.z = THREE.MathUtils.lerp(fromRot.z, toRot.z, k);
+          }
+          if (t >= 1) {
+            if (toPos) obj.position.copy(toPos);
+            if (toRot) obj.rotation.set(toRot.x, toRot.y, toRot.z);
+            if (onDone) onDone();
+            return true;
+          }
+          return false;
+        }
+      });
+    }
+
+    // ---- [작업 1] 도서에 라벨·청구기호 붙이기 3D 씬 ----
+    function buildLabelScene() {
+      setWallSign('🏷️ 사서 정리 작업대 · 도서 라벨 & 청구기호 붙이기', '#1e40af');
+      const mult = getAspectMult();
+      cameraPresets = {
+        overview: { pos: new THREE.Vector3(0, 1.85 * mult, 2.1 * mult), target: new THREE.Vector3(0, DESK_Y + 0.14, 0) },
+        place_book: { pos: new THREE.Vector3(-0.65, 1.55 * mult, 1.35 * mult), target: new THREE.Vector3(-0.35, DESK_Y + 0.12, 0.06) },
+        barcode: { pos: new THREE.Vector3(-0.35, 1.52 * mult, 1.25 * mult), target: new THREE.Vector3(-0.12, DESK_Y + 0.12, 0.05) },
+        call_label: { pos: new THREE.Vector3(0.28, 1.48 * mult, 1.18 * mult), target: new THREE.Vector3(0.08, DESK_Y + 0.14, 0.05) },
+        keeper: { pos: new THREE.Vector3(0.32, 1.48 * mult, 1.18 * mult), target: new THREE.Vector3(0.12, DESK_Y + 0.14, 0.05) },
+        to_cart: { pos: new THREE.Vector3(0.75, 1.68 * mult, 1.65 * mult), target: new THREE.Vector3(0.65, DESK_Y + 0.18, 0.0) }
+      };
+
+      const book = pickDistinctBooks(1, state.difficulty)[0];
+      state.activeBook = book;
+      state.roundData = {
+        bookPlaced: false,
+        barcodeDone: false,
+        labelDone: false,
+        keeperDone: false,
+        cartDone: false,
+        pickedLabelCorrect: false
+      };
+
+      // 중앙 녹색 작업 매트
+      const mat = new THREE.Mesh(
+        new THREE.BoxGeometry(0.92, 0.015, 0.62),
+        new THREE.MeshStandardMaterial({ color: 0xdcfce7, roughness: 0.75 })
+      );
+      mat.position.set(0, DESK_Y + 0.008, 0.04);
+      mat.receiveShadow = true;
+      taskGroup.add(mat);
+      const matSign = makeSignPlate('라벨 정리 매트', '#15803d', 0.42, 0.09);
+      matSign.position.set(0, DESK_Y + 0.018, 0.30);
+      matSign.rotation.x = -Math.PI / 2;
+      taskGroup.add(matSign);
+
+      // 왼쪽: 새 도서 대기 더미
+      const stackBook = createBookMesh(book, { showLabel: false, showBarcode: false, scale: 1.18 });
+      stackBook.position.set(-0.92, DESK_Y + 0.06, 0.08);
+      stackBook.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
+      taskGroup.add(stackBook);
+      const stackSign = makeSignPlate('📖 정리할 새 책', '#1d4ed8', 0.42, 0.1);
+      stackSign.position.set(-0.92, DESK_Y + 0.28, 0.08);
+      taskGroup.add(stackSign);
+      registerHit(stackBook, 'place_book', `📖 『${book.title}』 작업대에 놓기`, new THREE.Vector3(-0.92, DESK_Y + 0.03, 0.08));
+
+      // 작업대 위 책 위 3D 부착물(바코드, 청구기호 라벨, 투명 키퍼)
+      const workBook = createBookMesh(book, { showLabel: false, showBarcode: false, scale: 1.28 });
+      workBook.position.set(0, DESK_Y + 0.07, 0.02);
+      workBook.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
+      workBook.visible = false;
+      taskGroup.add(workBook);
+
+      // 책 위 바코드 스티커 메쉬
+      const bcCv = document.createElement('canvas');
+      bcCv.width = 256; bcCv.height = 128;
+      const bcG = bcCv.getContext('2d');
+      bcG.fillStyle = '#ffffff'; bcG.fillRect(0, 0, 256, 128);
+      bcG.strokeStyle = '#111827'; bcG.lineWidth = 6; bcG.strokeRect(4, 4, 248, 120);
+      bcG.fillStyle = '#0f172a';
+      for (let x = 22; x < 234; x += 8) bcG.fillRect(x, 18, 3 + (x % 3), 62);
+      bcG.font = 'bold 20px monospace'; bcG.textAlign = 'center';
+      bcG.fillText(book.barcode, 128, 108);
+      const bcTex = new THREE.CanvasTexture(bcCv); bcTex.colorSpace = THREE.SRGBColorSpace;
+      const barcodePatch = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.14, 0.07),
+        new THREE.MeshBasicMaterial({ map: bcTex })
+      );
+      barcodePatch.rotation.x = -Math.PI / 2;
+      barcodePatch.position.set(-0.08, DESK_Y + 0.118, 0.07);
+      barcodePatch.visible = false;
+      taskGroup.add(barcodePatch);
+
+      // 책등 아래쪽 청구기호 라벨 메쉬 (책이 눕혀졌을 때 정면에서 또렷이 보이도록 책등 상단면/전면 배치)
+      const lbCv = document.createElement('canvas');
+      lbCv.width = 256; lbCv.height = 256;
+      const lbG = lbCv.getContext('2d');
+      lbG.fillStyle = '#ffffff'; lbG.fillRect(0, 0, 256, 256);
+      lbG.fillStyle = kdcBandColor(book.kdcGroup); lbG.fillRect(0, 0, 256, 56);
+      lbG.strokeStyle = '#0f172a'; lbG.lineWidth = 8; lbG.strokeRect(4, 4, 248, 248);
+      lbG.fillStyle = '#0f172a'; lbG.textAlign = 'center';
+      lbG.font = 'bold 58px "Malgun Gothic", sans-serif'; lbG.fillText(book.text, 128, 138);
+      lbG.font = 'bold 46px "Malgun Gothic", sans-serif'; lbG.fillText(book.author, 128, 206);
+      const lbTex = new THREE.CanvasTexture(lbCv); lbTex.colorSpace = THREE.SRGBColorSpace;
+      const callLabelPatch = new THREE.Mesh(
+        new THREE.BoxGeometry(0.085, 0.092, 0.085),
+        new THREE.MeshStandardMaterial({ map: lbTex, roughness: 0.45 })
+      );
+      callLabelPatch.position.set(0.11, DESK_Y + 0.072, 0.145);
+      callLabelPatch.visible = false;
+      taskGroup.add(callLabelPatch);
+
+      // 투명 보호필름(키퍼) 광택 레이어
+      const keeperPatch = new THREE.Mesh(
+        new THREE.BoxGeometry(0.095, 0.102, 0.115),
+        new THREE.MeshPhysicalMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.48, roughness: 0.1, metalness: 0.05 })
+      );
+      keeperPatch.position.copy(callLabelPatch.position);
+      keeperPatch.visible = false;
+      taskGroup.add(keeperPatch);
+
+      // 도구 트레이들 (뒤쪽 좌->우: 바코드, 청구기호 라벨, 보호필름)
+      const makeToolTray = (x, z, color, labelTxt, targetId, hoverTxt) => {
+        const grp = new THREE.Group();
+        const box = new THREE.Mesh(
+          new THREE.BoxGeometry(0.28, 0.05, 0.22),
+          new THREE.MeshStandardMaterial({ color, roughness: 0.5 })
+        );
+        box.position.y = 0.025;
+        box.castShadow = true;
+        grp.add(box);
+        const topDeco = new THREE.Mesh(
+          new THREE.BoxGeometry(0.18, 0.03, 0.12),
+          new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 })
+        );
+        topDeco.position.y = 0.06;
+        grp.add(topDeco);
+        grp.position.set(x, DESK_Y, z);
+        taskGroup.add(grp);
+        const sign = makeSignPlate(labelTxt, '#0f172a', 0.36, 0.085);
+        sign.position.set(x, DESK_Y + 0.19, z);
+        taskGroup.add(sign);
+        registerHit(grp, targetId, hoverTxt, new THREE.Vector3(x, DESK_Y + 0.05, z));
+        return grp;
+      };
+
+      const barcodeTray = makeToolTray(-0.56, -0.36, 0x3b82f6, '🔍 바코드 스티커', 'barcode', '🔍 바코드·등록번호 붙이기');
+      const labelTray = makeToolTray(0.0, -0.36, 0xf59e0b, '🏷️ 청구기호 라벨', 'call_label', '🏷️ 청구기호 라벨 붙이기');
+      const keeperTray = makeToolTray(0.56, -0.36, 0x06b6d4, '✨ 보호필름(키퍼)', 'keeper', '✨ 라벨 보호필름 붙이기');
+
+      // 오른쪽: 북트럭
+      const cartGroup = new THREE.Group();
+      const cartBase = new THREE.Mesh(
+        new THREE.BoxGeometry(0.56, 0.12, 0.42),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 })
+      );
+      cartBase.position.y = 0.06;
+      cartBase.castShadow = true;
+      const cartBack = new THREE.Mesh(
+        new THREE.BoxGeometry(0.56, 0.28, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.6 })
+      );
+      cartBack.position.set(0, 0.20, -0.18);
+      cartGroup.add(cartBase, cartBack);
+      cartGroup.position.set(0.95, DESK_Y, 0.04);
+      taskGroup.add(cartGroup);
+      const cartSign = makeSignPlate('🛒 배가용 북트럭', '#b45309', 0.44, 0.1);
+      cartSign.position.set(0.95, DESK_Y + 0.42, 0.04);
+      taskGroup.add(cartSign);
+      registerHit(cartGroup, 'to_cart', '🛒 완성된 책 북트럭에 올리기', new THREE.Vector3(0.95, DESK_Y + 0.12, 0.04));
+
+      sceneObjects = { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch, barcodeTray, labelTray, keeperTray, cartGroup };
+    }
+
+    // ---- [작업 2] 청구기호 순서대로 나열하기 3D 씬 ----
+    function buildSortScene() {
+      setWallSign('🔢 청구기호 배열 연습대 · 작은 번호부터 순서대로 나열하기', '#0f766e');
+      const count = state.difficulty === 1 ? 3 : (state.difficulty === 3 ? 5 : 4);
+      const books = pickDistinctBooks(count, state.difficulty);
+      const sorted = books.slice().sort(cmpCall);
+      // 시작 시 정렬되지 않도록 섞기 (이미 정렬된 경우 한 번 더 섞음)
+      let shuffled = books.slice().sort(() => Math.random() - 0.5);
+      if (shuffled.every((b, i) => b.callNo === sorted[i].callNo) && shuffled.length > 1) {
+        [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+      }
+
+      const mult = getAspectMult();
+      cameraPresets = {
+        overview: { pos: new THREE.Vector3(0, 1.9 * mult, 2.25 * mult), target: new THREE.Vector3(0, DESK_Y + 0.18, 0) }
+      };
+
+      const spacing = count >= 5 ? 0.42 : 0.48;
+      const slotX = (idx) => (idx - (count - 1) / 2) * spacing;
+
+      // 뒤쪽: 정렬 레일 & 슬롯 (1번 ~ N번)
+      const rail = new THREE.Mesh(
+        new THREE.BoxGeometry(count * spacing + 0.24, 0.04, 0.34),
+        new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 })
+      );
+      rail.position.set(0, DESK_Y + 0.02, -0.26);
+      rail.receiveShadow = true;
+      taskGroup.add(rail);
+
+      const slots = [];
+      for (let i = 0; i < count; i++) {
+        const sx = slotX(i);
+        const pad = new THREE.Mesh(
+          new THREE.BoxGeometry(0.24, 0.015, 0.24),
+          new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.6 })
+        );
+        pad.position.set(sx, DESK_Y + 0.048, -0.26);
+        taskGroup.add(pad);
+
+        const numSign = makeSignPlate(`${i + 1}번 자리`, '#0f766e', 0.24, 0.085);
+        numSign.position.set(sx, DESK_Y + 0.06, -0.44);
+        taskGroup.add(numSign);
+
+        const slotAnchor = new THREE.Vector3(sx, DESK_Y + 0.06, -0.26);
+        registerHit(pad, `slot_${i}`, `📥 ${i + 1}번 자리`, slotAnchor);
+        slots.push({ index: i, x: sx, pad, placedBookIdx: null });
+      }
+
+      // 앞쪽: 대기 중인 3D 책들 (책등이 정면(카메라)을 향하게 세워 청구기호가 크게 보이게!)
+      const trayBooks = shuffled.map((b, i) => {
+        const bm = createBookMesh(b, { showLabel: true, showBarcode: false, scale: 1.22 });
+        const bx = slotX(i);
+        const homePos = new THREE.Vector3(bx, DESK_Y + 0.19, 0.28);
+        bm.position.copy(homePos);
+        // createBookMesh는 +x가 책등이므로 -PI/2 회전 시 +x가 +z(카메라)를 향함!
+        bm.rotation.set(0, -Math.PI / 2, 0);
+        taskGroup.add(bm);
+
+        const targetId = `sort_book_${i}`;
+        const camP = {
+          pos: new THREE.Vector3(bx * 0.4, 1.65 * mult, 1.75 * mult),
+          target: new THREE.Vector3(bx * 0.4, DESK_Y + 0.16, 0.02)
+        };
+        registerHit(bm, targetId, `📘 『${b.title}』 (${b.callNo})`, new THREE.Vector3(bx, DESK_Y + 0.04, 0.28), camP);
+        return { idx: i, data: b, mesh: bm, homePos, placedSlot: -1 };
+      });
+
+      // 작업 단계 동적 구성
+      TASKS.sort.steps = sorted.map((b, i) => ({
+        target: `sort_step_${i}`,
+        expectedCallNo: b.callNo,
+        expectedTitle: b.title,
+        emoji: '📘',
+        label: `${i + 1}번 자리 놓기`,
+        easyLabel: `${i + 1}번 책 놓기`,
+        prompt: `${i + 1}번 자리에 올 가장 작은 청구기호 책을 골라 놓아요!`
+      }));
+
+      state.activeBook = sorted[0];
+      state.roundData = { count, sorted, trayBooks, slots, nextSlot: 0 };
+      sceneObjects = { trayBooks, slots };
+    }
+
+    // ---- [작업 3] 책을 청구기호에 따라 서가에 꽂기 3D 씬 ----
+    function buildShelveScene() {
+      setWallSign('📚 도서관 자료실 · 청구기호 순서에 맞게 서가에 책 꽂기', '#15803d');
+      const shelfCount = state.difficulty === 1 ? 3 : (state.difficulty === 3 ? 5 : 4);
+      const picked = pickDistinctBooks(shelfCount + 1, state.difficulty);
+      const targetBook = picked[0];
+      const shelfBooks = picked.slice(1).sort(cmpCall);
+      const insertIndex = shelfBooks.filter((b) => cmpCall(b, targetBook) < 0).length;
+
+      const mult = getAspectMult();
+      cameraPresets = {
+        overview: { pos: new THREE.Vector3(0, 1.75 * mult, 2.2 * mult), target: new THREE.Vector3(0, DESK_Y + 0.24, -0.1) },
+        pick_cart: { pos: new THREE.Vector3(0.45, 1.55 * mult, 1.45 * mult), target: new THREE.Vector3(0.25, DESK_Y + 0.15, 0.22) },
+        shelve_gap: { pos: new THREE.Vector3(0, 1.58 * mult, 1.55 * mult), target: new THREE.Vector3(0, DESK_Y + 0.24, -0.22) }
+      };
+
+      // 서가 선반 (작업대 뒤쪽)
+      const shelfW = Math.max(1.9, (shelfCount + 1) * 0.34);
+      const shelfBack = new THREE.Mesh(
+        new THREE.BoxGeometry(shelfW, 0.72, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.7 })
+      );
+      shelfBack.position.set(0, DESK_Y + 0.36, -0.44);
+      taskGroup.add(shelfBack);
+
+      const shelfBoard = new THREE.Mesh(
+        new THREE.BoxGeometry(shelfW, 0.045, 0.38),
+        new THREE.MeshStandardMaterial({ color: 0xb47b44, roughness: 0.65 })
+      );
+      shelfBoard.position.set(0, DESK_Y + 0.025, -0.26);
+      shelfBoard.receiveShadow = true;
+      taskGroup.add(shelfBoard);
+
+      const shelfTop = new THREE.Mesh(
+        new THREE.BoxGeometry(shelfW, 0.045, 0.38),
+        new THREE.MeshStandardMaterial({ color: 0xb47b44, roughness: 0.65 })
+      );
+      shelfTop.position.set(0, DESK_Y + 0.72, -0.26);
+      taskGroup.add(shelfTop);
+
+      const stepX = shelfCount >= 5 ? 0.165 : 0.195;
+      const slotX = (slot) => (slot - shelfCount) * stepX;
+
+      shelfBooks.forEach((b, i) => {
+        const bm = createBookMesh(b, { showLabel: true, showBarcode: false, scale: 1.24 });
+        bm.position.set(slotX(i * 2 + 1), DESK_Y + 0.235, -0.24);
+        bm.rotation.set(0, -Math.PI / 2, 0);
+        taskGroup.add(bm);
+      });
+
+      // 빈칸(슬롯) 히트박스
+      const gapMeshes = [];
+      for (let g = 0; g <= shelfCount; g++) {
+        const gx = slotX(g * 2);
+        const gapBox = new THREE.Mesh(
+          new THREE.BoxGeometry(0.14, 0.38, 0.28),
+          new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.35 })
+        );
+        gapBox.position.set(gx, DESK_Y + 0.24, -0.22);
+        gapBox.visible = false;
+        taskGroup.add(gapBox);
+
+        const badge = makeSignPlate(`${g + 1}`, '#0f172a', 0.10, 0.09, '#fde047');
+        badge.position.set(0, 0.24, 0.14);
+        gapBox.add(badge);
+
+        registerHit(gapBox, `gap_${g}`, `📥 ${g + 1}번 자리에 꽂기`, new THREE.Vector3(gx, DESK_Y + 0.05, -0.18));
+        gapMeshes.push(gapBox);
+      }
+
+      // 앞쪽 미니 북트럭 & 목표 도서
+      const miniCart = new THREE.Mesh(
+        new THREE.BoxGeometry(0.56, 0.07, 0.34),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 })
+      );
+      miniCart.position.set(0, DESK_Y + 0.035, 0.32);
+      taskGroup.add(miniCart);
+
+      const cartBook = createBookMesh(targetBook, { showLabel: true, showBarcode: false, scale: 1.24 });
+      cartBook.position.set(0, DESK_Y + 0.26, 0.32);
+      cartBook.rotation.set(0, -Math.PI / 2, 0);
+      taskGroup.add(cartBook);
+      registerHit(cartBook, 'pick_cart', `🛒 『${targetBook.title}』 (${targetBook.callNo}) 집기`, new THREE.Vector3(0, DESK_Y + 0.07, 0.32));
+
+      state.activeBook = targetBook;
+      state.roundData = {
+        shelfBooks,
+        targetBook,
+        insertIndex,
+        holdingBook: false,
+        shelved: false,
+        gapMeshes,
+        slotX
+      };
+      sceneObjects = { cartBook, gapMeshes };
+    }
+
+    // ---- [작업 4] 도서 대출·반납 데스크 실습 3D 씬 ----
+    function buildCirculationScene() {
+      setWallSign('💳 도서관 대출·반납 데스크 · 바코드 스캔 및 정리', '#7c2d12');
+      const mult = getAspectMult();
+      cameraPresets = {
+        overview: { pos: new THREE.Vector3(0, 1.82 * mult, 2.08 * mult), target: new THREE.Vector3(0, DESK_Y + 0.15, 0) },
+        scan_card: { pos: new THREE.Vector3(-0.35, 1.52 * mult, 1.38 * mult), target: new THREE.Vector3(-0.35, DESK_Y + 0.14, 0.08) },
+        scan_checkout: { pos: new THREE.Vector3(0.05, 1.52 * mult, 1.38 * mult), target: new THREE.Vector3(-0.05, DESK_Y + 0.14, 0.06) },
+        scan_return: { pos: new THREE.Vector3(0.42, 1.52 * mult, 1.38 * mult), target: new THREE.Vector3(0.18, DESK_Y + 0.14, 0.06) },
+        put_tray: { pos: new THREE.Vector3(0.85, 1.62 * mult, 1.48 * mult), target: new THREE.Vector3(0.85, DESK_Y + 0.14, 0.04) }
+      };
+
+      const books = pickDistinctBooks(2, state.difficulty);
+      const bOut = { ...books[0], color: '#2563eb' };
+      const bRet = { ...books[1], color: '#dc2626' };
+      state.activeBook = bOut;
+      state.roundData = {
+        bOut, bRet,
+        cardScanned: false,
+        checkoutScanned: false,
+        returnScanned: false,
+        trayPlaced: false
+      };
+
+      // 중앙 바코드 스캐너
+      const scannerGroup = new THREE.Group();
+      const scanBase = new THREE.Mesh(
+        new THREE.BoxGeometry(0.22, 0.24, 0.20),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 })
+      );
+      scanBase.position.y = 0.12;
+      scanBase.castShadow = true;
+      const laser = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.015, 0.34),
+        new THREE.MeshBasicMaterial({ color: 0xef4444 })
+      );
+      laser.position.set(0, 0.16, 0.22);
+      scannerGroup.add(scanBase, laser);
+      scannerGroup.position.set(-0.18, DESK_Y, -0.26);
+      taskGroup.add(scannerGroup);
+      const scanSign = makeSignPlate('🔴 바코드 스캐너', '#dc2626', 0.42, 0.095);
+      scanSign.position.set(-0.18, DESK_Y + 0.38, -0.26);
+      taskGroup.add(scanSign);
+
+      // 회원증
+      const cardMesh = makeMemberCardMesh('김민준', '202600128');
+      cardMesh.position.set(-0.78, DESK_Y + 0.015, 0.16);
+      taskGroup.add(cardMesh);
+      const cardSign = makeSignPlate('💳 회원증', '#1d4ed8', 0.30, 0.085);
+      cardSign.position.set(-0.78, DESK_Y + 0.22, 0.16);
+      taskGroup.add(cardSign);
+      registerHit(cardMesh, 'scan_card', '💳 이용자 회원증 스캔하기', new THREE.Vector3(-0.78, DESK_Y + 0.03, 0.16));
+
+      // 대출 도서
+      const outBook = createBookMesh(bOut, { showLabel: true, showBarcode: true, scale: 1.15 });
+      outBook.position.set(-0.18, DESK_Y + 0.06, 0.22);
+      outBook.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
+      taskGroup.add(outBook);
+      const outSign = makeSignPlate('📘 대출 도서', '#2563eb', 0.32, 0.085);
+      outSign.position.set(-0.18, DESK_Y + 0.25, 0.22);
+      taskGroup.add(outSign);
+      registerHit(outBook, 'scan_checkout', `📘 대출 도서 『${bOut.title}』 스캔`, new THREE.Vector3(-0.18, DESK_Y + 0.04, 0.22));
+
+      // 반납 도서
+      const retBook = createBookMesh(bRet, { showLabel: true, showBarcode: true, scale: 1.15 });
+      retBook.position.set(0.36, DESK_Y + 0.06, 0.22);
+      retBook.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
+      taskGroup.add(retBook);
+      const retSign = makeSignPlate('📕 반납 도서', '#dc2626', 0.32, 0.085);
+      retSign.position.set(0.36, DESK_Y + 0.25, 0.22);
+      taskGroup.add(retSign);
+      registerHit(retBook, 'scan_return', `📕 반납 도서 『${bRet.title}』 스캔`, new THREE.Vector3(0.36, DESK_Y + 0.04, 0.22));
+
+      // 오른쪽 반납 트레이
+      const tray = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.05, 0.36),
+        new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.55 })
+      );
+      tray.position.set(0.92, DESK_Y + 0.025, 0.04);
+      tray.receiveShadow = true;
+      taskGroup.add(tray);
+      const traySign = makeSignPlate('📥 반납 도서 트레이', '#15803d', 0.42, 0.095);
+      traySign.position.set(0.92, DESK_Y + 0.24, 0.04);
+      taskGroup.add(traySign);
+      registerHit(tray, 'put_tray', '📥 반납 트레이에 도서 정리하기', new THREE.Vector3(0.92, DESK_Y + 0.05, 0.04));
+
+      sceneObjects = { scannerGroup, laser, cardMesh, outBook, retBook, tray };
+    }
+
+    // =========================================================================
+    // 7. 3가지 모드(자동실습 / 수동실습 / 실습모드) 핵심 엔진
+    // =========================================================================
+    function getCurrentTask() { return TASKS[state.taskId]; }
+    function getCurrentStep() { return getCurrentTask().steps[state.stepIndex] || null; }
+
+    function getStepDisplay(step) {
+      if (!step) return { label: '', prompt: '' };
+      return {
+        label: (state.easyMode && step.easyLabel) ? step.easyLabel : step.label,
+        prompt: step.prompt
+      };
+    }
+
+    function showGuidance(text, emoji = '📖', isGentle = false, isMistake = false) {
+      const banner = document.getElementById('guidanceBanner');
+      document.getElementById('guidanceEmoji').textContent = emoji;
+      document.getElementById('guidanceText').textContent = text;
+      banner.classList.toggle('gentle-hint', Boolean(isGentle));
+      banner.classList.toggle('mistake-hint', Boolean(isMistake));
+    }
+
+    function updateBookInfoChip() {
+      const chip = document.getElementById('bookInfoChip');
+      const b = state.activeBook;
+      if (!b) { chip.classList.add('hidden'); return; }
+      chip.classList.remove('hidden');
+      document.getElementById('chipKdcBand').style.background = kdcBandColor(b.kdcGroup);
+      document.getElementById('chipBookTitle').textContent = `『${b.title}』 · ${b.authorName} (${b.category})`;
+      const callEl = document.getElementById('chipCallNum');
+      if (state.taskId === 'label' && state.practiceMode === 'practicum' && !state.roundData.labelDone) {
+        callEl.textContent = '청구기호 라벨을 맞춰보세요!';
+      } else {
+        callEl.textContent = b.callNo;
+      }
+    }
+
+    function getHighlightedTargetId() {
+      const step = getCurrentStep();
+      if (!step) return null;
+      if (state.taskId === 'sort') {
+        const rd = state.roundData;
+        const idx = rd.trayBooks.findIndex((tb) => tb.placedSlot === -1 && tb.data.callNo === step.expectedCallNo);
+        return idx >= 0 ? `sort_book_${idx}` : null;
+      }
+      if (state.taskId === 'shelve' && step.target === 'shelve_gap') {
+        return `gap_${state.roundData.insertIndex}`;
+      }
+      return step.target;
+    }
+
+    function buildManualChoicesForStep(nextIdx) {
+      const task = getCurrentTask();
+      const nextStep = task.steps[nextIdx];
+      if (!nextStep) return [];
+
+      if (state.taskId === 'sort') {
+        const remaining = state.roundData.trayBooks.filter((tb) => tb.placedSlot === -1);
+        return remaining.map((tb) => ({
+          id: `sort_book_${tb.idx}`,
+          emoji: '📘',
+          label: `${tb.data.callNo} (${tb.data.title})`,
+          isCorrect: tb.data.callNo === nextStep.expectedCallNo
+        }));
+      }
+
+      if (state.taskId === 'shelve' && nextStep.target === 'shelve_gap') {
+        const { shelfBooks, insertIndex } = state.roundData;
+        const choices = [];
+        for (let g = 0; g <= shelfBooks.length; g++) {
+          let label = '';
+          if (g === 0) label = `1번 (『${shelfBooks[0].title}』 ${shelfBooks[0].callNo} 앞)`;
+          else if (g === shelfBooks.length) label = `${g + 1}번 (『${shelfBooks[g - 1].title}』 ${shelfBooks[g - 1].callNo} 뒤)`;
+          else label = `${g + 1}번 (${shelfBooks[g - 1].text} ~ ${shelfBooks[g].text} 사이)`;
+          choices.push({ id: `gap_${g}`, emoji: '📥', label, isCorrect: g === insertIndex });
+        }
+        return choices;
+      }
+
+      // label / circulation: 단계들 중 4개 보기 구성
+      const others = task.steps.filter((s) => s.target !== nextStep.target).sort(() => Math.random() - 0.5);
+      const picks = [nextStep, ...others.slice(0, 3)].sort(() => Math.random() - 0.5);
+      return picks.map((s) => ({
+        id: s.target,
+        emoji: s.emoji,
+        label: getStepDisplay(s).label,
+        isCorrect: s.target === nextStep.target
+      }));
+    }
+
+    function buildLabelPracticumChoices(book) {
+      const wrongGroups = [300, 400, 600, 900].filter((g) => g !== book.kdcGroup);
+      const wrongKdc1 = `${wrongGroups[0] + 10}.2 ${book.author}`;
+      const wrongAuthor = `${book.text} ${book.author === '김12ㄱ' ? '박34ㅎ' : '김12ㄱ'}`;
+      const wrongKdc2 = `${wrongGroups[1] + 20}.5 ${book.author}`;
+      const arr = [
+        { callNo: book.callNo, kdcGroup: book.kdcGroup, ok: true },
+        { callNo: wrongKdc1, kdcGroup: wrongGroups[0], ok: false, reason: `『${book.title}』는 '${book.category}' 분야(${Math.floor(book.value)}번대) 책이에요!` },
+        { callNo: wrongAuthor, kdcGroup: book.kdcGroup, ok: false, reason: `저자 '${book.authorName}'의 성씨로 시작하는 저자기호(${book.author})를 확인해 보세요!` },
+        { callNo: wrongKdc2, kdcGroup: wrongGroups[1], ok: false, reason: `'${book.category}' 분류번호와 맞지 않는 번호예요.` }
+      ].sort(() => Math.random() - 0.5);
+      return arr;
+    }
+
+    function recordMistake(msg) {
+      if (!state.craft.mistakes.includes(msg)) state.craft.mistakes.push(msg);
+    }
+
+    function completeCurrentTask(evalRes = null) {
+      state.busy = false;
+      state.awaitingNextChoice = false;
+      state.awaitingLabelPick = false;
+      state.completedCount += 1;
+      saveScoreCount(state.completedCount);
+      sndSuccess();
+
+      const task = getCurrentTask();
+      if (window.D1Bridge && typeof window.D1Bridge.saveRecord === 'function') {
+        const starTxt = evalRes ? `별 ${evalRes.stars}/3` : '완료';
+        window.D1Bridge.saveRecord({
+          game: 'library',
+          stage: task.name,
+          score: evalRes ? evalRes.stars * 100 : 100,
+          summary: `${task.name} (${state.practiceMode} · ${starTxt} · 누적 ${state.completedCount}회)`,
+          mode: state.practiceMode,
+          payload: { taskId: state.taskId, mode: state.practiceMode, evalRes }
+        });
+      }
+
+      document.getElementById('completeEmoji').textContent = task.emoji;
+      const reportEl = document.getElementById('practicumReport');
+      if (evalRes) {
+        const starStr = '⭐'.repeat(evalRes.stars) + '☆'.repeat(3 - evalRes.stars);
+        document.getElementById('completeTitle').textContent =
+          evalRes.stars === 3 ? `${task.name} 완벽 성공!` : `${task.name} 실습 결과`;
+        document.getElementById('completeDesc').textContent =
+          evalRes.stars === 3
+            ? '실수 없이 도서관 규칙에 맞춰 정확하게 완료했어요!'
+            : '실수한 부분을 확인하고 한 번 더 연습해 볼까요?';
+        reportEl.classList.remove('hidden');
+        reportEl.innerHTML =
+          `<div class="prac-stars">${starStr}</div>` +
+          evalRes.checks.map((c) => `<div class="prac-item ${c.ok ? 'ok' : 'warn'}">${c.ok ? '✅' : '⚠️'} ${c.text}</div>`).join('');
+      } else {
+        document.getElementById('completeTitle').textContent = `${task.name} 완료!`;
+        document.getElementById('completeDesc').textContent = '차분하게 순서대로 정말 잘 해냈어요.';
+        reportEl.classList.add('hidden');
+      }
+      renderUI();
+      document.getElementById('completeModal').classList.remove('hidden');
+    }
+
+    function advanceGuidedStep() {
+      const task = getCurrentTask();
+      state.stepIndex += 1;
+      if (state.stepIndex >= task.steps.length) {
+        completeCurrentTask(null);
+        return;
+      }
+      if (state.practiceMode === 'manual') {
+        state.awaitingNextChoice = true;
+        state.manualChoices = buildManualChoicesForStep(state.stepIndex);
+      }
+      renderUI();
+    }
+
+    // ---- 동작 실행기 (3D 탭 & 하단 버튼 공용) ----
+    function handleAction(actionId, opts = {}) {
+      if (state.busy || state.paused) return;
+
+      if (state.practiceMode === 'practicum') {
+        handlePracticumAction(actionId, opts);
+        return;
+      }
+
+      const step = getCurrentStep();
+      if (!step) return;
+
+      // 수동실습: 다음 단계 선택 중일 때
+      if (state.practiceMode === 'manual' && state.awaitingNextChoice) {
+        const expectedHit = getHighlightedTargetId();
+        const isRight = (actionId === expectedHit || actionId === step.target);
+        if (isRight) {
+          state.awaitingNextChoice = false;
+          state.manualChoices = [];
+          playTone(784, 0.11, 'sine', 0.05);
+          executeGuidedAction(actionId);
+        } else {
+          sndHint();
+          const msg = getMismatchGuidance(actionId, step);
+          showGuidance(msg, '🧭', true);
+          speakKorean(msg, true);
+        }
+        return;
+      }
+
+      // 자동실습 / 수동실습 실행 단계
+      const expectedHit = getHighlightedTargetId();
+      if (actionId !== expectedHit && actionId !== step.target) {
+        sndHint();
+        const msg = getMismatchGuidance(actionId, step);
+        showGuidance(msg, '💡', true);
+        speakKorean(msg, true);
+        return;
+      }
+      executeGuidedAction(actionId);
+    }
+
+    function getMismatchGuidance(actionId, step) {
+      if (state.taskId === 'label') {
+        if (step.target === 'place_book') return '먼저 왼쪽의 새 책을 작업대 매트 위에 올려놓아야 해요!';
+        if (actionId === 'keeper' && !state.roundData.labelDone) return '보호필름(키퍼)은 청구기호 라벨을 붙인 다음에 덧대야 해요!';
+        if (actionId === 'to_cart') return '아직 라벨 정리가 끝나지 않아 북트럭에 올릴 수 없어요!';
+      }
+      if (state.taskId === 'sort') {
+        return `지금은 ${state.stepIndex + 1}번 자리예요! 남은 책 중 청구기호 숫자가 가장 작은 책(${step.expectedCallNo})을 찾아볼까요?`;
+      }
+      if (state.taskId === 'shelve') {
+        if (step.target === 'pick_cart') return '먼저 앞쪽 북트럭에서 배가할 책을 집어 들어 주세요!';
+        const { targetBook, shelfBooks, insertIndex } = state.roundData;
+        const clickedGap = Number(String(actionId).replace('gap_', ''));
+        if (!Number.isNaN(clickedGap)) {
+          if (clickedGap < insertIndex) {
+            const rb = shelfBooks[clickedGap];
+            return `『${targetBook.title}』(${targetBook.callNo})는 『${rb.title}』(${rb.callNo})보다 더 큰 번호라 오른쪽으로 가야 해요!`;
+          }
+          if (clickedGap > insertIndex) {
+            const lb = shelfBooks[clickedGap - 1];
+            return `『${targetBook.title}』(${targetBook.callNo})는 『${lb.title}』(${lb.callNo})보다 더 작은 번호라 왼쪽으로 가야 해요!`;
+          }
+        }
+      }
+      if (state.taskId === 'circulation') {
+        if (step.target === 'scan_card') return '도서관에서는 먼저 회원증을 스캔해 이용자를 확인해야 해요!';
+        if (step.target === 'scan_return' && actionId === 'put_tray') return '반납 트레이에 놓기 전에 먼저 빨간 반납 도서를 스캐너에 찍어야 해요!';
+      }
+      return `괜찮아요! 지금은 "${getStepDisplay(step).label}" 차례예요. ${step.prompt}`;
+    }
+
+    function executeGuidedAction(actionId) {
+      state.busy = true;
+      if (state.taskId === 'label') {
+        const rd = state.roundData;
+        const { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch } = sceneObjects;
+        if (actionId === 'place_book') {
+          sndClick();
+          stackBook.visible = false;
+          workBook.visible = true;
+          rd.bookPlaced = true;
+        } else if (actionId === 'barcode') {
+          sndBeep();
+          barcodePatch.visible = true;
+          rd.barcodeDone = true;
+        } else if (actionId === 'call_label') {
+          sndStick();
+          callLabelPatch.visible = true;
+          rd.labelDone = true;
+          rd.pickedLabelCorrect = true;
+        } else if (actionId === 'keeper') {
+          sndStick();
+          keeperPatch.visible = true;
+          rd.keeperDone = true;
+        } else if (actionId === 'to_cart') {
+          sndClick();
+          rd.cartDone = true;
+          const dest = new THREE.Vector3(0.95, DESK_Y + 0.28, 0.04);
+          workBook.position.copy(dest);
+          workBook.rotation.set(0, -Math.PI / 2, 0);
+          barcodePatch.visible = false;
+          callLabelPatch.visible = false;
+          keeperPatch.visible = false;
+          // 책등에 라벨 부착 버전으로 교체 표시
+          const finishedBook = createBookMesh(state.activeBook, { showLabel: true, showBarcode: true, scale: 1.24 });
+          finishedBook.position.copy(dest);
+          finishedBook.rotation.set(0, -Math.PI / 2, 0);
+          workBook.visible = false;
+          taskGroup.add(finishedBook);
+        }
+        setTimeout(() => { state.busy = false; advanceGuidedStep(); }, 380);
+        return;
+      }
+
+      if (state.taskId === 'sort') {
+        const rd = state.roundData;
+        const idx = Number(actionId.replace('sort_book_', ''));
+        const tb = rd.trayBooks[idx];
+        const slot = rd.slots[rd.nextSlot];
+        sndStick();
+        tb.placedSlot = rd.nextSlot;
+        rd.nextSlot += 1;
+        state.activeBook = rd.sorted[Math.min(rd.nextSlot, rd.sorted.length - 1)];
+        tweenTransform(tb.mesh, new THREE.Vector3(slot.x, DESK_Y + 0.21, -0.26), new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
+          state.busy = false;
+          advanceGuidedStep();
+        });
+        return;
+      }
+
+      if (state.taskId === 'shelve') {
+        const rd = state.roundData;
+        if (actionId === 'pick_cart') {
+          sndClick();
+          rd.holdingBook = true;
+          rd.gapMeshes.forEach((gm) => { gm.visible = true; });
+          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(0, DESK_Y + 0.50, 0.14), new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
+            state.busy = false;
+            advanceGuidedStep();
+          });
+          return;
+        }
+        if (actionId.startsWith('gap_')) {
+          sndStick();
+          const gx = rd.slotX(rd.insertIndex * 2);
+          rd.gapMeshes.forEach((gm) => { gm.visible = false; });
+          rd.shelved = true;
+          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(gx, DESK_Y + 0.235, -0.24), new THREE.Euler(0, -Math.PI / 2, 0), 380, () => {
+            state.busy = false;
+            advanceGuidedStep();
+          });
+          return;
+        }
+      }
+
+      if (state.taskId === 'circulation') {
+        const rd = state.roundData;
+        const { cardMesh, outBook, retBook } = sceneObjects;
+        if (actionId === 'scan_card') {
+          sndBeep();
+          rd.cardScanned = true;
+          tweenTransform(cardMesh, new THREE.Vector3(-0.18, DESK_Y + 0.16, 0.0), new THREE.Euler(0, 0, 0), 260, () => {
+            tweenTransform(cardMesh, new THREE.Vector3(-0.78, DESK_Y + 0.015, 0.16), new THREE.Euler(0, 0, 0), 240, () => {
+              state.busy = false;
+              advanceGuidedStep();
+            });
+          });
+          return;
+        }
+        if (actionId === 'scan_checkout') {
+          sndBeep();
+          rd.checkoutScanned = true;
+          state.activeBook = rd.bRet;
+          tweenTransform(outBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 260, () => {
+            tweenTransform(outBook, new THREE.Vector3(-0.56, DESK_Y + 0.06, -0.18), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 260, () => {
+              state.busy = false;
+              advanceGuidedStep();
+            });
+          });
+          return;
+        }
+        if (actionId === 'scan_return') {
+          sndBeep();
+          rd.returnScanned = true;
+          tweenTransform(retBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 280, () => {
+            state.busy = false;
+            advanceGuidedStep();
+          });
+          return;
+        }
+        if (actionId === 'put_tray') {
+          sndStick();
+          rd.trayPlaced = true;
+          tweenTransform(retBook, new THREE.Vector3(0.92, DESK_Y + 0.09, 0.04), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 340, () => {
+            state.busy = false;
+            advanceGuidedStep();
+          });
+          return;
+        }
+      }
+      state.busy = false;
+    }
+
+    // ---- 실습모드(practicum): 자유 조작 + 실수 기록 + 최종 평가 ----
+    function handlePracticumAction(actionId, opts = {}) {
+      if (state.taskId === 'label') {
+        const rd = state.roundData;
+        const { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch } = sceneObjects;
+        if (actionId === 'place_book') {
+          if (rd.bookPlaced) return;
+          sndClick();
+          stackBook.visible = false;
+          workBook.visible = true;
+          rd.bookPlaced = true;
+          state.craft.log.push('book_placed');
+          showGuidance('작업대에 새 책을 놓았어요! 이제 바코드와 청구기호 라벨을 붙여 보세요.', '📖', false);
+          renderUI();
+          return;
+        }
+        if (!rd.bookPlaced) {
+          sndHint();
+          recordMistake('책을 작업대에 올려놓기 전에 도구를 먼저 눌렀어요');
+          showGuidance('앗! 아직 작업대에 책이 없어요. 먼저 왼쪽의 새 책을 작업대에 놓아주세요!', '⚠️', false, true);
+          renderUI();
+          return;
+        }
+        if (actionId === 'barcode') {
+          if (rd.barcodeDone) return;
+          sndBeep();
+          barcodePatch.visible = true;
+          rd.barcodeDone = true;
+          state.craft.log.push('barcode');
+          showGuidance('도서관 바코드(등록번호)를 붙였어요!', '🔍', false);
+          renderUI();
+          return;
+        }
+        if (actionId === 'call_label') {
+          if (rd.labelDone) return;
+          sndClick();
+          state.awaitingLabelPick = true;
+          state.labelChoices = buildLabelPracticumChoices(state.activeBook);
+          showGuidance(`『${state.activeBook.title}』(${state.activeBook.authorName})에 맞는 청구기호 라벨을 아래에서 골라주세요!`, '🏷️', false);
+          renderUI();
+          return;
+        }
+        if (actionId === 'label_choice') {
+          const picked = state.labelChoices[opts.idx];
+          if (!picked) return;
+          if (!picked.ok) {
+            sndHint();
+            recordMistake(`잘못된 청구기호 라벨(${picked.callNo})을 선택했어요`);
+            showGuidance(picked.reason, '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          sndStick();
+          state.awaitingLabelPick = false;
+          callLabelPatch.visible = true;
+          rd.labelDone = true;
+          rd.pickedLabelCorrect = true;
+          state.craft.log.push('call_label');
+          showGuidance(`정확한 청구기호(${picked.callNo}) 라벨을 책등 아래에 붙였어요!`, '🏷️', false);
+          renderUI();
+          return;
+        }
+        if (actionId === 'keeper') {
+          if (rd.keeperDone) return;
+          if (!rd.labelDone) {
+            sndHint();
+            recordMistake('청구기호 라벨을 붙이기 전에 보호필름(키퍼)을 먼저 붙이려 했어요');
+            showGuidance('보호필름(키퍼)을 먼저 붙이면 청구기호 라벨이 안 붙어요! 먼저 청구기호 라벨을 붙여 주세요.', '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          sndStick();
+          keeperPatch.visible = true;
+          rd.keeperDone = true;
+          state.craft.log.push('keeper');
+          showGuidance('투명 보호필름(키퍼)을 꼼꼼히 덮었어요!', '✨', false);
+          renderUI();
+          return;
+        }
+        if (actionId === 'to_cart') {
+          if (!rd.barcodeDone || !rd.labelDone || !rd.keeperDone) {
+            sndHint();
+            recordMistake('바코드·청구기호 라벨·보호필름 중 빠진 작업이 있는 채 북트럭에 옮기려 했어요');
+            showGuidance('아직 빠진 라벨 작업이 있어요! 바코드, 청구기호 라벨, 보호필름을 모두 마친 뒤 북트럭에 올려주세요.', '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          sndClick();
+          rd.cartDone = true;
+          workBook.visible = false;
+          barcodePatch.visible = false;
+          callLabelPatch.visible = false;
+          keeperPatch.visible = false;
+          const finishedBook = createBookMesh(state.activeBook, { showLabel: true, showBarcode: true, scale: 1.24 });
+          finishedBook.position.set(0.95, DESK_Y + 0.28, 0.04);
+          finishedBook.rotation.set(0, -Math.PI / 2, 0);
+          taskGroup.add(finishedBook);
+
+          const checks = [
+            { ok: rd.barcodeDone, text: '도서관 바코드(등록번호) 부착 완료' },
+            { ok: rd.pickedLabelCorrect, text: `정확한 청구기호(${state.activeBook.callNo}) 판별 및 부착` },
+            { ok: rd.keeperDone, text: '라벨 보호필름(키퍼) 마감 완료' },
+            { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '실수 없이 순서대로 완벽 처리' : `주의 기록 ${state.craft.mistakes.length}건 (${state.craft.mistakes[0]})` }
+          ];
+          const stars = Math.max(1, 3 - Math.min(2, state.craft.mistakes.length));
+          completeCurrentTask({ stars, checks });
+          return;
+        }
+      }
+
+      if (state.taskId === 'sort') {
+        const rd = state.roundData;
+        // 대기 책 클릭 -> 다음 빈 슬롯으로 이동
+        if (actionId.startsWith('sort_book_')) {
+          const idx = Number(actionId.replace('sort_book_', ''));
+          const tb = rd.trayBooks[idx];
+          if (!tb) return;
+          if (tb.placedSlot !== -1) {
+            // 이미 슬롯에 있으면 원래 자리로 되돌리기 (자유 수정!)
+            sndClick();
+            rd.slots[tb.placedSlot].placedBookIdx = null;
+            tb.placedSlot = -1;
+            tweenTransform(tb.mesh, tb.homePos, new THREE.Euler(0, -Math.PI / 2, 0), 260);
+            showGuidance(`『${tb.data.title}』을(를) 다시 아래로 내려놓았어요.`, '↩️', false);
+            renderUI();
+            return;
+          }
+          const emptySlot = rd.slots.find((s) => s.placedBookIdx === null);
+          if (!emptySlot) return;
+          sndStick();
+          emptySlot.placedBookIdx = idx;
+          tb.placedSlot = emptySlot.index;
+          state.craft.log.push(tb.data.callNo);
+          tweenTransform(tb.mesh, new THREE.Vector3(emptySlot.x, DESK_Y + 0.21, -0.26), new THREE.Euler(0, -Math.PI / 2, 0), 300);
+          renderUI();
+          return;
+        }
+        // 슬롯 클릭 시 해당 슬롯 책 되돌리기
+        if (actionId.startsWith('slot_')) {
+          const sIdx = Number(actionId.replace('slot_', ''));
+          const slot = rd.slots[sIdx];
+          if (slot && slot.placedBookIdx !== null) {
+            const tb = rd.trayBooks[slot.placedBookIdx];
+            sndClick();
+            slot.placedBookIdx = null;
+            tb.placedSlot = -1;
+            tweenTransform(tb.mesh, tb.homePos, new THREE.Euler(0, -Math.PI / 2, 0), 260);
+            renderUI();
+          }
+          return;
+        }
+        // 순서 확인 버튼
+        if (actionId === 'verify_sort') {
+          const allPlaced = rd.slots.every((s) => s.placedBookIdx !== null);
+          if (!allPlaced) {
+            sndHint();
+            showGuidance('아직 빈 자리가 남아 있어요! 모든 책을 1번~끝번 자리에 놓은 뒤 확인해 주세요.', '⚠️', false, true);
+            return;
+          }
+          const placedBooks = rd.slots.map((s) => rd.trayBooks[s.placedBookIdx].data);
+          let wrongIdx = -1;
+          for (let i = 0; i < placedBooks.length; i++) {
+            if (placedBooks[i].callNo !== rd.sorted[i].callNo) { wrongIdx = i; break; }
+          }
+          if (wrongIdx !== -1) {
+            sndHint();
+            const got = placedBooks[wrongIdx];
+            recordMistake(`${wrongIdx + 1}번 자리에 놓은 ${got.callNo} 순서가 맞지 않았어요`);
+            showGuidance(`${wrongIdx + 1}번 자리(${got.callNo}) 순서가 맞지 않아요! 틀린 위치의 책을 눌러 내려놓고 다시 맞춰 보세요.`, '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          const checks = [
+            { ok: true, text: `${rd.count}권 청구기호 오름차순 정렬 성공` },
+            { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '한 번에 정확한 순서로 배열 완료' : `수정 시도 ${state.craft.mistakes.length}회 후 정확히 완성` }
+          ];
+          const stars = Math.max(1, 3 - Math.min(2, state.craft.mistakes.length));
+          completeCurrentTask({ stars, checks });
+          return;
+        }
+      }
+
+      if (state.taskId === 'shelve') {
+        const rd = state.roundData;
+        if (actionId === 'pick_cart') {
+          if (rd.holdingBook) return;
+          sndClick();
+          rd.holdingBook = true;
+          rd.gapMeshes.forEach((gm) => { gm.visible = true; });
+          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(0, DESK_Y + 0.50, 0.14), new THREE.Euler(0, -Math.PI / 2, 0), 300);
+          showGuidance(`『${rd.targetBook.title}』(${rd.targetBook.callNo})을(를) 들었어요! 서가의 빈칸 중 알맞은 곳에 꽂아보세요.`, '📚', false);
+          renderUI();
+          return;
+        }
+        if (actionId.startsWith('gap_')) {
+          if (!rd.holdingBook) {
+            sndHint();
+            recordMistake('북트럭에서 책을 집기 전에 서가 빈칸을 먼저 눌렀어요');
+            showGuidance('먼저 앞쪽 북트럭에 있는 책을 집어 주세요!', '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          const g = Number(actionId.replace('gap_', ''));
+          if (g !== rd.insertIndex) {
+            sndHint();
+            const reason = getMismatchGuidance(actionId, getCurrentStep());
+            recordMistake(`${g + 1}번 자리 오배가 시도`);
+            showGuidance(reason, '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          sndStick();
+          rd.gapMeshes.forEach((gm) => { gm.visible = false; });
+          rd.shelved = true;
+          const gx = rd.slotX(rd.insertIndex * 2);
+          state.busy = true;
+          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(gx, DESK_Y + 0.235, -0.24), new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
+            state.busy = false;
+            const checks = [
+              { ok: true, text: `도서 『${rd.targetBook.title}』(${rd.targetBook.callNo}) 올바른 위치 배가` },
+              { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '비콘 없이 단번에 정확한 서가 위치 찾기 성공' : `오배가 시도 ${state.craft.mistakes.length}회 후 정확히 배가` }
+            ];
+            const stars = Math.max(1, 3 - Math.min(2, state.craft.mistakes.length));
+            completeCurrentTask({ stars, checks });
+          });
+          return;
+        }
+      }
+
+      if (state.taskId === 'circulation') {
+        const rd = state.roundData;
+        const { cardMesh, outBook, retBook } = sceneObjects;
+        if (actionId === 'scan_card') {
+          if (rd.cardScanned) return;
+          sndBeep();
+          rd.cardScanned = true;
+          state.busy = true;
+          tweenTransform(cardMesh, new THREE.Vector3(-0.18, DESK_Y + 0.16, 0.0), new THREE.Euler(0, 0, 0), 220, () => {
+            tweenTransform(cardMesh, new THREE.Vector3(-0.78, DESK_Y + 0.015, 0.16), new THREE.Euler(0, 0, 0), 220, () => {
+              state.busy = false;
+              showGuidance('회원증 확인 완료! 이제 대출·반납 도서를 스캔해 보세요.', '💳', false);
+              renderUI();
+            });
+          });
+          return;
+        }
+        if (!rd.cardScanned) {
+          sndHint();
+          recordMistake('회원증 확인 없이 도서부터 처리하려 했어요');
+          showGuidance('먼저 이용자 회원증을 바코드 스캐너에 찍어 본인 확인을 해주세요!', '⚠️', false, true);
+          renderUI();
+          return;
+        }
+        if (actionId === 'scan_checkout') {
+          if (rd.checkoutScanned) return;
+          sndBeep();
+          rd.checkoutScanned = true;
+          state.activeBook = rd.bRet;
+          state.busy = true;
+          tweenTransform(outBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 220, () => {
+            tweenTransform(outBook, new THREE.Vector3(-0.56, DESK_Y + 0.06, -0.18), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 220, () => {
+              state.busy = false;
+              showGuidance(`대출 도서 『${rd.bOut.title}』 스캔 완료!`, '📘', false);
+              renderUI();
+            });
+          });
+          return;
+        }
+        if (actionId === 'scan_return') {
+          if (rd.returnScanned) return;
+          sndBeep();
+          rd.returnScanned = true;
+          state.busy = true;
+          tweenTransform(retBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 240, () => {
+            state.busy = false;
+            showGuidance(`반납 도서 『${rd.bRet.title}』 스캔 완료! 이제 반납 트레이에 놓아주세요.`, '📕', false);
+            renderUI();
+          });
+          return;
+        }
+        if (actionId === 'put_tray') {
+          if (!rd.returnScanned) {
+            sndHint();
+            recordMistake('반납 도서 바코드를 스캔하지 않고 반납 트레이에 놓으려 했어요');
+            showGuidance('반납 도서를 바코드 스캐너에 먼저 찍어야 반납 처리가 돼요!', '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          if (!rd.checkoutScanned) {
+            sndHint();
+            recordMistake('대출 도서 처리를 건너뛰었어요');
+            showGuidance('파란색 대출 도서도 바코드 스캐너에 찍어 대출 처리를 마쳐주세요!', '⚠️', false, true);
+            renderUI();
+            return;
+          }
+          sndStick();
+          rd.trayPlaced = true;
+          state.busy = true;
+          tweenTransform(retBook, new THREE.Vector3(0.92, DESK_Y + 0.09, 0.04), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 300, () => {
+            state.busy = false;
+            const checks = [
+              { ok: rd.cardScanned, text: '이용자 회원증 선확인 완료' },
+              { ok: rd.checkoutScanned, text: `대출 도서 『${rd.bOut.title}』 스캔 완료` },
+              { ok: rd.returnScanned && rd.trayPlaced, text: `반납 도서 『${rd.bRet.title}』 스캔 및 트레이 정리` },
+              { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '절차 오류 없이 깔끔한 데스크 응대' : `절차 주의 ${state.craft.mistakes.length}건` }
+            ];
+            const stars = Math.max(1, 3 - Math.min(2, state.craft.mistakes.length));
+            completeCurrentTask({ stars, checks });
+          });
+        }
+      }
+    }
+
+    // =========================================================================
+    // 8. UI 렌더링
+    // =========================================================================
+    function renderTaskDrawer() {
+      const drawer = document.getElementById('taskDrawer');
+      drawer.innerHTML =
+        `<div class="task-drawer-title">📚 실습할 도서관 직무 작업을 선택하세요</div>` +
+        `<div class="task-grid">` +
+          TASK_ORDER.map((id) => {
+            const t = TASKS[id];
+            return `<button type="button" class="task-card-btn ${id === state.taskId ? 'active' : ''}" data-task="${id}">
+              <strong>${t.emoji} ${t.name}</strong>
+              <small>${t.desc}</small>
+            </button>`;
+          }).join('') +
+        `</div>`;
+      drawer.querySelectorAll('.task-card-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.taskId = btn.dataset.task;
+          drawer.classList.add('hidden');
+          document.getElementById('taskPickerBtn').setAttribute('aria-expanded', 'false');
+          resetTaskSession();
+        });
+      });
+    }
+
+    function renderManualChoiceBar() {
+      const bar = document.getElementById('manualChoiceBar');
+      // 실습모드 라벨 고르기 팝업
+      if (state.practiceMode === 'practicum' && state.awaitingLabelPick) {
+        const b = state.activeBook;
+        bar.classList.remove('hidden');
+        bar.innerHTML =
+          `<div class="manual-choice-title">🏷️ 『${b.title}』 (저자: ${b.authorName} · 분야: ${b.category})에 맞는 청구기호 라벨을 고르세요!</div>` +
+          `<div class="manual-choice-grid">` +
+            state.labelChoices.map((c, idx) =>
+              `<button type="button" class="manual-choice-btn" data-lidx="${idx}">` +
+                `<span style="display:inline-block;width:10px;height:16px;border-radius:3px;background:${kdcBandColor(c.kdcGroup)}"></span>` +
+                `<span>${c.callNo}</span>` +
+              `</button>`
+            ).join('') +
+          `</div>`;
+        bar.querySelectorAll('[data-lidx]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.dataset.lidx);
+            const ch = state.labelChoices[idx];
+            if (ch && !ch.ok) {
+              btn.classList.remove('wrong-shake'); void btn.offsetWidth; btn.classList.add('wrong-shake');
+            }
+            handlePracticumAction('label_choice', { idx });
+          });
+        });
+        return;
+      }
+
+      // 수동실습: 다음 단계 선택
+      if (state.practiceMode === 'manual' && state.awaitingNextChoice && state.manualChoices.length) {
+        const prevStep = getCurrentTask().steps[state.stepIndex - 1];
+        bar.classList.remove('hidden');
+        bar.innerHTML =
+          `<div class="manual-choice-title">🧭 ${prevStep ? `"${getStepDisplay(prevStep).label}" 완료! ` : ''}다음에 할 작업은 무엇일까요?</div>` +
+          `<div class="manual-choice-grid">` +
+            state.manualChoices.map((ch) =>
+              `<button type="button" class="manual-choice-btn" data-choice="${ch.id}"><span>${ch.emoji}</span><span>${ch.label}</span></button>`
+            ).join('') +
+          `</div>`;
+        bar.querySelectorAll('[data-choice]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const expectedHit = getHighlightedTargetId();
+            const step = getCurrentStep();
+            if (step && btn.dataset.choice !== expectedHit && btn.dataset.choice !== step.target) {
+              btn.classList.remove('wrong-shake'); void btn.offsetWidth; btn.classList.add('wrong-shake');
+            }
+            handleAction(btn.dataset.choice);
+          });
+        });
+        return;
+      }
+
+      bar.classList.add('hidden');
+    }
+
+    function renderPracticumStatus() {
+      const bar = document.getElementById('practicumStatusBar');
+      if (state.practiceMode !== 'practicum') { bar.classList.add('hidden'); return; }
+      bar.classList.remove('hidden');
+      const rd = state.roundData;
+      let pills = '';
+      if (state.taskId === 'label') {
+        pills =
+          `<span class="prac-pill">📖 책: ${rd.bookPlaced ? '놓음✓' : '대기'}</span>` +
+          `<span class="prac-pill">🔍 바코드: ${rd.barcodeDone ? '완료✓' : '미완료'}</span>` +
+          `<span class="prac-pill">🏷️ 청구기호: ${rd.labelDone ? '완료✓' : '미완료'}</span>` +
+          `<span class="prac-pill">✨ 보호필름: ${rd.keeperDone ? '완료✓' : '미완료'}</span>`;
+      } else if (state.taskId === 'sort') {
+        const placed = rd.slots.filter((s) => s.placedBookIdx !== null).length;
+        pills = `<span class="prac-pill">🔢 배치: ${placed} / ${rd.count}권</span>` +
+                `<span class="prac-pill">💡 놓인 책을 누르면 되돌릴 수 있어요</span>`;
+      } else if (state.taskId === 'shelve') {
+        pills = `<span class="prac-pill">🛒 책 들기: ${rd.holdingBook ? '들었음✓' : '아직'}</span>` +
+                `<span class="prac-pill">📚 서가 배가: ${rd.shelved ? '완료✓' : '자리 선택'}</span>`;
+      } else if (state.taskId === 'circulation') {
+        pills =
+          `<span class="prac-pill">💳 회원증: ${rd.cardScanned ? '확인✓' : '대기'}</span>` +
+          `<span class="prac-pill">📘 대출: ${rd.checkoutScanned ? '완료✓' : '대기'}</span>` +
+          `<span class="prac-pill">📕 반납: ${rd.returnScanned ? '스캔✓' : '대기'}</span>`;
+      }
+
+      bar.innerHTML =
+        pills +
+        (state.craft.mistakes.length ? `<span class="prac-pill warn">⚠️ 주의 ${state.craft.mistakes.length}건</span>` : '') +
+        `<button type="button" class="prac-reset-btn" id="pracRestartBtn">🧹 처음부터 다시</button>`;
+      const rbtn = document.getElementById('pracRestartBtn');
+      if (rbtn) rbtn.addEventListener('click', resetTaskSession);
+    }
+
+    function renderActionBar() {
+      const bar = document.getElementById('actionBar');
+      bar.innerHTML = '';
+      const isAuto = state.practiceMode === 'auto';
+      const isManual = state.practiceMode === 'manual';
+      const isPracticum = state.practiceMode === 'practicum';
+      const showGuide = isAuto || (isManual && !state.awaitingNextChoice);
+      const step = getCurrentStep();
+      const highlightedId = (showGuide && state.guidedMode) ? getHighlightedTargetId() : null;
+
+      let buttons = [];
+      if (state.taskId === 'label') {
+        const rd = state.roundData;
+        buttons = [
+          { id: 'place_book', emoji: '📖', label: '책 놓기', done: rd.bookPlaced },
+          { id: 'barcode', emoji: '🔍', label: '바코드 붙이기', done: rd.barcodeDone },
+          { id: 'call_label', emoji: '🏷️', label: '청구기호 라벨', done: rd.labelDone },
+          { id: 'keeper', emoji: '✨', label: '보호필름(키퍼)', done: rd.keeperDone },
+          { id: 'to_cart', emoji: '🛒', label: '북트럭에 옮기기', done: rd.cartDone }
+        ];
+      } else if (state.taskId === 'sort') {
+        const rd = state.roundData;
+        buttons = rd.trayBooks.map((tb) => ({
+          id: `sort_book_${tb.idx}`,
+          emoji: tb.placedSlot !== -1 ? '✅' : '📘',
+          label: `${tb.data.callNo} (${tb.data.title.slice(0, 6)})`,
+          done: tb.placedSlot !== -1
+        }));
+        if (isPracticum) {
+          const allPlaced = rd.slots.every((s) => s.placedBookIdx !== null);
+          buttons.push({ id: 'verify_sort', emoji: '✅', label: '정렬 순서 확인하기', highlightOverride: allPlaced });
+        }
+      } else if (state.taskId === 'shelve') {
+        const rd = state.roundData;
+        buttons = [{ id: 'pick_cart', emoji: '🛒', label: '북트럭 책 집기', done: rd.holdingBook }];
+        if (rd.holdingBook || isPracticum) {
+          for (let g = 0; g <= rd.shelfBooks.length; g++) {
+            const lb = g > 0 ? rd.shelfBooks[g - 1] : null;
+            const rb = g < rd.shelfBooks.length ? rd.shelfBooks[g] : null;
+            const hintTxt = !lb ? `${g + 1}번(맨앞)` : (!rb ? `${g + 1}번(맨뒤)` : `${g + 1}번(${lb.text}~${rb.text})`);
+            buttons.push({ id: `gap_${g}`, emoji: '📥', label: hintTxt, done: false });
+          }
+        }
+      } else if (state.taskId === 'circulation') {
+        const rd = state.roundData;
+        buttons = [
+          { id: 'scan_card', emoji: '💳', label: '회원증 스캔', done: rd.cardScanned },
+          { id: 'scan_checkout', emoji: '📘', label: '대출 도서 스캔', done: rd.checkoutScanned },
+          { id: 'scan_return', emoji: '📕', label: '반납 도서 스캔', done: rd.returnScanned },
+          { id: 'put_tray', emoji: '📥', label: '반납 트레이 정리', done: rd.trayPlaced }
+        ];
+      }
+
+      let hlEl = null;
+      buttons.forEach((b) => {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'tool-btn';
+        if (b.done && !(isPracticum && state.taskId === 'sort')) el.classList.add('done-btn');
+        if (b.highlightOverride || (highlightedId && (highlightedId === b.id || (step && step.target === b.id)))) {
+          el.classList.add('highlighted');
+          hlEl = el;
+        }
+        el.innerHTML = `<span>${b.emoji}</span><span>${b.label}</span>`;
+        el.addEventListener('click', () => handleAction(b.id));
+        bar.appendChild(el);
+      });
+      if (hlEl) hlEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    function renderUI() {
+      const task = getCurrentTask();
+      const step = getCurrentStep();
+      const nextStep = task.steps[state.stepIndex + 1] || null;
+      const isAuto = state.practiceMode === 'auto';
+      const isManual = state.practiceMode === 'manual';
+      const isPracticum = state.practiceMode === 'practicum';
+      const showGuide = isAuto || (isManual && !state.awaitingNextChoice);
+
+      document.getElementById('scoreBadge').textContent = `★ ${state.completedCount}`;
+      document.getElementById('currentTaskLabel').textContent = `${task.emoji} ${task.name}`;
+      document.querySelectorAll('.pmode-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.pmode === state.practiceMode);
+      });
+
+      // 과제 분석표
+      const strip = document.getElementById('scheduleStrip');
+      strip.innerHTML = '';
+      if (isPracticum) {
+        strip.innerHTML = `<div class="step-card current"><span class="step-num">🧪</span><span>실전 실습: ${task.emoji} ${task.name} · 안내 없이 직접 순서와 청구기호를 판단해 보세요!</span></div>`;
+      } else {
+        let curCard = null;
+        task.steps.forEach((s, idx) => {
+          const disp = getStepDisplay(s);
+          const card = document.createElement('div');
+          card.className = 'step-card';
+          if (idx < state.stepIndex) card.classList.add('done');
+          else if (idx === state.stepIndex && !state.awaitingNextChoice) { card.classList.add('current'); curCard = card; }
+          const lbl = (isManual && idx > state.stepIndex) ? '❓ 다음 단계' : `${s.emoji} ${disp.label}`;
+          card.innerHTML = `<span class="step-num">${idx < state.stepIndex ? '✓' : idx + 1}</span><span>${lbl}</span>`;
+          strip.appendChild(card);
+          if (idx < task.steps.length - 1) {
+            const ar = document.createElement('span');
+            ar.className = 'step-arrow'; ar.textContent = '→';
+            strip.appendChild(ar);
+          }
+        });
+        if (curCard) curCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+
+      // 지금 -> 다음 바
+      const ftBar = document.getElementById('firstThenBar');
+      if (isPracticum) {
+        ftBar.innerHTML =
+          `<span class="ft-pill now">🧪 자유 실습: ${task.emoji} ${task.name}</span>` +
+          `<span>→</span>` +
+          `<span class="ft-pill next">3D 작업대나 아래 버튼을 눌러 진행해요</span>`;
+      } else if (isManual && state.awaitingNextChoice) {
+        ftBar.innerHTML =
+          `<span class="ft-pill now">🧭 방금 단계 완료!</span>` +
+          `<span>→</span>` +
+          `<span class="ft-pill next">아래에서 다음 순서를 직접 골라요</span>`;
+      } else if (step) {
+        const curDisp = getStepDisplay(step);
+        const nextDisp = nextStep ? getStepDisplay(nextStep) : null;
+        ftBar.innerHTML =
+          `<span class="ft-pill now">지금: ${step.emoji} ${curDisp.label}</span>` +
+          `<span>→</span>` +
+          `<span class="ft-pill next">${isManual ? '다음: 직접 선택 🧭' : `다음: ${nextStep ? `${nextStep.emoji} ${nextDisp.label}` : '🎉 실습 완료!'}`}</span>`;
+      }
+
+      updateBookInfoChip();
+
+      // 안내 배너
+      if (isPracticum) {
+        if (state.craft.log.length === 0 && !state.awaitingLabelPick && state.craft.mistakes.length === 0) {
+          showGuidance(`실습모드예요! "${task.name}" 작업을 스스로 순서에 맞게 해보세요.`, '🧪', false);
+        }
+      } else if (isManual && state.awaitingNextChoice) {
+        showGuidance('방금 단계를 잘 마쳤어요! 아래 보기나 3D 화면에서 다음 순서를 골라보세요.', '🧭', false);
+      } else if (step) {
+        const disp = getStepDisplay(step);
+        showGuidance(disp.prompt, step.emoji, false);
+        if (state.guidedMode) speakKorean(disp.prompt);
+      }
+
+      renderActionBar();
+      renderManualChoiceBar();
+      renderPracticumStatus();
+
+      // 3D 강조 링 & 비콘 업데이트
+      const hlTarget = getHighlightedTargetId();
+      if (showGuide && state.guidedMode && hlTarget && targetAnchors[hlTarget]) {
+        const p = targetAnchors[hlTarget];
+        highlightRing.position.set(p.x, p.y + 0.015, p.z);
+        highlightRing.visible = true;
+        highlightBeacon.userData.baseY = p.y + 0.36;
+        highlightBeacon.position.set(p.x, p.y + 0.36, p.z);
+        highlightBeacon.visible = true;
+      } else {
+        highlightRing.visible = false;
+        highlightBeacon.visible = false;
+      }
+
+      // 자동 카메라 포커스
+      if (state.autoCamera && state.cameraViewMode === 'step' && !state.awaitingLabelPick) {
+        const camKey = (isPracticum || (isManual && state.awaitingNextChoice))
+          ? 'overview'
+          : (hlTarget && cameraPresets[hlTarget] ? hlTarget : (step && cameraPresets[step.target] ? step.target : 'overview'));
+        const preset = cameraPresets[camKey] || cameraPresets.overview;
+        animateCameraTo(preset.pos, preset.target, 480);
+      }
+    }
+
+    function resetTaskSession() {
+      state.stepIndex = 0;
+      state.busy = false;
+      state.awaitingNextChoice = false;
+      state.manualChoices = [];
+      state.awaitingLabelPick = false;
+      state.labelChoices = [];
+      state.craft = { mistakes: [], log: [] };
+      document.getElementById('completeModal').classList.add('hidden');
+      clearTaskScene();
+      if (state.taskId === 'label') buildLabelScene();
+      else if (state.taskId === 'sort') buildSortScene();
+      else if (state.taskId === 'shelve') buildShelveScene();
+      else buildCirculationScene();
+      renderTaskDrawer();
+      renderUI();
+      if (state.cameraViewMode === 'overview') {
+        const ov = cameraPresets.overview;
+        animateCameraTo(ov.pos, ov.target, 420);
+      }
+    }
+
+    function setPracticeMode(nextMode) {
+      if (!nextMode || state.practiceMode === nextMode) return;
+      state.practiceMode = nextMode;
+      const msg = {
+        auto: '자동실습 모드예요. 단계마다 3D 화살표와 버튼으로 차근차근 안내해 드려요.',
+        manual: '수동실습 모드예요. 한 단계를 마칠 때마다 다음 순서를 직접 골라 보세요!',
+        practicum: '실습모드예요. 안내 없이 직접 판단해 작업하고 결과를 확인해 보세요!'
+      }[nextMode];
+      resetTaskSession();
+      showGuidance(msg, nextMode === 'auto' ? '🤖' : (nextMode === 'manual' ? '🧭' : '🧪'), false);
+      speakKorean(msg, true);
+    }
+
+    // =========================================================================
+    // 9. 마우스 / 태블릿 터치 포인터 & UI 이벤트 바인딩
+    // =========================================================================
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const hoverLabel = document.getElementById('hoverLabel');
+    let downPos = { x: 0, y: 0 };
+
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+      downPos = { x: e.clientX, y: e.clientY };
+    });
+
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      const dist = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
+      if (dist > 10) return; // 태블릿 드래그 회전과 탭 구분
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const visibleObjs = interactables.filter((o) => o.visible);
+      const hits = raycaster.intersectObjects(visibleObjs, true);
+      if (hits.length > 0 && hits[0].object.userData.targetId) {
+        handleAction(hits[0].object.userData.targetId, { from3D: true });
+      }
+    });
+
+    renderer.domElement.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const visibleObjs = interactables.filter((o) => o.visible);
+      const hits = raycaster.intersectObjects(visibleObjs, true);
+      if (hits.length > 0 && hits[0].object.userData.label) {
+        hoverLabel.textContent = hits[0].object.userData.label;
+        hoverLabel.style.left = `${e.clientX - rect.left}px`;
+        hoverLabel.style.top = `${e.clientY - rect.top}px`;
+        hoverLabel.classList.remove('hidden');
+        container.style.cursor = 'pointer';
+      } else {
+        hoverLabel.classList.add('hidden');
+        container.style.cursor = 'grab';
+      }
+    });
+
+    // 상단 버튼들
+    const taskPickerBtn = document.getElementById('taskPickerBtn');
+    const taskDrawer = document.getElementById('taskDrawer');
+    const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+    const settingsPopover = document.getElementById('settingsPopover');
+
+    taskPickerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hidden = taskDrawer.classList.toggle('hidden');
+      taskPickerBtn.setAttribute('aria-expanded', String(!hidden));
+      if (!hidden) {
+        settingsPopover.classList.add('hidden');
+        settingsToggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    settingsToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hidden = settingsPopover.classList.toggle('hidden');
+      settingsToggleBtn.setAttribute('aria-expanded', String(!hidden));
+      if (!hidden) {
+        taskDrawer.classList.add('hidden');
+        taskPickerBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (!taskDrawer.contains(e.target) && !taskPickerBtn.contains(e.target)) {
+        taskDrawer.classList.add('hidden');
+        taskPickerBtn.setAttribute('aria-expanded', 'false');
+      }
+      if (!settingsPopover.contains(e.target) && !settingsToggleBtn.contains(e.target)) {
+        settingsPopover.classList.add('hidden');
+        settingsToggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.querySelectorAll('.pmode-btn').forEach((btn) => {
+      btn.addEventListener('click', () => { sndClick(); setPracticeMode(btn.dataset.pmode); });
+    });
+
+    const focusStepBtn = document.getElementById('focusStepBtn');
+    const resetCamBtn = document.getElementById('resetCamBtn');
+    function syncCamButtons() {
+      focusStepBtn.classList.toggle('active', state.cameraViewMode === 'step');
+      resetCamBtn.classList.toggle('active', state.cameraViewMode === 'overview');
+    }
+    focusStepBtn.addEventListener('click', () => {
+      state.cameraViewMode = 'step';
+      syncCamButtons();
+      renderUI();
+    });
+    resetCamBtn.addEventListener('click', () => {
+      state.cameraViewMode = 'overview';
+      syncCamButtons();
+      animateCameraTo(cameraPresets.overview.pos, cameraPresets.overview.target, 460);
+    });
+
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    if (window.D1Bridge && typeof window.D1Bridge.bindFullscreenButton === 'function') {
+      window.D1Bridge.bindFullscreenButton(fullscreenBtn, { enterText: '⛶ 전체화면', exitText: '⛶ 창모드' });
+    } else {
+      fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+      });
+    }
+
+    document.getElementById('quickBreakBtn').addEventListener('click', () => {
+      state.paused = true;
+      document.getElementById('breakModal').classList.remove('hidden');
+    });
+    document.getElementById('resumeBreakBtn').addEventListener('click', () => {
+      state.paused = false;
+      document.getElementById('breakModal').classList.add('hidden');
+    });
+
+    document.getElementById('autoCamBtn').addEventListener('click', (e) => {
+      state.autoCamera = !state.autoCamera;
+      e.target.textContent = `🎬 자동 카메라: ${state.autoCamera ? '켜짐' : '꺼짐'}`;
+      e.target.classList.toggle('active', state.autoCamera);
+    });
+    document.getElementById('modeBtn').addEventListener('click', (e) => {
+      state.guidedMode = !state.guidedMode;
+      e.target.textContent = `🧭 안내 강조: ${state.guidedMode ? '켜짐' : '꺼짐'}`;
+      e.target.classList.toggle('active', state.guidedMode);
+      renderUI();
+    });
+    document.getElementById('voiceBtn').addEventListener('click', (e) => {
+      state.voiceEnabled = !state.voiceEnabled;
+      e.target.textContent = `🔊 음성 안내: ${state.voiceEnabled ? '켜짐' : '꺼짐'}`;
+      e.target.classList.toggle('active', state.voiceEnabled);
+      if (state.voiceEnabled) speakKorean(document.getElementById('guidanceText').textContent, true);
+    });
+    document.getElementById('soundBtn').addEventListener('click', (e) => {
+      state.soundEnabled = !state.soundEnabled;
+      e.target.textContent = `🔔 효과음: ${state.soundEnabled ? '켜짐' : '꺼짐'}`;
+      e.target.classList.toggle('active', state.soundEnabled);
+    });
+    document.getElementById('easyLibBtn').addEventListener('click', (e) => {
+      state.easyMode = !state.easyMode;
+      e.target.textContent = `📖 쉬운 말: ${state.easyMode ? '켜짐' : '꺼짐'}`;
+      e.target.classList.toggle('active', state.easyMode);
+      renderUI();
+    });
+    const diffNames = { 1: '기초(정수)', 2: '표준(소수+저자)', 3: '심화(5권)' };
+    document.getElementById('diffBtn').addEventListener('click', (e) => {
+      state.difficulty = (state.difficulty % 3) + 1;
+      e.target.textContent = `📊 난이도: ${diffNames[state.difficulty]}`;
+      resetTaskSession();
+    });
+
+    document.getElementById('speakStepBtn').addEventListener('click', () => {
+      speakKorean(document.getElementById('guidanceText').textContent, true);
+    });
+    document.getElementById('closeGuidanceBtn').addEventListener('click', () => {
+      state.guidanceHidden = true;
+      document.getElementById('guidanceBanner').classList.add('hidden');
+      document.getElementById('reopenGuidanceBtn').classList.remove('hidden');
+    });
+    document.getElementById('reopenGuidanceBtn').addEventListener('click', () => {
+      state.guidanceHidden = false;
+      document.getElementById('guidanceBanner').classList.remove('hidden');
+      document.getElementById('reopenGuidanceBtn').classList.add('hidden');
+    });
+
+    document.getElementById('retryTaskBtn').addEventListener('click', resetTaskSession);
+    document.getElementById('nextTaskBtn').addEventListener('click', () => {
+      const idx = (TASK_ORDER.indexOf(state.taskId) + 1) % TASK_ORDER.length;
+      state.taskId = TASK_ORDER[idx];
+      resetTaskSession();
+    });
+
+    window.addEventListener('resize', () => {
+      const w = container.clientWidth;
+      const h = Math.max(container.clientHeight, 1);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+
+    // =========================================================================
+    // 10. 렌더 루프 & 시작
+    // =========================================================================
+    function animate(now) {
+      requestAnimationFrame(animate);
+      for (let i = animators.length - 1; i >= 0; i--) {
+        if (animators[i].update(now)) animators.splice(i, 1);
+      }
+      if (highlightRing.visible) {
+        const s = 1 + Math.sin(now * 0.006) * 0.08;
+        highlightRing.scale.set(s, s, 1);
+      }
+      if (highlightBeacon.visible) {
+        highlightBeacon.position.y = highlightBeacon.userData.baseY + Math.sin(now * 0.006) * 0.035;
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    resetTaskSession();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
