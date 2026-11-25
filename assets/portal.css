@@ -257,6 +257,12 @@ p.sub {
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
 }
 
+.card.library h2 { color: #1D4ED8; }
+.card.library .go {
+  background: linear-gradient(135deg, #2563EB, #1E40AF);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.35);
+}
+
 /* SVG Animations inside Portal */
 .svg-bob { animation: pBob 4.2s ease-in-out infinite; }
 .svg-bob-slow { animation: pBob 6s ease-in-out -1.5s infinite; }

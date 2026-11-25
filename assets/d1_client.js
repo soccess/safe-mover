@@ -33,7 +33,8 @@
     emotion: "마음 날씨 연구소",
     cafe: "마음카페 3D",
     outlet: "콘센트 조립 실습실",
-    kiosk: "마음카페 키오스크"
+    kiosk: "마음카페 키오스크",
+    library: "우리 도서관 3D 실습실"
   };
 
   const SAFE_MOVER_CUSTOM_KEY = "safe_mover.custom_words.v1";

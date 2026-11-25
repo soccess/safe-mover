@@ -69,7 +69,7 @@
         <path d="M80 12l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#fde047" class="svg-twinkle"/>
       </svg>
       <h1>학습 게임 모음</h1>
-      <p class="sub">원하는 활동을 선택하세요 · 총 6개 활동 (Cloudflare D1 DB 자동 저장)</p>
+      <p class="sub">원하는 활동을 선택하세요 · 총 7개 활동 (Cloudflare D1 DB 자동 저장)</p>
     </header>
 
     <section class="portal-section" aria-labelledby="catBasicTitle">
@@ -194,8 +194,7 @@
         <span class="cat-badge voc">🛠️ 직업실습</span>
         <h2 class="cat-title" id="catVocTitle">3D 현장 직무 체험 &amp; 실습실</h2>
       </div>
-      <div class="grid grid-3">
-      <!-- 4. 마음카페 3D 바리스타 연습실 -->
+      <div class="grid">
       <a class="card cafe" href="./cafe/index.html">
         <svg class="icon-svg" viewBox="0 0 120 100" aria-hidden="true">
           <defs>
@@ -314,6 +313,45 @@
         <p>18종 전체 음료 · 4종 디저트 · 수량별 1:1 음료 그림!<br>IC카드 방향 맞추기 결제와 동전·지폐 현금 입력·거스름돈까지</p>
         <span class="go">▶ 키오스크 열기</span>
       </a>
+
+      <!-- 7. 우리 도서관 3D 사서 직무 실습 -->
+      <a class="card library" href="./library_3d/도서관실습_1017_gemini4-argon.html">
+        <svg class="icon-svg" viewBox="0 0 120 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="lbBook1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#60a5fa"/>
+              <stop offset="100%" stop-color="#1d4ed8"/>
+            </linearGradient>
+            <linearGradient id="lbBook2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbbf24"/>
+              <stop offset="100%" stop-color="#d97706"/>
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="52" r="40" fill="#dbeafe" class="svg-pulse"/>
+          <g class="svg-bob">
+            <!-- 서가 선반 -->
+            <rect x="20" y="76" width="80" height="8" rx="4" fill="#92400e"/>
+            <!-- 책 3권 -->
+            <rect x="28" y="26" width="18" height="50" rx="4" fill="url(#lbBook1)" stroke="#1e3a8a" stroke-width="2.4"/>
+            <rect x="30" y="54" width="14" height="16" rx="2" fill="#fff"/>
+            <rect x="30" y="54" width="14" height="4" fill="#2563eb"/>
+            <rect x="49" y="20" width="20" height="56" rx="4" fill="#16a34a" stroke="#14532d" stroke-width="2.4"/>
+            <rect x="51" y="52" width="16" height="18" rx="2" fill="#fff"/>
+            <rect x="51" y="52" width="16" height="4.5" fill="#f59e0b"/>
+            <rect x="72" y="30" width="18" height="46" rx="4" fill="url(#lbBook2)" stroke="#92400e" stroke-width="2.4"/>
+            <rect x="74" y="56" width="14" height="15" rx="2" fill="#fff"/>
+            <rect x="74" y="56" width="14" height="4" fill="#dc2626"/>
+          </g>
+          <g class="svg-bob-slow">
+            <circle cx="92" cy="30" r="11" fill="#1d4ed8" stroke="#fff" stroke-width="2"/>
+            <path d="M87.5 30l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <path d="M22 24l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#2563eb" class="svg-twinkle"/>
+        </svg>
+        <h2>우리 도서관 실습실<br>3D 사서 직무 체험</h2>
+        <p>자동실습 · 수동실습 · 실습모드!<br>라벨·청구기호 붙이기, 순서 나열, 서가 꽂기, 대출·반납까지 태블릿 지원</p>
+        <span class="go">▶ 도서관 열기</span>
+      </a>
       </div>
     </section>
 
@@ -359,7 +397,8 @@
         emotion: "마음 날씨 연구소",
         cafe: "마음카페 3D",
         outlet: "콘센트 조립 실습실",
-        kiosk: "마음카페 키오스크"
+        kiosk: "마음카페 키오스크",
+        library: "우리 도서관 3D 실습실"
       };
 
       function esc(s) {
