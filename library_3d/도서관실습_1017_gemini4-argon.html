@@ -1072,18 +1072,25 @@
     };
 
     // =========================================================================
-    // 4. 감각 친화적 오디오 & 한국어 음성
+    // 4. 감각 친화적 프로시저럴 사운드 제너레이터 & 한국어 음성
     // =========================================================================
     let audioCtx = null;
+    let noiseBuffer = null;
     function getAudioCtx() {
       if (!state.soundEnabled) return null;
       try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (!noiseBuffer) {
+          const len = Math.floor(audioCtx.sampleRate * 1.2);
+          noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+          const data = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        }
         return audioCtx;
       } catch { return null; }
     }
-    function playTone(freq = 523.25, dur = 0.14, type = 'sine', vol = 0.06, delay = 0) {
+    function playTone(freq = 523.25, dur = 0.14, type = 'sine', vol = 0.06, delay = 0, freqEnd = null) {
       const ctx = getAudioCtx();
       if (!ctx) return;
       try {
@@ -1092,19 +1099,54 @@
         const gain = ctx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, t);
+        if (freqEnd !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(40, freqEnd), t + dur);
         gain.gain.setValueAtTime(0.0001, t);
-        gain.gain.exponentialRampToValueAtTime(vol, t + 0.014);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.014);
         gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
         osc.connect(gain).connect(ctx.destination);
         osc.start(t);
         osc.stop(t + dur + 0.03);
       } catch {}
     }
-    const sndClick = () => playTone(660, 0.07, 'sine', 0.045);
-    const sndBeep = () => playTone(1560, 0.09, 'sine', 0.055);
-    const sndStick = () => { playTone(480, 0.06, 'triangle', 0.05); playTone(720, 0.09, 'sine', 0.045, 0.05); };
-    const sndHint = () => { playTone(440, 0.12, 'sine', 0.045); playTone(523.25, 0.14, 'sine', 0.045, 0.09); };
-    const sndSuccess = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => playTone(f, 0.24, 'sine', 0.055, i * 0.09));
+    function playFilteredNoise(dur = 0.25, freqStart = 600, freqEnd = 1400, q = 2.0, vol = 0.05, delay = 0) {
+      const ctx = getAudioCtx();
+      if (!ctx || !noiseBuffer) return;
+      try {
+        const t = ctx.currentTime + delay;
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuffer;
+        src.loop = true;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freqStart, t);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(80, freqEnd), t + dur);
+        filter.Q.value = q;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        src.connect(filter).connect(gain).connect(ctx.destination);
+        src.start(t);
+        src.stop(t + dur + 0.03);
+      } catch {}
+    }
+
+    const sndClick = () => { playTone(660, 0.07, 'sine', 0.045); playTone(990, 0.05, 'triangle', 0.02, 0.01); };
+    const playPageWhoosh = () => { playFilteredNoise(0.22, 580, 1450, 1.8, 0.045); playTone(380, 0.14, 'sine', 0.025, 0, 520); };
+    const playBookThud = () => { playTone(150, 0.14, 'triangle', 0.085, 0, 68); playFilteredNoise(0.09, 360, 180, 1.4, 0.05); };
+    const playStickerPeel = () => { playFilteredNoise(0.14, 1700, 2900, 2.2, 0.045); playTone(760, 0.09, 'sine', 0.045, 0.06, 980); };
+    const playLabelStick = () => { playFilteredNoise(0.15, 1100, 2200, 2.0, 0.04); playTone(560, 0.08, 'triangle', 0.05, 0.04); playTone(840, 0.11, 'sine', 0.045, 0.09); };
+    const playTapeSwipe = () => { playFilteredNoise(0.28, 1350, 2750, 2.4, 0.05); playTone(640, 0.16, 'sine', 0.03, 0.04, 940); };
+    const playScannerBeep = () => { playTone(2080, 0.065, 'sine', 0.055); playTone(2560, 0.085, 'sine', 0.055, 0.075); playTone(1040, 0.06, 'triangle', 0.025, 0.075); };
+    const playBookSlideIn = () => { playFilteredNoise(0.18, 480, 960, 1.6, 0.045); playTone(220, 0.12, 'triangle', 0.06, 0.08, 140); playTone(880, 0.11, 'sine', 0.04, 0.12); };
+    const playCartPlace = () => { playTone(290, 0.12, 'triangle', 0.065, 0, 180); playTone(587.33, 0.14, 'sine', 0.045, 0.06); playTone(880, 0.15, 'sine', 0.035, 0.11); };
+    const sndHint = () => { playTone(392, 0.12, 'sine', 0.045); playTone(329.63, 0.16, 'sine', 0.04, 0.09); };
+    const sndSuccess = () => {
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        playTone(f, 0.28, 'sine', 0.06, i * 0.095);
+        playTone(f * 1.5, 0.18, 'triangle', 0.022, i * 0.095 + 0.02);
+      });
+    };
 
     let lastSpoken = '';
     function speakKorean(text, force = false) {
@@ -1228,7 +1270,35 @@
       leg.position.set(lx, (DESK_Y - 0.07) / 2, lz);
       deskGroup.add(leg);
     });
+    // 책상 앞쪽 우드 몰딩 & 도서관 펜던트 조명 2개
+    const deskTrim = new THREE.Mesh(
+      new THREE.BoxGeometry(2.84, 0.03, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xa46b39, roughness: 0.55 })
+    );
+    deskTrim.position.set(0, DESK_Y - 0.015, 0.675);
+    deskGroup.add(deskTrim);
     scene.add(deskGroup);
+
+    [-0.78, 0.78].forEach((lx) => {
+      const lamp = new THREE.Group();
+      const cord = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.008, 0.008, 0.68, 8),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 })
+      );
+      cord.position.y = 0.36;
+      const shade = new THREE.Mesh(
+        new THREE.ConeGeometry(0.12, 0.12, 20, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.35, metalness: 0.25, side: THREE.DoubleSide })
+      );
+      const bulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.038, 14, 14),
+        new THREE.MeshStandardMaterial({ color: 0xfff3c4, emissive: 0xffd27d, emissiveIntensity: 1.4, roughness: 0.2 })
+      );
+      bulb.position.y = -0.04;
+      lamp.add(cord, shade, bulb);
+      lamp.position.set(lx, 2.25, 0.05);
+      scene.add(lamp);
+    });
 
     // 벽면 사인보드
     let wallSignMesh = null;
@@ -1414,6 +1484,40 @@
     highlightBeacon.userData.baseY = DESK_Y + 0.35;
     scene.add(highlightBeacon);
 
+    // 3D 반짝이 파티클 & 확산 링 파동 VFX
+    const sparkles3D = [];
+    const ringWaves3D = [];
+    function spawn3DSparkles(worldPos, count = 14, colorHex = 0xfbbf24) {
+      const palette = [colorHex, 0xffffff, 0x34d399, 0xfde047, 0x60a5fa];
+      for (let i = 0; i < count; i++) {
+        const mesh = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.015, 0),
+          new THREE.MeshBasicMaterial({ color: palette[i % palette.length], transparent: true, opacity: 1 })
+        );
+        mesh.position.copy(worldPos);
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.45;
+        const speed = 0.42 + Math.random() * 0.58;
+        scene.add(mesh);
+        sparkles3D.push({
+          mesh,
+          vx: Math.cos(angle) * speed,
+          vy: 0.55 + Math.random() * 0.65,
+          vz: Math.sin(angle) * speed,
+          life: 1.0
+        });
+      }
+    }
+    function spawn3DRingWave(worldPos, colorHex = 0x22c55e, maxScale = 2.4) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.07, 0.105, 32),
+        new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(worldPos.x, worldPos.y + 0.015, worldPos.z);
+      scene.add(ring);
+      ringWaves3D.push({ mesh: ring, life: 1.0, maxScale });
+    }
+
     // =========================================================================
     // 6. 동적 씬 빌더 (작업별 전용 3D 공간 구성)
     // =========================================================================
@@ -1435,6 +1539,8 @@
       targetAnchors = {};
       sceneObjects = {};
       animators.length = 0;
+      while (sparkles3D.length) scene.remove(sparkles3D.pop().mesh);
+      while (ringWaves3D.length) scene.remove(ringWaves3D.pop().mesh);
       highlightRing.visible = false;
       highlightBeacon.visible = false;
     }
@@ -1518,24 +1624,26 @@
       matSign.rotation.x = -Math.PI / 2;
       taskGroup.add(matSign);
 
-      // 왼쪽: 새 도서 대기 더미
+      // 왼쪽: 새 도서 대기 더미 (앞표지가 위(+y), 책등이 정면(+z)을 향하게 배치)
       const stackBook = createBookMesh(book, { showLabel: false, showBarcode: false, scale: 1.18 });
-      stackBook.position.set(-0.92, DESK_Y + 0.06, 0.08);
-      stackBook.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
+      stackBook.position.set(-0.92, DESK_Y + 0.045, 0.08);
+      stackBook.rotation.order = 'YXZ';
+      stackBook.rotation.set(-Math.PI / 2, -Math.PI / 2, 0);
       taskGroup.add(stackBook);
       const stackSign = makeSignPlate('📖 정리할 새 책', '#1d4ed8', 0.42, 0.1);
       stackSign.position.set(-0.92, DESK_Y + 0.28, 0.08);
       taskGroup.add(stackSign);
       registerHit(stackBook, 'place_book', `📖 『${book.title}』 작업대에 놓기`, new THREE.Vector3(-0.92, DESK_Y + 0.03, 0.08));
 
-      // 작업대 위 책 위 3D 부착물(바코드, 청구기호 라벨, 투명 키퍼)
+      // 작업대 위 책 & 3D 부착물(표지 위 바코드, 앞쪽 책등 하단 청구기호 라벨, 투명 키퍼)
       const workBook = createBookMesh(book, { showLabel: false, showBarcode: false, scale: 1.28 });
-      workBook.position.set(0, DESK_Y + 0.07, 0.02);
-      workBook.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
+      workBook.position.set(0, DESK_Y + 0.056, 0.02);
+      workBook.rotation.order = 'YXZ';
+      workBook.rotation.set(-Math.PI / 2, -Math.PI / 2, 0);
       workBook.visible = false;
       taskGroup.add(workBook);
 
-      // 책 위 바코드 스티커 메쉬
+      // 책 앞표지 위 바코드 스티커 메쉬
       const bcCv = document.createElement('canvas');
       bcCv.width = 256; bcCv.height = 128;
       const bcG = bcCv.getContext('2d');
@@ -1547,15 +1655,15 @@
       bcG.fillText(book.barcode, 128, 108);
       const bcTex = new THREE.CanvasTexture(bcCv); bcTex.colorSpace = THREE.SRGBColorSpace;
       const barcodePatch = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.14, 0.07),
+        new THREE.PlaneGeometry(0.145, 0.072),
         new THREE.MeshBasicMaterial({ map: bcTex })
       );
       barcodePatch.rotation.x = -Math.PI / 2;
-      barcodePatch.position.set(-0.08, DESK_Y + 0.118, 0.07);
+      barcodePatch.position.set(-0.07, DESK_Y + 0.104, 0.04);
       barcodePatch.visible = false;
       taskGroup.add(barcodePatch);
 
-      // 책등 아래쪽 청구기호 라벨 메쉬 (책이 눕혀졌을 때 정면에서 또렷이 보이도록 책등 상단면/전면 배치)
+      // 책등 아래쪽(왼쪽 하단 앞면) 청구기호 라벨 메쉬
       const lbCv = document.createElement('canvas');
       lbCv.width = 256; lbCv.height = 256;
       const lbG = lbCv.getContext('2d');
@@ -1567,21 +1675,41 @@
       lbG.font = 'bold 46px "Malgun Gothic", sans-serif'; lbG.fillText(book.author, 128, 206);
       const lbTex = new THREE.CanvasTexture(lbCv); lbTex.colorSpace = THREE.SRGBColorSpace;
       const callLabelPatch = new THREE.Mesh(
-        new THREE.BoxGeometry(0.085, 0.092, 0.085),
+        new THREE.BoxGeometry(0.095, 0.092, 0.032),
         new THREE.MeshStandardMaterial({ map: lbTex, roughness: 0.45 })
       );
-      callLabelPatch.position.set(0.11, DESK_Y + 0.072, 0.145);
+      callLabelPatch.position.set(-0.125, DESK_Y + 0.058, 0.155);
       callLabelPatch.visible = false;
       taskGroup.add(callLabelPatch);
 
       // 투명 보호필름(키퍼) 광택 레이어
       const keeperPatch = new THREE.Mesh(
-        new THREE.BoxGeometry(0.095, 0.102, 0.115),
-        new THREE.MeshPhysicalMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.48, roughness: 0.1, metalness: 0.05 })
+        new THREE.BoxGeometry(0.115, 0.104, 0.042),
+        new THREE.MeshPhysicalMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.52, roughness: 0.08, metalness: 0.08 })
       );
       keeperPatch.position.copy(callLabelPatch.position);
       keeperPatch.visible = false;
       taskGroup.add(keeperPatch);
+
+      // 애니메이션용 비행 스티커/라벨/필름 프롭
+      const flySticker = new THREE.Mesh(
+        new THREE.BoxGeometry(0.145, 0.012, 0.072),
+        new THREE.MeshBasicMaterial({ map: bcTex })
+      );
+      flySticker.visible = false;
+      taskGroup.add(flySticker);
+      const flyLabel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.095, 0.092, 0.032),
+        new THREE.MeshStandardMaterial({ map: lbTex, roughness: 0.45 })
+      );
+      flyLabel.visible = false;
+      taskGroup.add(flyLabel);
+      const flyKeeper = new THREE.Mesh(
+        new THREE.BoxGeometry(0.115, 0.104, 0.042),
+        new THREE.MeshPhysicalMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.6, roughness: 0.1 })
+      );
+      flyKeeper.visible = false;
+      taskGroup.add(flyKeeper);
 
       // 도구 트레이들 (뒤쪽 좌->우: 바코드, 청구기호 라벨, 보호필름)
       const makeToolTray = (x, z, color, labelTxt, targetId, hoverTxt) => {
@@ -1633,7 +1761,7 @@
       taskGroup.add(cartSign);
       registerHit(cartGroup, 'to_cart', '🛒 완성된 책 북트럭에 올리기', new THREE.Vector3(0.95, DESK_Y + 0.12, 0.04));
 
-      sceneObjects = { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch, barcodeTray, labelTray, keeperTray, cartGroup };
+      sceneObjects = { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch, flySticker, flyLabel, flyKeeper, barcodeTray, labelTray, keeperTray, cartGroup };
     }
 
     // ---- [작업 2] 청구기호 순서대로 나열하기 3D 씬 ----
@@ -2144,46 +2272,188 @@
       return `괜찮아요! 지금은 "${getStepDisplay(step).label}" 차례예요. ${step.prompt}`;
     }
 
+    function flashScannerLaser() {
+      const laser = sceneObjects.laser;
+      if (!laser) return;
+      laser.material.color.setHex(0x22c55e);
+      laser.scale.set(2.2, 2.2, 1.2);
+      spawn3DRingWave(new THREE.Vector3(-0.18, DESK_Y + 0.02, -0.04), 0xef4444, 2.2);
+      setTimeout(() => {
+        if (laser.material) laser.material.color.setHex(0xef4444);
+        laser.scale.set(1, 1, 1);
+      }, 260);
+    }
+
+    function animateLabelStep(actionId, onDone) {
+      const rd = state.roundData;
+      const { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch, flySticker, flyLabel, flyKeeper } = sceneObjects;
+      if (actionId === 'place_book') {
+        playPageWhoosh();
+        rd.bookPlaced = true;
+        workBook.position.copy(stackBook.position);
+        stackBook.visible = false;
+        workBook.visible = true;
+        tweenTransform(workBook, new THREE.Vector3(0, DESK_Y + 0.056, 0.02), null, 380, () => {
+          playBookThud();
+          spawn3DRingWave(new THREE.Vector3(0, DESK_Y + 0.02, 0.02), 0x16a34a, 2.4);
+          spawn3DSparkles(new THREE.Vector3(0, DESK_Y + 0.14, 0.02), 10, 0x34d399);
+          onDone();
+        });
+      } else if (actionId === 'barcode') {
+        playPageWhoosh();
+        rd.barcodeDone = true;
+        flySticker.position.set(-0.56, DESK_Y + 0.12, -0.36);
+        flySticker.visible = true;
+        tweenTransform(flySticker, new THREE.Vector3(-0.07, DESK_Y + 0.115, 0.04), null, 320, () => {
+          flySticker.visible = false;
+          barcodePatch.visible = true;
+          playStickerPeel();
+          spawn3DSparkles(barcodePatch.position.clone(), 12, 0x3b82f6);
+          onDone();
+        });
+      } else if (actionId === 'call_label') {
+        playPageWhoosh();
+        rd.labelDone = true;
+        rd.pickedLabelCorrect = true;
+        flyLabel.position.set(0, DESK_Y + 0.12, -0.36);
+        flyLabel.visible = true;
+        tweenTransform(flyLabel, callLabelPatch.position.clone(), null, 340, () => {
+          flyLabel.visible = false;
+          callLabelPatch.visible = true;
+          playLabelStick();
+          spawn3DSparkles(callLabelPatch.position.clone(), 14, 0xf59e0b);
+          spawn3DRingWave(new THREE.Vector3(-0.125, DESK_Y + 0.02, 0.155), 0xf59e0b, 1.8);
+          onDone();
+        });
+      } else if (actionId === 'keeper') {
+        playPageWhoosh();
+        rd.keeperDone = true;
+        flyKeeper.position.set(0.56, DESK_Y + 0.12, -0.36);
+        flyKeeper.visible = true;
+        tweenTransform(flyKeeper, new THREE.Vector3(-0.22, DESK_Y + 0.07, 0.16), null, 240, () => {
+          playTapeSwipe();
+          tweenTransform(flyKeeper, callLabelPatch.position.clone(), null, 220, () => {
+            flyKeeper.visible = false;
+            keeperPatch.visible = true;
+            spawn3DSparkles(keeperPatch.position.clone(), 12, 0x06b6d4);
+            onDone();
+          });
+        });
+      } else if (actionId === 'to_cart') {
+        playPageWhoosh();
+        rd.cartDone = true;
+        barcodePatch.visible = false;
+        callLabelPatch.visible = false;
+        keeperPatch.visible = false;
+        workBook.visible = false;
+        const finishedBook = createBookMesh(state.activeBook, { showLabel: true, showBarcode: true, scale: 1.24 });
+        finishedBook.position.copy(workBook.position);
+        finishedBook.rotation.order = 'YXZ';
+        finishedBook.rotation.set(-Math.PI / 2, -Math.PI / 2, 0);
+        taskGroup.add(finishedBook);
+        const dest = new THREE.Vector3(0.95, DESK_Y + 0.28, 0.04);
+        tweenTransform(finishedBook, dest, new THREE.Euler(0, -Math.PI / 2, 0), 440, () => {
+          playCartPlace();
+          spawn3DSparkles(dest, 18, 0xfbbf24);
+          spawn3DRingWave(new THREE.Vector3(0.95, DESK_Y + 0.12, 0.04), 0xf59e0b, 2.6);
+          onDone();
+        });
+      }
+    }
+
+    function animateSortPlace(tb, slot, onDone) {
+      playPageWhoosh();
+      slot.pad.material.color.setHex(0x93c5fd);
+      const dest = new THREE.Vector3(slot.x, DESK_Y + 0.21, -0.26);
+      tweenTransform(tb.mesh, dest, new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
+        playBookSlideIn();
+        spawn3DSparkles(dest, 10, 0x38bdf8);
+        spawn3DRingWave(new THREE.Vector3(slot.x, DESK_Y + 0.05, -0.26), 0x0ea5e9, 1.8);
+        onDone();
+      });
+    }
+
+    function animateShelvePick(onDone) {
+      const rd = state.roundData;
+      playPageWhoosh();
+      rd.holdingBook = true;
+      rd.gapMeshes.forEach((gm) => { gm.visible = true; });
+      const holdPos = new THREE.Vector3(0, DESK_Y + 0.50, 0.14);
+      tweenTransform(sceneObjects.cartBook, holdPos, new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
+        spawn3DSparkles(holdPos, 8, 0x60a5fa);
+        onDone();
+      });
+    }
+
+    function animateShelveInsert(gapIdx, onDone) {
+      const rd = state.roundData;
+      const gx = rd.slotX(gapIdx * 2);
+      rd.gapMeshes.forEach((gm) => { gm.visible = false; });
+      rd.shelved = true;
+      playPageWhoosh();
+      const approachPos = new THREE.Vector3(gx, DESK_Y + 0.28, 0.04);
+      const finalPos = new THREE.Vector3(gx, DESK_Y + 0.235, -0.24);
+      tweenTransform(sceneObjects.cartBook, approachPos, new THREE.Euler(0.14, -Math.PI / 2, 0), 220, () => {
+        tweenTransform(sceneObjects.cartBook, finalPos, new THREE.Euler(0, -Math.PI / 2, 0), 240, () => {
+          playBookSlideIn();
+          spawn3DSparkles(finalPos, 18, 0x22c55e);
+          spawn3DRingWave(new THREE.Vector3(gx, DESK_Y + 0.04, -0.22), 0x22c55e, 2.2);
+          onDone();
+        });
+      });
+    }
+
+    function animateCircAction(actionId, onDone) {
+      const rd = state.roundData;
+      const { cardMesh, outBook, retBook } = sceneObjects;
+      if (actionId === 'scan_card') {
+        playPageWhoosh();
+        rd.cardScanned = true;
+        tweenTransform(cardMesh, new THREE.Vector3(-0.18, DESK_Y + 0.16, 0.0), new THREE.Euler(0, 0, 0), 250, () => {
+          playScannerBeep();
+          flashScannerLaser();
+          spawn3DSparkles(new THREE.Vector3(-0.18, DESK_Y + 0.18, 0.0), 12, 0x60a5fa);
+          tweenTransform(cardMesh, new THREE.Vector3(-0.78, DESK_Y + 0.015, 0.16), new THREE.Euler(0, 0, 0), 230, onDone);
+        });
+      } else if (actionId === 'scan_checkout') {
+        playPageWhoosh();
+        rd.checkoutScanned = true;
+        state.activeBook = rd.bRet;
+        tweenTransform(outBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 250, () => {
+          playScannerBeep();
+          flashScannerLaser();
+          spawn3DSparkles(new THREE.Vector3(-0.18, DESK_Y + 0.18, -0.02), 12, 0x3b82f6);
+          tweenTransform(outBook, new THREE.Vector3(-0.56, DESK_Y + 0.06, -0.18), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 250, () => {
+            playBookThud();
+            onDone();
+          });
+        });
+      } else if (actionId === 'scan_return') {
+        playPageWhoosh();
+        rd.returnScanned = true;
+        tweenTransform(retBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 270, () => {
+          playScannerBeep();
+          flashScannerLaser();
+          spawn3DSparkles(new THREE.Vector3(-0.18, DESK_Y + 0.18, -0.02), 12, 0xef4444);
+          onDone();
+        });
+      } else if (actionId === 'put_tray') {
+        playPageWhoosh();
+        rd.trayPlaced = true;
+        const dest = new THREE.Vector3(0.92, DESK_Y + 0.09, 0.04);
+        tweenTransform(retBook, dest, new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 340, () => {
+          playCartPlace();
+          spawn3DSparkles(dest, 18, 0x22c55e);
+          spawn3DRingWave(new THREE.Vector3(0.92, DESK_Y + 0.05, 0.04), 0x16a34a, 2.4);
+          onDone();
+        });
+      }
+    }
+
     function executeGuidedAction(actionId) {
       state.busy = true;
       if (state.taskId === 'label') {
-        const rd = state.roundData;
-        const { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch } = sceneObjects;
-        if (actionId === 'place_book') {
-          sndClick();
-          stackBook.visible = false;
-          workBook.visible = true;
-          rd.bookPlaced = true;
-        } else if (actionId === 'barcode') {
-          sndBeep();
-          barcodePatch.visible = true;
-          rd.barcodeDone = true;
-        } else if (actionId === 'call_label') {
-          sndStick();
-          callLabelPatch.visible = true;
-          rd.labelDone = true;
-          rd.pickedLabelCorrect = true;
-        } else if (actionId === 'keeper') {
-          sndStick();
-          keeperPatch.visible = true;
-          rd.keeperDone = true;
-        } else if (actionId === 'to_cart') {
-          sndClick();
-          rd.cartDone = true;
-          const dest = new THREE.Vector3(0.95, DESK_Y + 0.28, 0.04);
-          workBook.position.copy(dest);
-          workBook.rotation.set(0, -Math.PI / 2, 0);
-          barcodePatch.visible = false;
-          callLabelPatch.visible = false;
-          keeperPatch.visible = false;
-          // 책등에 라벨 부착 버전으로 교체 표시
-          const finishedBook = createBookMesh(state.activeBook, { showLabel: true, showBarcode: true, scale: 1.24 });
-          finishedBook.position.copy(dest);
-          finishedBook.rotation.set(0, -Math.PI / 2, 0);
-          workBook.visible = false;
-          taskGroup.add(finishedBook);
-        }
-        setTimeout(() => { state.busy = false; advanceGuidedStep(); }, 380);
+        animateLabelStep(actionId, () => { state.busy = false; advanceGuidedStep(); });
         return;
       }
 
@@ -2192,11 +2462,10 @@
         const idx = Number(actionId.replace('sort_book_', ''));
         const tb = rd.trayBooks[idx];
         const slot = rd.slots[rd.nextSlot];
-        sndStick();
         tb.placedSlot = rd.nextSlot;
         rd.nextSlot += 1;
         state.activeBook = rd.sorted[Math.min(rd.nextSlot, rd.sorted.length - 1)];
-        tweenTransform(tb.mesh, new THREE.Vector3(slot.x, DESK_Y + 0.21, -0.26), new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
+        animateSortPlace(tb, slot, () => {
           state.busy = false;
           advanceGuidedStep();
         });
@@ -2204,74 +2473,19 @@
       }
 
       if (state.taskId === 'shelve') {
-        const rd = state.roundData;
         if (actionId === 'pick_cart') {
-          sndClick();
-          rd.holdingBook = true;
-          rd.gapMeshes.forEach((gm) => { gm.visible = true; });
-          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(0, DESK_Y + 0.50, 0.14), new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
-            state.busy = false;
-            advanceGuidedStep();
-          });
+          animateShelvePick(() => { state.busy = false; advanceGuidedStep(); });
           return;
         }
         if (actionId.startsWith('gap_')) {
-          sndStick();
-          const gx = rd.slotX(rd.insertIndex * 2);
-          rd.gapMeshes.forEach((gm) => { gm.visible = false; });
-          rd.shelved = true;
-          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(gx, DESK_Y + 0.235, -0.24), new THREE.Euler(0, -Math.PI / 2, 0), 380, () => {
-            state.busy = false;
-            advanceGuidedStep();
-          });
+          animateShelveInsert(state.roundData.insertIndex, () => { state.busy = false; advanceGuidedStep(); });
           return;
         }
       }
 
       if (state.taskId === 'circulation') {
-        const rd = state.roundData;
-        const { cardMesh, outBook, retBook } = sceneObjects;
-        if (actionId === 'scan_card') {
-          sndBeep();
-          rd.cardScanned = true;
-          tweenTransform(cardMesh, new THREE.Vector3(-0.18, DESK_Y + 0.16, 0.0), new THREE.Euler(0, 0, 0), 260, () => {
-            tweenTransform(cardMesh, new THREE.Vector3(-0.78, DESK_Y + 0.015, 0.16), new THREE.Euler(0, 0, 0), 240, () => {
-              state.busy = false;
-              advanceGuidedStep();
-            });
-          });
-          return;
-        }
-        if (actionId === 'scan_checkout') {
-          sndBeep();
-          rd.checkoutScanned = true;
-          state.activeBook = rd.bRet;
-          tweenTransform(outBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 260, () => {
-            tweenTransform(outBook, new THREE.Vector3(-0.56, DESK_Y + 0.06, -0.18), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 260, () => {
-              state.busy = false;
-              advanceGuidedStep();
-            });
-          });
-          return;
-        }
-        if (actionId === 'scan_return') {
-          sndBeep();
-          rd.returnScanned = true;
-          tweenTransform(retBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 280, () => {
-            state.busy = false;
-            advanceGuidedStep();
-          });
-          return;
-        }
-        if (actionId === 'put_tray') {
-          sndStick();
-          rd.trayPlaced = true;
-          tweenTransform(retBook, new THREE.Vector3(0.92, DESK_Y + 0.09, 0.04), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 340, () => {
-            state.busy = false;
-            advanceGuidedStep();
-          });
-          return;
-        }
+        animateCircAction(actionId, () => { state.busy = false; advanceGuidedStep(); });
+        return;
       }
       state.busy = false;
     }
@@ -2280,16 +2494,15 @@
     function handlePracticumAction(actionId, opts = {}) {
       if (state.taskId === 'label') {
         const rd = state.roundData;
-        const { stackBook, workBook, barcodePatch, callLabelPatch, keeperPatch } = sceneObjects;
         if (actionId === 'place_book') {
           if (rd.bookPlaced) return;
-          sndClick();
-          stackBook.visible = false;
-          workBook.visible = true;
-          rd.bookPlaced = true;
-          state.craft.log.push('book_placed');
-          showGuidance('작업대에 새 책을 놓았어요! 이제 바코드와 청구기호 라벨을 붙여 보세요.', '📖', false);
-          renderUI();
+          state.busy = true;
+          animateLabelStep('place_book', () => {
+            state.busy = false;
+            state.craft.log.push('book_placed');
+            showGuidance('작업대에 새 책을 놓았어요! 이제 바코드와 청구기호 라벨을 붙여 보세요.', '📖', false);
+            renderUI();
+          });
           return;
         }
         if (!rd.bookPlaced) {
@@ -2301,12 +2514,13 @@
         }
         if (actionId === 'barcode') {
           if (rd.barcodeDone) return;
-          sndBeep();
-          barcodePatch.visible = true;
-          rd.barcodeDone = true;
-          state.craft.log.push('barcode');
-          showGuidance('도서관 바코드(등록번호)를 붙였어요!', '🔍', false);
-          renderUI();
+          state.busy = true;
+          animateLabelStep('barcode', () => {
+            state.busy = false;
+            state.craft.log.push('barcode');
+            showGuidance('도서관 바코드(등록번호)를 붙였어요!', '🔍', false);
+            renderUI();
+          });
           return;
         }
         if (actionId === 'call_label') {
@@ -2328,14 +2542,14 @@
             renderUI();
             return;
           }
-          sndStick();
           state.awaitingLabelPick = false;
-          callLabelPatch.visible = true;
-          rd.labelDone = true;
-          rd.pickedLabelCorrect = true;
-          state.craft.log.push('call_label');
-          showGuidance(`정확한 청구기호(${picked.callNo}) 라벨을 책등 아래에 붙였어요!`, '🏷️', false);
-          renderUI();
+          state.busy = true;
+          animateLabelStep('call_label', () => {
+            state.busy = false;
+            state.craft.log.push('call_label');
+            showGuidance(`정확한 청구기호(${picked.callNo}) 라벨을 책등 아래에 붙였어요!`, '🏷️', false);
+            renderUI();
+          });
           return;
         }
         if (actionId === 'keeper') {
@@ -2347,12 +2561,13 @@
             renderUI();
             return;
           }
-          sndStick();
-          keeperPatch.visible = true;
-          rd.keeperDone = true;
-          state.craft.log.push('keeper');
-          showGuidance('투명 보호필름(키퍼)을 꼼꼼히 덮었어요!', '✨', false);
-          renderUI();
+          state.busy = true;
+          animateLabelStep('keeper', () => {
+            state.busy = false;
+            state.craft.log.push('keeper');
+            showGuidance('투명 보호필름(키퍼)을 꼼꼼히 덮었어요!', '✨', false);
+            renderUI();
+          });
           return;
         }
         if (actionId === 'to_cart') {
@@ -2363,71 +2578,64 @@
             renderUI();
             return;
           }
-          sndClick();
-          rd.cartDone = true;
-          workBook.visible = false;
-          barcodePatch.visible = false;
-          callLabelPatch.visible = false;
-          keeperPatch.visible = false;
-          const finishedBook = createBookMesh(state.activeBook, { showLabel: true, showBarcode: true, scale: 1.24 });
-          finishedBook.position.set(0.95, DESK_Y + 0.28, 0.04);
-          finishedBook.rotation.set(0, -Math.PI / 2, 0);
-          taskGroup.add(finishedBook);
-
-          const checks = [
-            { ok: rd.barcodeDone, text: '도서관 바코드(등록번호) 부착 완료' },
-            { ok: rd.pickedLabelCorrect, text: `정확한 청구기호(${state.activeBook.callNo}) 판별 및 부착` },
-            { ok: rd.keeperDone, text: '라벨 보호필름(키퍼) 마감 완료' },
-            { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '실수 없이 순서대로 완벽 처리' : `주의 기록 ${state.craft.mistakes.length}건 (${state.craft.mistakes[0]})` }
-          ];
-          const stars = Math.max(1, 3 - Math.min(2, state.craft.mistakes.length));
-          completeCurrentTask({ stars, checks });
+          state.busy = true;
+          animateLabelStep('to_cart', () => {
+            const checks = [
+              { ok: rd.barcodeDone, text: '도서관 바코드(등록번호) 부착 완료' },
+              { ok: rd.pickedLabelCorrect, text: `정확한 청구기호(${state.activeBook.callNo}) 판별 및 부착` },
+              { ok: rd.keeperDone, text: '라벨 보호필름(키퍼) 마감 완료' },
+              { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '실수 없이 순서대로 완벽 처리' : `주의 기록 ${state.craft.mistakes.length}건 (${state.craft.mistakes[0]})` }
+            ];
+            const stars = Math.max(1, 3 - Math.min(2, state.craft.mistakes.length));
+            completeCurrentTask({ stars, checks });
+          });
           return;
         }
       }
 
       if (state.taskId === 'sort') {
         const rd = state.roundData;
-        // 대기 책 클릭 -> 다음 빈 슬롯으로 이동
         if (actionId.startsWith('sort_book_')) {
           const idx = Number(actionId.replace('sort_book_', ''));
           const tb = rd.trayBooks[idx];
           if (!tb) return;
           if (tb.placedSlot !== -1) {
-            // 이미 슬롯에 있으면 원래 자리로 되돌리기 (자유 수정!)
-            sndClick();
-            rd.slots[tb.placedSlot].placedBookIdx = null;
+            playPageWhoosh();
+            const oldSlot = rd.slots[tb.placedSlot];
+            oldSlot.placedBookIdx = null;
+            oldSlot.pad.material.color.setHex(0xfef3c7);
             tb.placedSlot = -1;
-            tweenTransform(tb.mesh, tb.homePos, new THREE.Euler(0, -Math.PI / 2, 0), 260);
+            tweenTransform(tb.mesh, tb.homePos, new THREE.Euler(0, -Math.PI / 2, 0), 260, () => playBookThud());
             showGuidance(`『${tb.data.title}』을(를) 다시 아래로 내려놓았어요.`, '↩️', false);
             renderUI();
             return;
           }
           const emptySlot = rd.slots.find((s) => s.placedBookIdx === null);
           if (!emptySlot) return;
-          sndStick();
           emptySlot.placedBookIdx = idx;
           tb.placedSlot = emptySlot.index;
           state.craft.log.push(tb.data.callNo);
-          tweenTransform(tb.mesh, new THREE.Vector3(emptySlot.x, DESK_Y + 0.21, -0.26), new THREE.Euler(0, -Math.PI / 2, 0), 300);
-          renderUI();
+          state.busy = true;
+          animateSortPlace(tb, emptySlot, () => {
+            state.busy = false;
+            renderUI();
+          });
           return;
         }
-        // 슬롯 클릭 시 해당 슬롯 책 되돌리기
         if (actionId.startsWith('slot_')) {
           const sIdx = Number(actionId.replace('slot_', ''));
           const slot = rd.slots[sIdx];
           if (slot && slot.placedBookIdx !== null) {
             const tb = rd.trayBooks[slot.placedBookIdx];
-            sndClick();
+            playPageWhoosh();
             slot.placedBookIdx = null;
+            slot.pad.material.color.setHex(0xfef3c7);
             tb.placedSlot = -1;
-            tweenTransform(tb.mesh, tb.homePos, new THREE.Euler(0, -Math.PI / 2, 0), 260);
+            tweenTransform(tb.mesh, tb.homePos, new THREE.Euler(0, -Math.PI / 2, 0), 260, () => playBookThud());
             renderUI();
           }
           return;
         }
-        // 순서 확인 버튼
         if (actionId === 'verify_sort') {
           const allPlaced = rd.slots.every((s) => s.placedBookIdx !== null);
           if (!allPlaced) {
@@ -2442,12 +2650,20 @@
           }
           if (wrongIdx !== -1) {
             sndHint();
+            rd.slots.forEach((s, i) => {
+              const ok = placedBooks[i].callNo === rd.sorted[i].callNo;
+              s.pad.material.color.setHex(ok ? 0x86efac : 0xfca5a5);
+            });
             const got = placedBooks[wrongIdx];
             recordMistake(`${wrongIdx + 1}번 자리에 놓은 ${got.callNo} 순서가 맞지 않았어요`);
-            showGuidance(`${wrongIdx + 1}번 자리(${got.callNo}) 순서가 맞지 않아요! 틀린 위치의 책을 눌러 내려놓고 다시 맞춰 보세요.`, '⚠️', false, true);
+            showGuidance(`${wrongIdx + 1}번 자리(${got.callNo}) 순서가 맞지 않아요! 빨간 자리의 책을 눌러 내려놓고 다시 맞춰 보세요.`, '⚠️', false, true);
             renderUI();
             return;
           }
+          rd.slots.forEach((s) => {
+            s.pad.material.color.setHex(0x86efac);
+            spawn3DSparkles(new THREE.Vector3(s.x, DESK_Y + 0.25, -0.26), 8, 0x22c55e);
+          });
           const checks = [
             { ok: true, text: `${rd.count}권 청구기호 오름차순 정렬 성공` },
             { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '한 번에 정확한 순서로 배열 완료' : `수정 시도 ${state.craft.mistakes.length}회 후 정확히 완성` }
@@ -2462,12 +2678,12 @@
         const rd = state.roundData;
         if (actionId === 'pick_cart') {
           if (rd.holdingBook) return;
-          sndClick();
-          rd.holdingBook = true;
-          rd.gapMeshes.forEach((gm) => { gm.visible = true; });
-          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(0, DESK_Y + 0.50, 0.14), new THREE.Euler(0, -Math.PI / 2, 0), 300);
-          showGuidance(`『${rd.targetBook.title}』(${rd.targetBook.callNo})을(를) 들었어요! 서가의 빈칸 중 알맞은 곳에 꽂아보세요.`, '📚', false);
-          renderUI();
+          state.busy = true;
+          animateShelvePick(() => {
+            state.busy = false;
+            showGuidance(`『${rd.targetBook.title}』(${rd.targetBook.callNo})을(를) 들었어요! 서가의 빈칸 중 알맞은 곳에 꽂아보세요.`, '📚', false);
+            renderUI();
+          });
           return;
         }
         if (actionId.startsWith('gap_')) {
@@ -2483,17 +2699,13 @@
             sndHint();
             const reason = getMismatchGuidance(actionId, getCurrentStep());
             recordMistake(`${g + 1}번 자리 오배가 시도`);
+            if (rd.gapMeshes[g]) rd.gapMeshes[g].material.color.setHex(0xef4444);
             showGuidance(reason, '⚠️', false, true);
             renderUI();
             return;
           }
-          sndStick();
-          rd.gapMeshes.forEach((gm) => { gm.visible = false; });
-          rd.shelved = true;
-          const gx = rd.slotX(rd.insertIndex * 2);
           state.busy = true;
-          tweenTransform(sceneObjects.cartBook, new THREE.Vector3(gx, DESK_Y + 0.235, -0.24), new THREE.Euler(0, -Math.PI / 2, 0), 340, () => {
-            state.busy = false;
+          animateShelveInsert(rd.insertIndex, () => {
             const checks = [
               { ok: true, text: `도서 『${rd.targetBook.title}』(${rd.targetBook.callNo}) 올바른 위치 배가` },
               { ok: state.craft.mistakes.length === 0, text: state.craft.mistakes.length === 0 ? '비콘 없이 단번에 정확한 서가 위치 찾기 성공' : `오배가 시도 ${state.craft.mistakes.length}회 후 정확히 배가` }
@@ -2507,18 +2719,13 @@
 
       if (state.taskId === 'circulation') {
         const rd = state.roundData;
-        const { cardMesh, outBook, retBook } = sceneObjects;
         if (actionId === 'scan_card') {
           if (rd.cardScanned) return;
-          sndBeep();
-          rd.cardScanned = true;
           state.busy = true;
-          tweenTransform(cardMesh, new THREE.Vector3(-0.18, DESK_Y + 0.16, 0.0), new THREE.Euler(0, 0, 0), 220, () => {
-            tweenTransform(cardMesh, new THREE.Vector3(-0.78, DESK_Y + 0.015, 0.16), new THREE.Euler(0, 0, 0), 220, () => {
-              state.busy = false;
-              showGuidance('회원증 확인 완료! 이제 대출·반납 도서를 스캔해 보세요.', '💳', false);
-              renderUI();
-            });
+          animateCircAction('scan_card', () => {
+            state.busy = false;
+            showGuidance('회원증 확인 완료! 이제 대출·반납 도서를 스캔해 보세요.', '💳', false);
+            renderUI();
           });
           return;
         }
@@ -2531,25 +2738,18 @@
         }
         if (actionId === 'scan_checkout') {
           if (rd.checkoutScanned) return;
-          sndBeep();
-          rd.checkoutScanned = true;
-          state.activeBook = rd.bRet;
           state.busy = true;
-          tweenTransform(outBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 220, () => {
-            tweenTransform(outBook, new THREE.Vector3(-0.56, DESK_Y + 0.06, -0.18), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 220, () => {
-              state.busy = false;
-              showGuidance(`대출 도서 『${rd.bOut.title}』 스캔 완료!`, '📘', false);
-              renderUI();
-            });
+          animateCircAction('scan_checkout', () => {
+            state.busy = false;
+            showGuidance(`대출 도서 『${rd.bOut.title}』 스캔 완료!`, '📘', false);
+            renderUI();
           });
           return;
         }
         if (actionId === 'scan_return') {
           if (rd.returnScanned) return;
-          sndBeep();
-          rd.returnScanned = true;
           state.busy = true;
-          tweenTransform(retBook, new THREE.Vector3(-0.18, DESK_Y + 0.15, -0.02), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 240, () => {
+          animateCircAction('scan_return', () => {
             state.busy = false;
             showGuidance(`반납 도서 『${rd.bRet.title}』 스캔 완료! 이제 반납 트레이에 놓아주세요.`, '📕', false);
             renderUI();
@@ -2571,10 +2771,8 @@
             renderUI();
             return;
           }
-          sndStick();
-          rd.trayPlaced = true;
           state.busy = true;
-          tweenTransform(retBook, new THREE.Vector3(0.92, DESK_Y + 0.09, 0.04), new THREE.Euler(-Math.PI / 2, 0, -Math.PI / 2), 300, () => {
+          animateCircAction('put_tray', () => {
             state.busy = false;
             const checks = [
               { ok: rd.cardScanned, text: '이용자 회원증 선확인 완료' },
@@ -3104,17 +3302,55 @@
     // =========================================================================
     // 10. 렌더 루프 & 시작
     // =========================================================================
+    let lastAnimNow = 0;
     function animate(now) {
       requestAnimationFrame(animate);
+      const dt = Math.min(0.05, lastAnimNow ? (now - lastAnimNow) / 1000 : 0.016);
+      lastAnimNow = now;
       for (let i = animators.length - 1; i >= 0; i--) {
         if (animators[i].update(now)) animators.splice(i, 1);
       }
+      for (let i = sparkles3D.length - 1; i >= 0; i--) {
+        const sp = sparkles3D[i];
+        sp.life -= dt * 1.45;
+        if (sp.life <= 0) {
+          scene.remove(sp.mesh);
+          sparkles3D.splice(i, 1);
+        } else {
+          sp.vy -= 1.8 * dt;
+          sp.mesh.position.x += sp.vx * dt;
+          sp.mesh.position.y += sp.vy * dt;
+          sp.mesh.position.z += sp.vz * dt;
+          sp.mesh.rotation.x += 5 * dt;
+          sp.mesh.rotation.y += 6 * dt;
+          sp.mesh.scale.setScalar(Math.max(0.05, sp.life));
+          sp.mesh.material.opacity = sp.life;
+        }
+      }
+      for (let i = ringWaves3D.length - 1; i >= 0; i--) {
+        const rw = ringWaves3D[i];
+        rw.life -= dt * 1.8;
+        if (rw.life <= 0) {
+          scene.remove(rw.mesh);
+          ringWaves3D.splice(i, 1);
+        } else {
+          const s = 1 + (1 - rw.life) * (rw.maxScale - 1);
+          rw.mesh.scale.set(s, s, 1);
+          rw.mesh.material.opacity = rw.life * 0.85;
+        }
+      }
+      if (state.taskId === 'shelve' && sceneObjects.gapMeshes) {
+        const pulseOp = 0.28 + 0.22 * (0.5 + 0.5 * Math.sin(now * 0.005));
+        sceneObjects.gapMeshes.forEach((gm) => {
+          if (gm.visible) gm.material.opacity = pulseOp;
+        });
+      }
       if (highlightRing.visible) {
-        const s = 1 + Math.sin(now * 0.006) * 0.08;
+        const s = 1 + Math.sin(now * 0.006) * 0.1;
         highlightRing.scale.set(s, s, 1);
       }
       if (highlightBeacon.visible) {
-        highlightBeacon.position.y = highlightBeacon.userData.baseY + Math.sin(now * 0.006) * 0.035;
+        highlightBeacon.position.y = highlightBeacon.userData.baseY + Math.sin(now * 0.006) * 0.038;
       }
       controls.update();
       renderer.render(scene, camera);
